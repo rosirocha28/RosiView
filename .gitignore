@@ -1,0 +1,35 @@
+# ==========================================================================
+# RosiView — Git Ignore
+# ==========================================================================
+
+# Gabaritos e roteiros exclusivos do professor (NUNCA ENVIAR AO REPOSITÓRIO PÚBLICO)
+gabaritos_professor/
+*gabarito*
+
+# Arquivos de log e depuração
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Arquivos temporários e de sistema operacional
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+*.tmp
+*~
+
+# IDEs e Editores
+.vscode/
+.idea/
+.agents/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Binários gerados de compilação intermediária (se houver)
+obj/
+bin/Debug/
+bin/Release/

@@ -1,0 +1,368 @@
+/* ==========================================================================
+   RosiView — Main Design System & Layout Stylesheet
+   Estilo LabVIEW Moderno / Industrial com Alta Precisão Visual
+   ========================================================================== */
+
+:root {
+  /* Color Palette */
+  --bg-app: #1e222b;
+  --bg-panel: #282c37;
+  --bg-panel-light: #323846;
+  --bg-front-panel: #d6d9df;
+  --bg-front-panel-grid: #c5c8cf;
+  --bg-diagram: #ffffff;
+  --bg-diagram-grid: #e2e8f0;
+  
+  --border-color: #454c5e;
+  --border-light: #606980;
+  --border-panel: #b0b4be;
+  
+  --text-primary: #f0f4f8;
+  --text-secondary: #9ba3b4;
+  --text-dark: #1e293b;
+  --text-muted: #64748b;
+
+  /* Accent Colors */
+  --accent-primary: #007acc;
+  --accent-hover: #0098ff;
+  --accent-active: #005a9e;
+  
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #06b6d4;
+
+  /* LabVIEW Wire & Data Type Colors */
+  --wire-double: #ea580c;       /* Laranja para Números Float / DBL */
+  --wire-integer: #0284c7;      /* Azul para Inteiros I32 */
+  --wire-boolean: #16a34a;      /* Verde para Booleanos T/F */
+  --wire-string: #db2777;       /* Rosa/Magenta para Strings */
+  --wire-array: #ca8a04;        /* Amarelo escuro / Marrom para Arrays */
+  --wire-cluster: #8b5cf6;      /* Roxo para Clusters / Bundles */
+  --wire-error: #dc2626;        /* Vermelho para Clusters de Erro */
+
+  /* Shadows & Elevation */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  --shadow-inset: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "Cascadia Code", "Fira Code", "Consolas", monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-family);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   App Layout
+   ========================================================================== */
+#app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Header & Menu Bar */
+#app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 46px;
+  background: linear-gradient(180deg, #2f3442 0%, #222630 100%);
+  border-bottom: 1px solid #151820;
+  padding: 0 12px;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(135deg, #007acc 0%, #00b4d8 100%);
+  border-radius: 6px;
+  font-weight: 900;
+  font-size: 16px;
+  color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 122, 204, 0.4);
+  letter-spacing: -1px;
+}
+
+.brand-title {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  color: #f1f5f9;
+}
+
+.brand-subtitle {
+  font-size: 10px;
+  font-weight: 500;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+/* Toolbar Control Center */
+.toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #4a5266;
+  background: linear-gradient(180deg, #3a4153 0%, #2b3140 100%);
+  color: #e2e8f0;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.tool-btn:hover {
+  background: linear-gradient(180deg, #485269 0%, #343c4e 100%);
+  border-color: #636e8a;
+  color: #ffffff;
+}
+
+.tool-btn:active {
+  background: #202430;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
+  transform: translateY(1px);
+}
+
+.tool-btn.btn-run {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  border-color: #047857;
+  color: #ffffff;
+}
+.tool-btn.btn-run:hover {
+  background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
+}
+
+.tool-btn.btn-stop {
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+  border-color: #b91c1c;
+  color: #ffffff;
+}
+.tool-btn.btn-stop:hover {
+  background: linear-gradient(180deg, #f87171 0%, #ef4444 100%);
+}
+
+.tool-btn.btn-highlight.active {
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+  border-color: #b45309;
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+}
+
+.tool-btn.btn-active {
+  border-color: #007acc;
+  box-shadow: 0 0 6px rgba(0, 122, 204, 0.5);
+}
+
+.divider-vertical {
+  width: 1px;
+  height: 20px;
+  background-color: #3b4254;
+  margin: 0 4px;
+}
+
+/* View Mode Switcher (Abas: Painel Frontal, Diagrama, Split) */
+.view-tabs {
+  display: flex;
+  background: #191c24;
+  border-radius: 6px;
+  padding: 2px;
+  border: 1px solid #2e3444;
+}
+
+.view-tab {
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  color: #94a3b8;
+  transition: all 0.15s ease;
+}
+
+.view-tab:hover {
+  color: #f1f5f9;
+}
+
+.view-tab.active {
+  background: #007acc;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Hardware Mode Selector */
+.mode-selector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #191c24;
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid #2f3647;
+}
+
+.mode-label {
+  font-size: 10px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.mode-select {
+  background: #2b3140;
+  color: #38bdf8;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Workspaces Area */
+#workspace-area {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  height: calc(100vh - 46px - 26px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Workspace Views */
+.workspace-view {
+  display: none;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.workspace-view.active {
+  display: flex;
+}
+
+/* Split View Configuration */
+#workspace-split {
+  flex-direction: row;
+}
+
+.split-pane {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  border-right: 1px solid #1e222b;
+}
+
+.split-pane:last-child {
+  border-right: none;
+}
+
+.split-header {
+  height: 26px;
+  background: #252936;
+  border-bottom: 1px solid #363d4e;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  font-weight: 600;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+.split-content {
+  height: calc(100% - 26px);
+  position: relative;
+  overflow: auto;
+}
+
+/* Status Bar */
+#app-statusbar {
+  height: 26px;
+  background: #181b22;
+  border-top: 1px solid #232834;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-size: 11px;
+  color: #94a3b8;
+  z-index: 90;
+}
+
+.status-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-danger);
+}
+
+.status-dot.connected {
+  background-color: var(--color-success);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+}
+
+.status-dot.running {
+  background-color: var(--color-warning);
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.7);
+}

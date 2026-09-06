@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RosiView — Automação, Controle & Instrumentação Virtual</title>
+  <meta name="description" content="Ambiente web de instrumentação virtual e programação por fluxo de dados estilo LabVIEW para sistemas de controle e mecatrônica.">
+  <meta name="theme-color" content="#1e222b">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Estilos CSS -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/front_panel.css">
+  <link rel="stylesheet" href="css/block_diagram.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <div id="app-container">
+    
+    <!-- Top Header & Toolbar -->
+    <header id="app-header">
+      <!-- Seção Brand / Logo -->
+      <div class="brand-section">
+        <div class="brand-logo">RV</div>
+        <div>
+          <span class="brand-title">RosiView</span>
+          <span class="brand-subtitle">IFES Mecatrônica</span>
+        </div>
+      </div>
+
+      <!-- Seção Toolbar de Controle da Execução -->
+      <div class="toolbar-section">
+        <button class="tool-btn btn-run" id="btn-run" title="Executar uma iteração (Single Step)">
+          <span>▶</span>
+          <span>Run</span>
+        </button>
+
+        <button class="tool-btn" id="btn-cont-run" title="Execução contínua (While Loop)">
+          <span>🔁</span>
+          <span>Cont. Run</span>
+        </button>
+
+        <button class="tool-btn btn-stop" id="btn-stop" title="Parar Execução">
+          <span>⏹</span>
+          <span>Stop</span>
+        </button>
+
+        <button class="tool-btn btn-highlight" id="btn-highlight" title="Destacar fluxo de dados e execução passo-a-passo">
+          <span>💡</span>
+          <span>Highlight</span>
+        </button>
+
+        <div class="divider-vertical"></div>
+
+        <button class="tool-btn" id="btn-palette" title="Abrir paleta de nós e instrumentos">
+          <span>🧰</span>
+          <span>Paleta</span>
+        </button>
+
+        <div class="divider-vertical"></div>
+
+        <button class="tool-btn" id="btn-new" title="Iniciar Novo Projeto">
+          <span>📄</span>
+          <span>Novo</span>
+        </button>
+
+        <button class="tool-btn" id="btn-save" title="Salvar Projeto (.rosi)">
+          <span>💾</span>
+          <span>Salvar</span>
+        </button>
+
+        <button class="tool-btn" id="btn-load" title="Abrir Projeto (.rosi)">
+          <span>📁</span>
+          <span>Abrir</span>
+        </button>
+        <input type="file" id="file-input" accept=".rosi,.json" style="display: none;">
+
+        <button class="tool-btn" id="btn-clear" title="Limpar tudo">
+          <span>🗑</span>
+        </button>
+      </div>
+
+      <!-- Seção Seletor de Modo de Hardware & Abas de Visualização -->
+      <div class="toolbar-section">
+        <!-- Modo Hardware -->
+        <div class="mode-selector">
+          <span class="mode-label">Hardware:</span>
+          <select class="mode-select" id="mode-selector">
+            <option value="virtual" selected>Planta Virtual (Simulador)</option>
+            <option value="websocket">NI USB-6009 (Bridge WebSocket)</option>
+            <option value="webusb">NI USB-6009 (WebUSB Direto)</option>
+          </select>
+        </div>
+
+        <div class="divider-vertical"></div>
+
+        <!-- Abas de Visualização -->
+        <div class="view-tabs">
+          <div class="view-tab" data-view="front">Painel Frontal</div>
+          <div class="view-tab" data-view="diagram">Diagrama de Blocos</div>
+          <div class="view-tab active" data-view="split">Visualização Dividida</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Workspace Principal -->
+    <main id="workspace-area">
+      
+      <!-- Modo Painel Frontal Completo -->
+      <div class="workspace-view" id="workspace-front"></div>
+
+      <!-- Modo Diagrama de Blocos Completo -->
+      <div class="workspace-view" id="workspace-diagram"></div>
+
+      <!-- Modo Dividido (Split Screen - Painel Frontal + Diagrama) -->
+      <div class="workspace-view active" id="workspace-split">
+        <div class="split-pane">
+          <div class="split-header">
+            <span>PAINEL FRONTAL (IHM / Instrumentos)</span>
+          </div>
+          <div class="split-content" id="split-front-panel"></div>
+        </div>
+
+        <div class="split-pane">
+          <div class="split-header">
+            <span>DIAGRAMA DE BLOCOS (Fluxo de Dados / Lógica)</span>
+          </div>
+          <div class="split-content" id="split-diagram"></div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Containers de Renderização Compartilhados -->
+    <div id="front-panel-container" style="width: 100%; height: 100%;"></div>
+    <div id="diagram-container" style="width: 100%; height: 100%;"></div>
+
+    <!-- Status Bar Inferior -->
+    <footer id="app-statusbar">
+      <div class="status-group">
+        <div class="status-item">
+          <div class="status-dot connected" id="status-hw-dot"></div>
+          <span id="status-hw-text">Planta Virtual (Ativa)</span>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" id="status-run-dot"></div>
+          <span id="status-run-text">Parado (Idle)</span>
+        </div>
+      </div>
+
+      <div class="status-group">
+        <div class="status-item">
+          <span id="status-iteration">Loop [i]: 0</span>
+        </div>
+        <div class="status-item">
+          <span>RosiView v1.0 — IFES Serra</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Modal de Confirmação: Novo Projeto -->
+    <div class="modal-overlay" id="new-project-modal" style="display: none;">
+      <div class="modal-box confirm-dialog">
+        <div class="modal-header">
+          <span>Novo Projeto</span>
+          <button class="palette-close-btn" id="btn-modal-close" title="Fechar">✕</button>
+        </div>
+        <div class="modal-body" style="padding: 24px; text-align: center;">
+          <div style="font-size: 40px; margin-bottom: 12px;">💾</div>
+          <h3 style="margin-bottom: 8px; font-size: 16px; color: #f1f5f9; font-weight: 700;">Deseja salvar o projeto atual?</h3>
+          <p style="color: #94a3b8; font-size: 13px; line-height: 1.5;">
+            Há elementos no seu projeto atual. Se você iniciar um novo sem salvar, todas as alterações não salvas serão descartadas.
+          </p>
+        </div>
+        <div class="modal-footer confirm-footer">
+          <button class="modal-btn btn-save-action" id="btn-confirm-save">
+            <span>💾</span>
+            <span>Salvar e Criar Novo</span>
+          </button>
+          <button class="modal-btn btn-discard-action" id="btn-confirm-discard">
+            <span>🗑️</span>
+            <span>Descartar</span>
+          </button>
+          <button class="modal-btn btn-cancel-action" id="btn-confirm-cancel">
+            <span>✕</span>
+            <span>Cancelar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Ponto de Entrada da Aplicação (Bundle Autônomo com suporte a file:///) -->
+  <script src="js/rosiview_bundle.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,508 @@
+/**
+ * RosiView — Main Application Controller
+ * Orquestrador principal da interface, abas, menus, hardware e motor de execução
+ */
+
+import { DiagramGraph, DataTypes } from './core/graph.js';
+import { RosiViewRuntime } from './core/runtime.js';
+import { FrontPanelManager } from './ui/front_panel.js';
+import { BlockDiagramEditor } from './ui/block_diagram.js';
+import { PaletteManager } from './ui/palette.js';
+
+// Drivers de Hardware
+import { VirtualDAQDriver } from './hardware/virtual_daq.js';
+import { WSBridgeClient } from './hardware/ws_bridge_client.js';
+import { NIUSB6009WebUSBDriver } from './hardware/ni_usb6009_driver.js';
+
+// Biblioteca de Nós
+import { AddNode, SubtractNode, MultiplyNode, DivideNode, GainNode, SaturationNode } from './nodes/math_nodes.js';
+import { FormulaNode } from './nodes/formula_node.js';
+import { GreaterNode, LessNode, EqualNode, AndNode, OrNode, NotNode, SelectNode } from './nodes/logic_nodes.js';
+import { BuildArrayNode, ArraySubsetNode, BundleNode } from './nodes/array_nodes.js';
+import { OnOffControllerNode, PIDControllerNode } from './nodes/control_nodes.js';
+import { SineNode, RandomNumberNode, ConstantNode, TimeStepNode } from './nodes/signal_nodes.js';
+import { DAQAssistantAINode, DAQAssistantAONode } from './nodes/daq_nodes.js';
+import { TransferFunctionNode } from './nodes/plant_nodes.js';
+
+// Widgets do Painel Frontal
+import { ThermometerWidget } from './ui/widgets/thermometer_view.js';
+import { TankWidget } from './ui/widgets/tank_view.js';
+import { ChartWidget } from './ui/widgets/chart_view.js';
+import { SliderWidget } from './ui/widgets/slider_view.js';
+import { ToggleSwitchWidget, LEDWidget } from './ui/widgets/led_switch.js';
+import { NumericControlWidget } from './ui/widgets/numeric_view.js';
+
+class RosiViewApp {
+  constructor() {
+    this.graph = new DiagramGraph();
+    this.virtualDAQ = new VirtualDAQDriver();
+    this.wsBridge = new WSBridgeClient();
+    this.webUSB = new NIUSB6009WebUSBDriver();
+    
+    this.currentDAQ = this.virtualDAQ;
+
+    this.frontPanel = null;
+    this.editor = null;
+    this.runtime = null;
+    this.palette = null;
+    this.activeView = 'split'; // 'front', 'diagram', 'split'
+  }
+
+  init() {
+    // 1. Inicializa Painel Frontal e Diagrama de Blocos
+    this.frontPanel = new FrontPanelManager('front-panel-container');
+    this.editor = new BlockDiagramEditor({
+      containerId: 'diagram-container',
+      graph: this.graph,
+      onNodeSelect: (nodeId) => {},
+      onWireCreated: () => {}
+    });
+
+    // 2. Inicializa Motor de Execução
+    this.runtime = new RosiViewRuntime({
+      graph: this.graph,
+      daqDevice: this.currentDAQ,
+      frontPanel: this.frontPanel
+    });
+
+    // 3. Inicializa Gerenciador de Paleta
+    this.palette = new PaletteManager({
+      onAddNode: (kind) => this.addNodeFromPalette(kind),
+      onAddWidget: (kind) => this.addWidgetFromPalette(kind)
+    });
+
+    // 4. Configura Listeners de Toolbar, Menus e Fechamento de Janela
+    this.setupToolbar();
+    this.setupViewTabs();
+    this.setupHardwareSelector();
+    this.setupStatusBar();
+    this.setupBeforeUnload();
+
+    // 5. Inicia com a área de trabalho 100% limpa
+    this.clearAll();
+  }
+
+  setupBeforeUnload() {
+    window.addEventListener('beforeunload', (e) => {
+      if (this.hasContent()) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    });
+  }
+
+  hasContent() {
+    return (this.graph && this.graph.nodes.size > 0) || (this.frontPanel && this.frontPanel.widgets.size > 0);
+  }
+
+  promptNewProject() {
+    if (this.hasContent()) {
+      const modal = document.getElementById('new-project-modal');
+      if (modal) modal.style.display = 'flex';
+    } else {
+      this.clearAll();
+    }
+  }
+
+  closeNewProjectModal() {
+    const modal = document.getElementById('new-project-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  setupToolbar() {
+    const btnRun = document.getElementById('btn-run');
+    const btnContRun = document.getElementById('btn-cont-run');
+    const btnStop = document.getElementById('btn-stop');
+    const btnHighlight = document.getElementById('btn-highlight');
+    const btnPalette = document.getElementById('btn-palette');
+    const btnNew = document.getElementById('btn-new');
+    const btnClear = document.getElementById('btn-clear');
+    const btnSave = document.getElementById('btn-save');
+    const btnLoad = document.getElementById('btn-load');
+    const fileInput = document.getElementById('file-input');
+
+    // Botões do Modal de Confirmação (Novo Projeto)
+    const modalClose = document.getElementById('btn-modal-close');
+    const modalCancel = document.getElementById('btn-confirm-cancel');
+    const modalDiscard = document.getElementById('btn-confirm-discard');
+    const modalSave = document.getElementById('btn-confirm-save');
+
+    if (btnRun) btnRun.addEventListener('click', () => this.runtime.runOnce());
+    if (btnContRun) {
+      btnContRun.addEventListener('click', () => {
+        if (this.runtime.isRunning) {
+          this.runtime.stop();
+        } else {
+          this.runtime.startContinuous();
+        }
+      });
+    }
+    if (btnStop) btnStop.addEventListener('click', () => this.runtime.stop());
+
+    if (btnHighlight) {
+      btnHighlight.addEventListener('click', () => {
+        const active = !this.runtime.isHighlight;
+        this.runtime.setHighlight(active);
+        if (active) btnHighlight.classList.add('active');
+        else btnHighlight.classList.remove('active');
+      });
+    }
+
+    if (btnPalette) btnPalette.addEventListener('click', () => this.palette.toggle());
+    if (btnNew) btnNew.addEventListener('click', () => this.promptNewProject());
+    if (btnClear) btnClear.addEventListener('click', () => this.promptNewProject());
+
+    // Salvar e Abrir Projeto
+    if (btnSave) btnSave.addEventListener('click', () => this.saveProject());
+    if (btnLoad) btnLoad.addEventListener('click', () => fileInput.click());
+    if (fileInput) fileInput.addEventListener('change', (e) => this.loadProjectFile(e));
+
+    // Listeners do Modal Novo Projeto
+    if (modalClose) modalClose.addEventListener('click', () => this.closeNewProjectModal());
+    if (modalCancel) modalCancel.addEventListener('click', () => this.closeNewProjectModal());
+    if (modalDiscard) {
+      modalDiscard.addEventListener('click', () => {
+        this.closeNewProjectModal();
+        this.clearAll();
+      });
+    }
+    if (modalSave) {
+      modalSave.addEventListener('click', () => {
+        this.closeNewProjectModal();
+        this.saveProject();
+        this.clearAll();
+      });
+    }
+
+    // Atualização visual do estado do Runtime
+    this.runtime.onStateChange = (running) => {
+      const dot = document.getElementById('status-run-dot');
+      const text = document.getElementById('status-run-text');
+
+      if (running) {
+        btnContRun.classList.add('btn-active');
+        if (dot) dot.className = 'status-dot running';
+        if (text) text.textContent = 'Executando (While Loop)';
+      } else {
+        btnContRun.classList.remove('btn-active');
+        if (dot) dot.className = 'status-dot';
+        if (text) text.textContent = 'Parado (Idle)';
+      }
+    };
+  }
+
+  setupViewTabs() {
+    const tabs = document.querySelectorAll('.view-tab');
+    const viewFront = document.getElementById('workspace-front');
+    const viewDiagram = document.getElementById('workspace-diagram');
+    const viewSplit = document.getElementById('workspace-split');
+
+    const fpContainer = document.getElementById('front-panel-container');
+    const diagContainer = document.getElementById('diagram-container');
+
+    const splitFP = document.getElementById('split-front-panel');
+    const splitDiag = document.getElementById('split-diagram');
+
+    const switchView = (mode) => {
+      this.activeView = mode;
+      tabs.forEach(t => t.classList.remove('active'));
+      const activeTab = document.querySelector(`.view-tab[data-view="${mode}"]`);
+      if (activeTab) activeTab.classList.add('active');
+
+      viewFront.classList.remove('active');
+      viewDiagram.classList.remove('active');
+      viewSplit.classList.remove('active');
+
+      if (mode === 'front') {
+        viewFront.classList.add('active');
+        viewFront.appendChild(fpContainer);
+      } else if (mode === 'diagram') {
+        viewDiagram.classList.add('active');
+        viewDiagram.appendChild(diagContainer);
+      } else {
+        viewSplit.classList.add('active');
+        splitFP.appendChild(fpContainer);
+        splitDiag.appendChild(diagContainer);
+      }
+
+      this.editor.renderWires();
+    };
+
+    tabs.forEach(t => {
+      t.addEventListener('click', () => {
+        const mode = t.getAttribute('data-view');
+        switchView(mode);
+      });
+    });
+
+    // Inicia no modo split
+    switchView('split');
+  }
+
+  setupHardwareSelector() {
+    const selector = document.getElementById('mode-selector');
+    const hwDot = document.getElementById('status-hw-dot');
+    const hwText = document.getElementById('status-hw-text');
+
+    selector.addEventListener('change', async (e) => {
+      const mode = e.target.value;
+      if (mode === 'virtual') {
+        this.currentDAQ = this.virtualDAQ;
+        this.runtime.setDAQDevice(this.virtualDAQ);
+        if (hwDot) hwDot.className = 'status-dot connected';
+        if (hwText) hwText.textContent = 'Planta Virtual (Ativa)';
+      } else if (mode === 'websocket') {
+        try {
+          if (hwText) hwText.textContent = 'Conectando WebSocket...';
+          await this.wsBridge.connect();
+          this.currentDAQ = this.wsBridge;
+          this.runtime.setDAQDevice(this.wsBridge);
+          if (hwDot) hwDot.className = 'status-dot connected';
+          if (hwText) hwText.textContent = 'NI USB-6009 (Bridge Conectado)';
+        } catch (err) {
+          alert('Não foi possível conectar ao Bridge WebSocket (ws://127.0.0.1:8765).\nCertifique-se de executar "python rosiview_bridge.py" no computador.');
+          selector.value = 'virtual';
+          this.currentDAQ = this.virtualDAQ;
+          this.runtime.setDAQDevice(this.virtualDAQ);
+          if (hwText) hwText.textContent = 'Planta Virtual (Ativa)';
+        }
+      } else if (mode === 'webusb') {
+        try {
+          await this.webUSB.connect();
+          this.currentDAQ = this.webUSB;
+          this.runtime.setDAQDevice(this.webUSB);
+          if (hwDot) hwDot.className = 'status-dot connected';
+          if (hwText) hwText.textContent = 'NI USB-6009 (WebUSB Conectado)';
+        } catch (err) {
+          alert('Erro ao conectar via WebUSB: ' + err.message);
+          selector.value = 'virtual';
+        }
+      }
+    });
+
+    if (hwDot) hwDot.className = 'status-dot connected';
+    if (hwText) hwText.textContent = 'Planta Virtual (Ativa)';
+  }
+
+  setupStatusBar() {
+    const iterEl = document.getElementById('status-iteration');
+    this.runtime.onStepCompleted = ({ iteration }) => {
+      if (iterEl) iterEl.textContent = `Loop [i]: ${iteration}`;
+    };
+  }
+
+  addNodeFromPalette(kind) {
+    let node = null;
+    const x = 120 + Math.random() * 80;
+    const y = 80 + Math.random() * 80;
+
+    switch (kind) {
+      case 'ctrl_onoff': node = new OnOffControllerNode({ x, y }); break;
+      case 'ctrl_pid': node = new PIDControllerNode({ x, y }); break;
+      case 'plant_tf': node = new TransferFunctionNode({ x, y }); break;
+      case 'formula_node': node = new FormulaNode({ x, y }); break;
+      case 'daq_ai': node = new DAQAssistantAINode({ x, y }); break;
+      case 'daq_ao': node = new DAQAssistantAONode({ x, y }); break;
+      case 'math_add': node = new AddNode({ x, y }); break;
+      case 'math_sub': node = new SubtractNode({ x, y }); break;
+      case 'math_mul': node = new MultiplyNode({ x, y }); break;
+      case 'math_div': node = new DivideNode({ x, y }); break;
+      case 'math_gain': node = new GainNode({ x, y }); break;
+      case 'math_sat': node = new SaturationNode({ x, y }); break;
+      case 'sig_random': node = new RandomNumberNode({ x, y }); break;
+      case 'sig_sine': node = new SineNode({ x, y }); break;
+      case 'sig_const': node = new ConstantNode({ x, y }); break;
+      case 'cluster_bundle': node = new BundleNode({ x, y }); break;
+      case 'array_build': node = new BuildArrayNode({ x, y }); break;
+      case 'array_subset': node = new ArraySubsetNode({ x, y }); break;
+    }
+
+    if (node) {
+      this.graph.addNode(node);
+      this.editor.render();
+      this.palette.toggle(false);
+    }
+  }
+
+  addWidgetFromPalette(kind) {
+    let widget = null;
+    const id = `widget_${Date.now()}`;
+    const x = 50 + Math.random() * 50;
+    const y = 50 + Math.random() * 50;
+
+    switch (kind) {
+      case 'tank': widget = new TankWidget({ id, x, y }); break;
+      case 'thermometer': widget = new ThermometerWidget({ id, x, y }); break;
+      case 'chart': widget = new ChartWidget({ id, x, y }); break;
+      case 'slider': widget = new SliderWidget({ id, x, y }); break;
+      case 'switch': widget = new ToggleSwitchWidget({ id, x, y }); break;
+      case 'led': widget = new LEDWidget({ id, x, y }); break;
+    }
+
+    if (widget) {
+      this.frontPanel.addWidget(widget);
+      this.palette.toggle(false);
+    }
+  }
+
+  clearAll() {
+    this.runtime.stop();
+    this.graph.clear();
+    this.frontPanel.clear();
+    this.editor.render();
+  }
+
+  saveProject() {
+    const data = {
+      version: '2.0',
+      app: 'RosiView',
+      savedAt: new Date().toISOString(),
+      graph: this.graph.toJSON(),
+      frontPanel: this.frontPanel.toJSON()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rosiview_projeto_${Date.now()}.rosi`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  loadProjectFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target.result);
+        this.clearAll();
+
+        if (json.frontPanel && Array.isArray(json.frontPanel.widgets)) {
+          for (const w of json.frontPanel.widgets) {
+            let widget = null;
+            switch (w.kind) {
+              case 'slider':
+                widget = new SliderWidget({ id: w.id, title: w.title, min: w.min, max: w.max, step: w.step, initialValue: w.initialValue, x: w.x, y: w.y });
+                break;
+              case 'tank':
+                widget = new TankWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, x: w.x, y: w.y });
+                if (w.initialValue !== undefined) widget.setValue(w.initialValue);
+                break;
+              case 'thermometer':
+                widget = new ThermometerWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, x: w.x, y: w.y });
+                if (w.initialValue !== undefined) widget.setValue(w.initialValue);
+                break;
+              case 'chart':
+                widget = new ChartWidget({ id: w.id, title: w.title, maxPoints: w.maxPoints || 200, plots: w.plots, x: w.x, y: w.y });
+                break;
+              case 'switch':
+                widget = new ToggleSwitchWidget({ id: w.id, title: w.title, labelOn: w.labelOn || 'ON', labelOff: w.labelOff || 'OFF', initialState: Boolean(w.initialValue), x: w.x, y: w.y });
+                break;
+              case 'led':
+                widget = new LEDWidget({ id: w.id, title: w.title, color: w.color || 'green', initialState: Boolean(w.initialValue), x: w.x, y: w.y });
+                break;
+              case 'num_ctrl':
+                widget = new NumericControlWidget({ id: w.id, title: w.title, initialValue: w.initialValue, isIndicator: false, x: w.x, y: w.y });
+                break;
+              case 'num_ind':
+                widget = new NumericControlWidget({ id: w.id, title: w.title, initialValue: w.initialValue, isIndicator: true, x: w.x, y: w.y });
+                break;
+            }
+            if (widget) this.frontPanel.addWidget(widget);
+          }
+        }
+
+        if (json.graph && Array.isArray(json.graph.nodes)) {
+          for (const n of json.graph.nodes) {
+            let node = null;
+            switch (n.type) {
+              case 'math_add': node = new AddNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'math_sub': node = new SubtractNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'math_mul': node = new MultiplyNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'math_div': node = new DivideNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'math_gain': node = new GainNode({ id: n.id, gain: n.gain || 1, x: n.x, y: n.y }); break;
+              case 'math_sat': node = new SaturationNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'logic_gt': node = new GreaterNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'logic_lt': node = new LessNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'logic_eq': node = new EqualNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'logic_and': node = new AndNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'logic_or': node = new OrNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'logic_not': node = new NotNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'logic_select': node = new SelectNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'sig_const':
+                node = new ConstantNode({ id: n.id, constantValue: n.constantValue !== undefined ? n.constantValue : 0, x: n.x, y: n.y });
+                break;
+              case 'sig_sine': node = new SineNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'sig_random': node = new RandomNumberNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'sig_timestep': node = new TimeStepNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'daq_ai': node = new DAQAssistantAINode({ id: n.id, channel: n.channel !== undefined ? n.channel : 0, x: n.x, y: n.y }); break;
+              case 'daq_ao': node = new DAQAssistantAONode({ id: n.id, channel: n.channel !== undefined ? n.channel : 0, x: n.x, y: n.y }); break;
+              case 'ctrl_onoff': node = new OnOffControllerNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'ctrl_pid': node = new PIDControllerNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'plant_tf': node = new TransferFunctionNode({ id: n.id, kp: n.kp, tau: n.tau, theta: n.theta, x: n.x, y: n.y }); break;
+              case 'formula_node':
+                node = new FormulaNode({
+                  id: n.id,
+                  title: n.title,
+                  code: n.code,
+                  inputNames: n.inputNames,
+                  outputNames: n.outputNames,
+                  x: n.x,
+                  y: n.y
+                });
+                break;
+              case 'cluster_bundle': node = new BundleNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'array_build': node = new BuildArrayNode({ id: n.id, x: n.x, y: n.y }); break;
+              case 'array_subset': node = new ArraySubsetNode({ id: n.id, x: n.x, y: n.y }); break;
+            }
+
+            if (node) {
+              if (n.title) node.title = n.title;
+              if (n.inputs && Array.isArray(n.inputs)) {
+                for (const iv of n.inputs) {
+                  const inTerm = node.getInput(iv.name);
+                  if (inTerm && iv.value !== undefined) inTerm.value = iv.value;
+                }
+              }
+              this.graph.addNode(node);
+            }
+          }
+        }
+
+        if (json.graph && Array.isArray(json.graph.connections)) {
+          for (const c of json.graph.connections) {
+            this.graph.addConnection({
+              fromNodeId: c.fromNodeId,
+              fromTerminalId: c.fromTerminalId,
+              toNodeId: c.toNodeId,
+              toTerminalId: c.toTerminalId,
+              type: c.type
+            });
+          }
+        }
+
+        if (json.frontPanel && Array.isArray(json.frontPanel.bindings)) {
+          for (const b of json.frontPanel.bindings) {
+            this.frontPanel.bindWidgetToNode(b);
+          }
+        }
+
+        this.editor.render();
+      } catch (err) {
+        alert('Erro ao carregar o arquivo .rosi: ' + err.message);
+      } finally {
+        e.target.value = '';
+      }
+    };
+    reader.readAsText(file);
+  }
+}
+
+// Inicializa quando a página carregar
+window.addEventListener('DOMContentLoaded', () => {
+  window.rosiViewApp = new RosiViewApp();
+  window.rosiViewApp.init();
+});

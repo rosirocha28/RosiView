@@ -1,0 +1,6 @@
+{
+  "version": "v0.1",
+  "name": "RosiView v0.1",
+  "releaseDate": "2026-09-07",
+  "notes": "Lançamento v0.1: Aplicativo autônomo com executável nativo e ícone embutido; paleta móvel 100% em português; novos widgets (Knob e Gauge); edição direta de constantes no diagrama; janela interativa 'Salvar Projeto' (Salvar Como) e sincronização automática."
+}

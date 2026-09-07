@@ -102,7 +102,7 @@ export class ToggleSwitchWidget {
 }
 
 export class LEDWidget {
-  constructor({ id, title = 'LED Status', color = 'green', initialState = false, x = 120, y = 50 }) {
+  constructor({ id, title = 'LED Indicador', color = 'green', initialState = false, x = 120, y = 50 }) {
     this.id = id;
     this.title = title;
     this.color = color;

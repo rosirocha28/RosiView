@@ -573,7 +573,7 @@
   // ==========================================================================
   class AddNode extends BaseNode {
     constructor(opts = {}) {
-      super({ ...opts, type: 'math_add', title: 'Add', icon: '+' });
+      super({ ...opts, type: 'math_add', title: opts.title || 'Soma', icon: '+' });
       this.addInput('x', DataTypes.DOUBLE, 0);
       this.addInput('y', DataTypes.DOUBLE, 0);
       this.addOutput('x+y', DataTypes.DOUBLE, 0);
@@ -585,7 +585,7 @@
 
   class SubtractNode extends BaseNode {
     constructor(opts = {}) {
-      super({ ...opts, type: 'math_sub', title: 'Subtract', icon: '−' });
+      super({ ...opts, type: 'math_sub', title: opts.title || 'Subtração', icon: '−' });
       this.addInput('x', DataTypes.DOUBLE, 0);
       this.addInput('y', DataTypes.DOUBLE, 0);
       this.addOutput('x-y', DataTypes.DOUBLE, 0);
@@ -597,7 +597,7 @@
 
   class MultiplyNode extends BaseNode {
     constructor(opts = {}) {
-      super({ ...opts, type: 'math_mul', title: 'Multiply', icon: '×' });
+      super({ ...opts, type: 'math_mul', title: opts.title || 'Multiplicação', icon: '×' });
       this.addInput('x', DataTypes.DOUBLE, 1);
       this.addInput('y', DataTypes.DOUBLE, 1);
       this.addOutput('x*y', DataTypes.DOUBLE, 1);
@@ -617,7 +617,7 @@
 
   class DivideNode extends BaseNode {
     constructor(opts = {}) {
-      super({ ...opts, type: 'math_div', title: 'Divide', icon: '÷' });
+      super({ ...opts, type: 'math_div', title: opts.title || 'Divisão', icon: '÷' });
       this.addInput('x', DataTypes.DOUBLE, 1);
       this.addInput('y', DataTypes.DOUBLE, 1);
       this.addOutput('x/y', DataTypes.DOUBLE, 1);
@@ -631,7 +631,7 @@
 
   class GainNode extends BaseNode {
     constructor(opts = {}) {
-      super({ ...opts, type: 'math_gain', title: 'Gain (Kp)', icon: 'K' });
+      super({ ...opts, type: 'math_gain', title: opts.title || 'Ganho (Kp)', icon: 'K' });
       this.gain = opts.gain || 1.0;
       this.addInput('in', DataTypes.DOUBLE, 0);
       this.addOutput('out', DataTypes.DOUBLE, 0);
@@ -643,7 +643,7 @@
 
   class SaturationNode extends BaseNode {
     constructor(opts = {}) {
-      super({ ...opts, type: 'math_sat', title: 'Saturation', icon: '⫰' });
+      super({ ...opts, type: 'math_sat', title: opts.title || 'Saturação', icon: '⫰' });
       this.min = opts.min !== undefined ? opts.min : 0.0;
       this.max = opts.max !== undefined ? opts.max : 5.0;
       this.addInput('in', DataTypes.DOUBLE, 0);
@@ -722,7 +722,7 @@
 
   class GreaterNode extends BaseNode {
     constructor(opts = {}) {
-      super({ ...opts, type: 'logic_gt', title: 'Greater?', icon: '>' });
+      super({ ...opts, type: 'logic_gt', title: opts.title || 'Maior que? (>)', icon: '>' });
       this.addInput('x', DataTypes.DOUBLE, 0);
       this.addInput('y', DataTypes.DOUBLE, 0);
       this.addOutput('x > y?', DataTypes.BOOLEAN, false);
@@ -734,7 +734,7 @@
 
   class LessNode extends BaseNode {
     constructor(opts = {}) {
-      super({ ...opts, type: 'logic_lt', title: 'Less?', icon: '<' });
+      super({ ...opts, type: 'logic_lt', title: opts.title || 'Menor que? (<)', icon: '<' });
       this.addInput('x', DataTypes.DOUBLE, 0);
       this.addInput('y', DataTypes.DOUBLE, 0);
       this.addOutput('x < y?', DataTypes.BOOLEAN, false);
@@ -746,7 +746,7 @@
 
   class EqualNode extends BaseNode {
     constructor(opts = {}) {
-      super({ ...opts, type: 'logic_eq', title: 'Equal?', icon: '=' });
+      super({ ...opts, type: 'logic_eq', title: opts.title || 'Igual a? (=)', icon: '=' });
       this.addInput('x', DataTypes.DOUBLE, 0);
       this.addInput('y', DataTypes.DOUBLE, 0);
       this.addOutput('x == y?', DataTypes.BOOLEAN, false);
@@ -758,7 +758,7 @@
 
   class AndNode extends BaseNode {
     constructor(opts = {}) {
-      super({ ...opts, type: 'logic_and', title: 'And', icon: '&' });
+      super({ ...opts, type: 'logic_and', title: opts.title || 'Porta E (AND)', icon: '&' });
       this.addInput('x', DataTypes.BOOLEAN, false);
       this.addInput('y', DataTypes.BOOLEAN, false);
       this.addOutput('x .and. y', DataTypes.BOOLEAN, false);
@@ -770,7 +770,7 @@
 
   class OrNode extends BaseNode {
     constructor(opts = {}) {
-      super({ ...opts, type: 'logic_or', title: 'Or', icon: '≥1' });
+      super({ ...opts, type: 'logic_or', title: opts.title || 'Porta OU (OR)', icon: '≥1' });
       this.addInput('x', DataTypes.BOOLEAN, false);
       this.addInput('y', DataTypes.BOOLEAN, false);
       this.addOutput('x .or. y', DataTypes.BOOLEAN, false);
@@ -782,7 +782,7 @@
 
   class NotNode extends BaseNode {
     constructor(opts = {}) {
-      super({ ...opts, type: 'logic_not', title: 'Not', icon: '!' });
+      super({ ...opts, type: 'logic_not', title: opts.title || 'Inversor (NOT)', icon: '!' });
       this.addInput('x', DataTypes.BOOLEAN, false);
       this.addOutput('.not. x', DataTypes.BOOLEAN, true);
     }
@@ -962,7 +962,7 @@
 
   class ConstantNode extends BaseNode {
     constructor(opts = {}) {
-      super({ ...opts, type: 'sig_const', title: 'Numeric Constant', icon: '#' });
+      super({ ...opts, type: 'sig_const', title: opts.title || 'Constante', icon: '#' });
       this.constantValue = opts.constantValue !== undefined ? opts.constantValue : 0;
       this.addOutput('value', DataTypes.DOUBLE, this.constantValue);
     }
@@ -971,6 +971,11 @@
       this.getOutput('value').value = this.constantValue;
     }
     execute() { this.getOutput('value').value = this.constantValue; }
+    toJSON() {
+      const json = super.toJSON();
+      json.constantValue = this.constantValue;
+      return json;
+    }
   }
 
   class DAQAssistantAINode extends BaseNode {
@@ -1428,6 +1433,406 @@
     }
   }
 
+  class KnobWidget {
+    constructor({ id, title = 'Knob', min = 0, max = 10, step = 0.1, initialValue = 0, unit = 'V', x = 60, y = 60 }) {
+      this.id = id;
+      this.title = title;
+      this.min = Number(min);
+      this.max = Number(max);
+      this.step = Number(step);
+      this.value = Number(initialValue);
+      this.unit = unit;
+      this.x = x;
+      this.y = y;
+      this.element = null;
+      this.dialWrapper = null;
+      this.needleEl = null;
+      this.inputEl = null;
+      this.minLabelEl = null;
+      this.maxLabelEl = null;
+      this.unitEl = null;
+      this.onChangeCallback = null;
+      this.render();
+    }
+
+    render() {
+      const el = document.createElement('div');
+      el.className = 'fp-widget';
+      el.id = `widget_${this.id}`;
+      el.style.left = `${this.x}px`;
+      el.style.top = `${this.y}px`;
+
+      el.innerHTML = `
+        <div class="fp-widget-header" contenteditable="true" title="Clique para renomear, duplo clique para configurar limites">${this.title}</div>
+        <div class="fp-widget-content">
+          <div class="knob-container">
+            <div class="knob-dial-wrapper" id="knob_dial_${this.id}" title="Arraste para cima/baixo ou use a roda do mouse">
+              <svg class="knob-dial-svg" viewBox="0 0 78 78">
+                <defs>
+                  <radialGradient id="knob_grad_${this.id}" cx="40%" cy="40%" r="60%">
+                    <stop offset="0%" stop-color="#475569" />
+                    <stop offset="60%" stop-color="#1e293b" />
+                    <stop offset="100%" stop-color="#0f172a" />
+                  </radialGradient>
+                </defs>
+                <circle cx="39" cy="39" r="36" fill="#1e222d" stroke="#334155" stroke-width="2"/>
+                <path d="M 13.5,64.5 A 36 36 0 1 1 64.5,64.5" fill="none" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="39" cy="39" r="28" fill="url(#knob_grad_${this.id})" stroke="#64748b" stroke-width="1.5"/>
+                <g id="knob_needle_${this.id}" style="transform-origin: 39px 39px;">
+                  <circle cx="39" cy="18" r="3.5" fill="#38bdf8"/>
+                  <line x1="39" y1="21" x2="39" y2="29" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                </g>
+                <circle cx="39" cy="39" r="8" fill="#0f172a" stroke="#475569" stroke-width="1"/>
+              </svg>
+            </div>
+            <div class="knob-scale-labels">
+              <span id="knob_min_${this.id}">${this.min}</span>
+              <span id="knob_max_${this.id}">${this.max}</span>
+            </div>
+            <div class="knob-bottom">
+              <input type="number" class="knob-input" id="knob_num_${this.id}" 
+                     step="${this.step}" min="${this.min}" max="${this.max}" value="${this.value}">
+              <span class="knob-unit" id="knob_unit_${this.id}">${this.unit}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      this.element = el;
+      this.dialWrapper = el.querySelector(`#knob_dial_${this.id}`);
+      this.needleEl = el.querySelector(`#knob_needle_${this.id}`);
+      this.inputEl = el.querySelector(`#knob_num_${this.id}`);
+      this.minLabelEl = el.querySelector(`#knob_min_${this.id}`);
+      this.maxLabelEl = el.querySelector(`#knob_max_${this.id}`);
+      this.unitEl = el.querySelector(`#knob_unit_${this.id}`);
+
+      this.setupInteractions();
+      this.updateAngle();
+      this.setupDrag();
+    }
+
+    setupInteractions() {
+      this.inputEl.addEventListener('input', (e) => this.setValue(e.target.value));
+      this.inputEl.addEventListener('change', (e) => this.setValue(e.target.value));
+      this.dialWrapper.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? this.step : -this.step;
+        this.setValue(this.value + delta);
+      });
+
+      let isDraggingDial = false, startY = 0, startVal = 0;
+      this.dialWrapper.addEventListener('mousedown', (e) => {
+        isDraggingDial = true;
+        startY = e.clientY;
+        startVal = this.value;
+        const onMouseMove = (ev) => {
+          if (!isDraggingDial) return;
+          const dy = startY - ev.clientY;
+          const range = this.max - this.min;
+          this.setValue(startVal + (dy / 150) * range);
+        };
+        const onMouseUp = () => {
+          isDraggingDial = false;
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+        };
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+      });
+
+      this.element.addEventListener('dblclick', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.getAttribute('contenteditable') === 'true') return;
+        this.openConfigDialog();
+      });
+    }
+
+    setValue(val) {
+      let num = Number(val);
+      if (isNaN(num)) num = this.min;
+      num = Math.max(this.min, Math.min(this.max, num));
+      const decimals = (this.step.toString().split('.')[1] || '').length;
+      this.value = Number(num.toFixed(Math.max(decimals, 1)));
+      if (this.inputEl && document.activeElement !== this.inputEl) this.inputEl.value = this.value;
+      this.updateAngle();
+      if (this.onChangeCallback) this.onChangeCallback(this.value);
+    }
+
+    updateAngle() {
+      if (!this.needleEl) return;
+      const range = this.max - this.min || 1;
+      const pct = Math.max(0, Math.min(1, (this.value - this.min) / range));
+      const angle = -135 + pct * 270;
+      this.needleEl.style.transform = `rotate(${angle}deg)`;
+    }
+
+    getValue() { return this.value; }
+
+    openConfigDialog() {
+      const existing = document.querySelector('.widget-config-modal');
+      if (existing) existing.remove();
+
+      const modal = document.createElement('div');
+      modal.className = 'widget-config-modal';
+      modal.innerHTML = `
+        <div class="widget-config-box">
+          <div class="widget-config-header">
+            <span>Configuração do Knob</span>
+            <button class="palette-close-btn" id="cfg_close">✕</button>
+          </div>
+          <div class="widget-config-body">
+            <div class="config-field"><label>Rótulo / Título:</label><input type="text" id="cfg_title" value="${this.title}"></div>
+            <div class="config-field"><label>Escala Mínima:</label><input type="number" id="cfg_min" value="${this.min}" step="any"></div>
+            <div class="config-field"><label>Escala Máxima:</label><input type="number" id="cfg_max" value="${this.max}" step="any"></div>
+            <div class="config-field"><label>Passo:</label><input type="number" id="cfg_step" value="${this.step}" step="any"></div>
+            <div class="config-field"><label>Unidade:</label><input type="text" id="cfg_unit" value="${this.unit}"></div>
+          </div>
+          <div class="widget-config-footer">
+            <button class="config-btn config-btn-cancel" id="cfg_cancel">Cancelar</button>
+            <button class="config-btn config-btn-save" id="cfg_save">Salvar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      const close = () => modal.remove();
+      modal.querySelector('#cfg_close').onclick = close;
+      modal.querySelector('#cfg_cancel').onclick = close;
+      modal.querySelector('#cfg_save').onclick = () => {
+        this.title = modal.querySelector('#cfg_title').value.trim() || 'Knob';
+        this.min = Number(modal.querySelector('#cfg_min').value) || 0;
+        this.max = Number(modal.querySelector('#cfg_max').value) || 10;
+        this.step = Number(modal.querySelector('#cfg_step').value) || 0.1;
+        this.unit = modal.querySelector('#cfg_unit').value.trim();
+        const header = this.element.querySelector('.fp-widget-header');
+        if (header) header.textContent = this.title;
+        if (this.minLabelEl) this.minLabelEl.textContent = this.min;
+        if (this.maxLabelEl) this.maxLabelEl.textContent = this.max;
+        if (this.unitEl) this.unitEl.textContent = this.unit;
+        if (this.inputEl) {
+          this.inputEl.min = this.min;
+          this.inputEl.max = this.max;
+          this.inputEl.step = this.step;
+        }
+        this.setValue(this.value);
+        close();
+      };
+    }
+
+    setupDrag() {
+      let isDragging = false, startX, startY, origX, origY;
+      this.element.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.knob-dial-wrapper') || e.target.tagName === 'INPUT' || e.target.getAttribute('contenteditable') === 'true') return;
+        isDragging = true;
+        startX = e.clientX; startY = e.clientY; origX = this.x; origY = this.y;
+        this.element.style.zIndex = 100;
+        const onMouseMove = (ev) => {
+          if (!isDragging) return;
+          this.x = origX + (ev.clientX - startX);
+          this.y = origY + (ev.clientY - startY);
+          this.element.style.left = `${this.x}px`;
+          this.element.style.top = `${this.y}px`;
+        };
+        const onMouseUp = () => {
+          isDragging = false;
+          this.element.style.zIndex = 10;
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+        };
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+      });
+    }
+  }
+
+  class GaugeWidget {
+    constructor({ id, title = 'Tacômetro', min = 0, max = 3000, initialValue = 0, unit = 'RPM', x = 60, y = 60 }) {
+      this.id = id;
+      this.title = title;
+      this.min = Number(min);
+      this.max = Number(max);
+      this.value = Number(initialValue);
+      this.unit = unit;
+      this.x = x;
+      this.y = y;
+      this.element = null;
+      this.needleEl = null;
+      this.valEl = null;
+      this.unitEl = null;
+      this.minTextEl = null;
+      this.maxTextEl = null;
+      this.midTextEl = null;
+      this.render();
+    }
+
+    render() {
+      const el = document.createElement('div');
+      el.className = 'fp-widget';
+      el.id = `widget_${this.id}`;
+      el.style.left = `${this.x}px`;
+      el.style.top = `${this.y}px`;
+      const midVal = Math.round((this.min + this.max) / 2);
+
+      el.innerHTML = `
+        <div class="fp-widget-header" contenteditable="true" title="Clique para renomear, duplo clique para configurar limites">${this.title}</div>
+        <div class="fp-widget-content">
+          <div class="gauge-container">
+            <svg class="gauge-svg" viewBox="0 0 180 128">
+              <defs>
+                <linearGradient id="gauge_safe_${this.id}" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#38bdf8"/>
+                  <stop offset="60%" stop-color="#22c55e"/>
+                  <stop offset="100%" stop-color="#eab308"/>
+                </linearGradient>
+              </defs>
+
+              <!-- Fundo da escala (Arco escuro de 240 graus) -->
+              <path d="M 38.04,115 A 60 60 0 1 1 141.96,115" fill="none" stroke="#1e293b" stroke-width="9" stroke-linecap="round"/>
+              
+              <!-- Faixa Normal / Segura (0 a 80%) -->
+              <path d="M 38.04,115 A 60 60 0 1 1 147.06,66.46" fill="none" stroke="url(#gauge_safe_${this.id})" stroke-width="6" stroke-linecap="round"/>
+              
+              <!-- Faixa de Alarme / Sobrerotação (80% a 100%) -->
+              <path d="M 147.06,66.46 A 60 60 0 0 1 141.96,115" fill="none" stroke="#ef4444" stroke-width="6" stroke-linecap="round"/>
+
+              <!-- Marcas de Graduação Principais (a cada 20%) -->
+              <line x1="34.57" y1="117" x2="28.51" y2="120.5" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="29.13" y1="65.22" x2="22.47" y2="63.06" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="63.97" y1="26.53" x2="61.12" y2="20.14" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="116.03" y1="26.53" x2="118.88" y2="20.14" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="150.87" y1="65.22" x2="157.53" y2="63.06" stroke="#f87171" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="145.43" y1="117" x2="151.49" y2="120.5" stroke="#f87171" stroke-width="1.8" stroke-linecap="round"/>
+
+              <!-- Marcas de Graduação Secundárias (a cada 10%) -->
+              <line x1="26.35" y1="91.69" x2="22.87" y2="92.06" stroke="#475569" stroke-width="1" stroke-linecap="round"/>
+              <line x1="42.44" y1="42.18" x2="39.84" y2="39.83" stroke="#475569" stroke-width="1" stroke-linecap="round"/>
+              <line x1="90" y1="21" x2="90" y2="17.5" stroke="#475569" stroke-width="1" stroke-linecap="round"/>
+              <line x1="137.56" y1="42.18" x2="140.16" y2="39.83" stroke="#475569" stroke-width="1" stroke-linecap="round"/>
+              <line x1="153.65" y1="91.69" x2="157.13" y2="92.06" stroke="#f87171" stroke-width="1" stroke-linecap="round"/>
+
+              <!-- Rótulos Numéricos Internos -->
+              <text x="52.8" y="106.5" fill="#94a3b8" font-size="9" font-family="monospace" font-weight="700" text-anchor="middle" id="gauge_min_${this.id}">${this.min}</text>
+              <text x="90" y="44" fill="#94a3b8" font-size="9" font-family="monospace" font-weight="700" text-anchor="middle" id="gauge_mid_${this.id}">${midVal}</text>
+              <text x="127.2" y="106.5" fill="#f87171" font-size="9" font-family="monospace" font-weight="700" text-anchor="middle" id="gauge_max_${this.id}">${this.max}</text>
+
+              <!-- Agulha Indicadora (Pivô fixado no centro exato 90, 85) -->
+              <g transform="translate(90, 85)">
+                <g id="gauge_needle_${this.id}" class="gauge-needle" transform="rotate(-120)">
+                  <polygon points="-2,2 2,2 0.8,-52 -0.8,-52" fill="#ef4444" filter="drop-shadow(0 0 2px rgba(239,68,68,0.8))"/>
+                  <circle cx="0" cy="0" r="9" fill="#0f172a" stroke="#cbd5e1" stroke-width="2"/>
+                  <circle cx="0" cy="0" r="3.5" fill="#ef4444"/>
+                </g>
+              </g>
+            </svg>
+            <div class="gauge-lcd">
+              <span class="gauge-lcd-val" id="gauge_val_${this.id}">${this.value.toFixed(1)}</span>
+              <span class="gauge-lcd-unit" id="gauge_unit_${this.id}">${this.unit}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      this.element = el;
+      this.needleEl = el.querySelector(`#gauge_needle_${this.id}`);
+      this.valEl = el.querySelector(`#gauge_val_${this.id}`);
+      this.unitEl = el.querySelector(`#gauge_unit_${this.id}`);
+      this.minTextEl = el.querySelector(`#gauge_min_${this.id}`);
+      this.maxTextEl = el.querySelector(`#gauge_max_${this.id}`);
+      this.midTextEl = el.querySelector(`#gauge_mid_${this.id}`);
+
+      this.setValue(this.value);
+
+      this.element.addEventListener('dblclick', (e) => {
+        if (e.target.getAttribute('contenteditable') === 'true') return;
+        this.openConfigDialog();
+      });
+
+      this.setupDrag();
+    }
+
+    setValue(val) {
+      let num = Number(val);
+      if (isNaN(num)) num = this.min;
+      this.value = num;
+      if (this.valEl) this.valEl.textContent = this.value.toFixed(1);
+      if (this.needleEl) {
+        const range = this.max - this.min || 1;
+        const pct = Math.max(0, Math.min(1.05, (this.value - this.min) / range));
+        const angle = -120 + pct * 240;
+        this.needleEl.setAttribute('transform', `rotate(${angle.toFixed(1)})`);
+      }
+    }
+
+    getValue() { return this.value; }
+
+    openConfigDialog() {
+      const existing = document.querySelector('.widget-config-modal');
+      if (existing) existing.remove();
+
+      const modal = document.createElement('div');
+      modal.className = 'widget-config-modal';
+      modal.innerHTML = `
+        <div class="widget-config-box">
+          <div class="widget-config-header">
+            <span>Configuração do Mostrador (Gauge)</span>
+            <button class="palette-close-btn" id="cfg_close">✕</button>
+          </div>
+          <div class="widget-config-body">
+            <div class="config-field"><label>Rótulo / Título:</label><input type="text" id="cfg_title" value="${this.title}"></div>
+            <div class="config-field"><label>Escala Mínima:</label><input type="number" id="cfg_min" value="${this.min}" step="any"></div>
+            <div class="config-field"><label>Escala Máxima:</label><input type="number" id="cfg_max" value="${this.max}" step="any"></div>
+            <div class="config-field"><label>Unidade:</label><input type="text" id="cfg_unit" value="${this.unit}"></div>
+          </div>
+          <div class="widget-config-footer">
+            <button class="config-btn config-btn-cancel" id="cfg_cancel">Cancelar</button>
+            <button class="config-btn config-btn-save" id="cfg_save">Salvar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      const close = () => modal.remove();
+      modal.querySelector('#cfg_close').onclick = close;
+      modal.querySelector('#cfg_cancel').onclick = close;
+      modal.querySelector('#cfg_save').onclick = () => {
+        this.title = modal.querySelector('#cfg_title').value.trim() || 'Tacômetro';
+        this.min = Number(modal.querySelector('#cfg_min').value) || 0;
+        this.max = Number(modal.querySelector('#cfg_max').value) || 3000;
+        this.unit = modal.querySelector('#cfg_unit').value.trim();
+        const header = this.element.querySelector('.fp-widget-header');
+        if (header) header.textContent = this.title;
+        if (this.minTextEl) this.minTextEl.textContent = this.min;
+        if (this.maxTextEl) this.maxTextEl.textContent = this.max;
+        if (this.midTextEl) this.midTextEl.textContent = Math.round((this.min + this.max) / 2);
+        if (this.unitEl) this.unitEl.textContent = this.unit;
+        this.setValue(this.value);
+        close();
+      };
+    }
+
+    setupDrag() {
+      let isDragging = false, startX, startY, origX, origY;
+      this.element.addEventListener('mousedown', (e) => {
+        if (e.target.getAttribute('contenteditable') === 'true') return;
+        isDragging = true;
+        startX = e.clientX; startY = e.clientY; origX = this.x; origY = this.y;
+        this.element.style.zIndex = 100;
+        const onMouseMove = (ev) => {
+          if (!isDragging) return;
+          this.x = origX + (ev.clientX - startX);
+          this.y = origY + (ev.clientY - startY);
+          this.element.style.left = `${this.x}px`;
+          this.element.style.top = `${this.y}px`;
+        };
+        const onMouseUp = () => {
+          isDragging = false;
+          this.element.style.zIndex = 10;
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+        };
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+      });
+    }
+  }
+
   class SliderWidget {
     constructor({ id, title = 'Slider (Setpoint)', min = 0, max = 300, step = 1, initialValue = 100, x = 60, y = 280, isVertical = false }) {
       this.id = id;
@@ -1589,7 +1994,7 @@
   }
 
   class LEDWidget {
-    constructor({ id, title = 'LED Status', color = 'green', initialState = false, x = 120, y = 50 }) {
+    constructor({ id, title = 'LED Indicador', color = 'green', initialState = false, x = 120, y = 50 }) {
       this.id = id;
       this.title = title;
       this.color = color;
@@ -1868,6 +2273,8 @@
       for (const [, widget] of this.widgets) {
         let kind = 'tank';
         if (widget instanceof SliderWidget) kind = 'slider';
+        else if (widget instanceof KnobWidget) kind = 'knob';
+        else if (widget instanceof GaugeWidget) kind = 'gauge';
         else if (widget instanceof TankWidget) kind = 'tank';
         else if (widget instanceof ThermometerWidget) kind = 'thermometer';
         else if (widget instanceof ChartWidget) kind = 'chart';
@@ -2019,6 +2426,16 @@
         `;
       }
 
+      if (node.type === 'sig_const') {
+        const val = node.constantValue !== undefined ? node.constantValue : 0;
+        bodyContent = `
+          <div class="constant-node-box" style="padding: 2px 4px; display: flex; align-items: center;">
+            <input type="number" class="constant-input" id="const_${node.id}" value="${val}" step="any"
+                   style="width: 68px; background: #0f172a; border: 1px solid #38bdf8; border-radius: 4px; color: #38bdf8; font-family: monospace; font-size: 12px; font-weight: 700; padding: 2px 4px; text-align: right; outline: none;">
+          </div>
+        `;
+      }
+
       el.innerHTML = `
         <div class="node-header">
           <div class="node-icon">${node.icon || 'ƒ'}</div>
@@ -2148,6 +2565,19 @@
             this.render();
           }
         });
+      }
+
+      if (node.type === 'sig_const') {
+        const constInput = el.querySelector(`#const_${node.id}`);
+        if (constInput) {
+          const updateVal = (e) => {
+            node.setValue(e.target.value);
+          };
+          constInput.addEventListener('input', updateVal);
+          constInput.addEventListener('change', updateVal);
+          constInput.addEventListener('mousedown', (e) => e.stopPropagation());
+          constInput.addEventListener('keydown', (e) => e.stopPropagation());
+        }
       }
 
       this.nodesContainer.appendChild(el);
@@ -2433,6 +2863,7 @@
       this.onAddWidget = onAddWidget;
       this.paletteEl = null;
       this.isOpen = false;
+      this.hasBeenMoved = false;
       this.init();
     }
 
@@ -2443,9 +2874,9 @@
       el.style.display = 'none';
 
       el.innerHTML = `
-        <div class="palette-header">
+        <div class="palette-header" title="Clique e arraste para mover a paleta na tela">
           <span>Paleta de Funções & Controles</span>
-          <button class="palette-close-btn" id="palette-close">✕</button>
+          <button class="palette-close-btn" id="palette-close" title="Fechar">✕</button>
         </div>
         <div class="palette-search">
           <input type="text" class="palette-search-input" id="palette-search-input" placeholder="Buscar função ou instrumento...">
@@ -2456,9 +2887,22 @@
           <div class="palette-category">
             <div class="category-title">🎛 Controles (Entradas)</div>
             <div class="category-grid">
-              <div class="palette-item" data-type="widget" data-kind="slider"><span class="palette-item-icon" style="background:#475569;color:#fff;">🎚</span><span>Slider Setpoint</span></div>
-              <div class="palette-item" data-type="widget" data-kind="num_ctrl"><span class="palette-item-icon" style="background:#0284c7;color:#fff;">123</span><span>Controle Numérico</span></div>
-              <div class="palette-item" data-type="widget" data-kind="switch"><span class="palette-item-icon" style="background:#334155;color:#fff;">🔘</span><span>Chave Toggle</span></div>
+              <div class="palette-item" data-type="widget" data-kind="knob">
+                <span class="palette-item-icon" style="background:#0284c7;color:#fff;">🎛</span>
+                <span>Knob (Giratório)</span>
+              </div>
+              <div class="palette-item" data-type="widget" data-kind="slider">
+                <span class="palette-item-icon" style="background:#475569;color:#fff;">🎚</span>
+                <span>Slider (Deslizador)</span>
+              </div>
+              <div class="palette-item" data-type="widget" data-kind="num_ctrl">
+                <span class="palette-item-icon" style="background:#0284c7;color:#fff;">123</span>
+                <span>Entrada Numérica</span>
+              </div>
+              <div class="palette-item" data-type="widget" data-kind="switch">
+                <span class="palette-item-icon" style="background:#334155;color:#fff;">🔘</span>
+                <span>Chave Liga/Desliga</span>
+              </div>
             </div>
           </div>
 
@@ -2466,31 +2910,30 @@
           <div class="palette-category">
             <div class="category-title">📊 Indicadores (Saídas)</div>
             <div class="category-grid">
-              <div class="palette-item" data-type="widget" data-kind="tank"><span class="palette-item-icon" style="background:#0284c7;color:#fff;">🛢</span><span>Tanque de Nível</span></div>
-              <div class="palette-item" data-type="widget" data-kind="thermometer"><span class="palette-item-icon" style="background:#dc2626;color:#fff;">🌡</span><span>Termômetro</span></div>
-              <div class="palette-item" data-type="widget" data-kind="chart"><span class="palette-item-icon" style="background:#0f172a;color:#38bdf8;">📈</span><span>Waveform Chart</span></div>
-              <div class="palette-item" data-type="widget" data-kind="led"><span class="palette-item-icon" style="background:#16a34a;color:#fff;">💡</span><span>LED Status</span></div>
-              <div class="palette-item" data-type="widget" data-kind="num_ind"><span class="palette-item-icon" style="background:#64748b;color:#fff;">[123]</span><span>Display Numérico</span></div>
-            </div>
-          </div>
-
-          <!-- Controle de Processos -->
-          <div class="palette-category">
-            <div class="category-title">⚙ Controle de Processos</div>
-            <div class="category-grid">
-              <div class="palette-item" data-type="node" data-kind="ctrl_onoff"><span class="palette-item-icon">⎍</span><span>Controle ON-OFF</span></div>
-              <div class="palette-item" data-type="node" data-kind="ctrl_pid"><span class="palette-item-icon">PID</span><span>Controlador PID</span></div>
-              <div class="palette-item" data-type="node" data-kind="plant_tf"><span class="palette-item-icon">G(s)</span><span>Processo G(s)</span></div>
-              <div class="palette-item" data-type="node" data-kind="formula_node"><span class="palette-item-icon">fx</span><span>Formula Node</span></div>
-            </div>
-          </div>
-
-          <!-- Aquisição (NI USB-6009) -->
-          <div class="palette-category">
-            <div class="category-title">🔌 Aquisição (NI USB-6009)</div>
-            <div class="category-grid">
-              <div class="palette-item" data-type="node" data-kind="daq_ai"><span class="palette-item-icon" style="background:#38bdf8;color:#0369a1;">AI</span><span>DAQ Assist (AI)</span></div>
-              <div class="palette-item" data-type="node" data-kind="daq_ao"><span class="palette-item-icon" style="background:#f87171;color:#991b1b;">AO</span><span>DAQ Assist (AO)</span></div>
+              <div class="palette-item" data-type="widget" data-kind="gauge">
+                <span class="palette-item-icon" style="background:#f97316;color:#fff;">⏱</span>
+                <span>Gauge (Tacômetro)</span>
+              </div>
+              <div class="palette-item" data-type="widget" data-kind="chart">
+                <span class="palette-item-icon" style="background:#0f172a;color:#38bdf8;">📈</span>
+                <span>Gráfico Temporal</span>
+              </div>
+              <div class="palette-item" data-type="widget" data-kind="led">
+                <span class="palette-item-icon" style="background:#16a34a;color:#fff;">💡</span>
+                <span>LED Indicador</span>
+              </div>
+              <div class="palette-item" data-type="widget" data-kind="tank">
+                <span class="palette-item-icon" style="background:#0284c7;color:#fff;">🛢</span>
+                <span>Tanque de Nível</span>
+              </div>
+              <div class="palette-item" data-type="widget" data-kind="thermometer">
+                <span class="palette-item-icon" style="background:#dc2626;color:#fff;">🌡</span>
+                <span>Termômetro</span>
+              </div>
+              <div class="palette-item" data-type="widget" data-kind="num_ind">
+                <span class="palette-item-icon" style="background:#64748b;color:#fff;">[123]</span>
+                <span>Display Numérico</span>
+              </div>
             </div>
           </div>
 
@@ -2498,12 +2941,16 @@
           <div class="palette-category">
             <div class="category-title">➕ Matemática</div>
             <div class="category-grid">
-              <div class="palette-item" data-type="node" data-kind="math_add"><span class="palette-item-icon">+</span><span>Add</span></div>
-              <div class="palette-item" data-type="node" data-kind="math_sub"><span class="palette-item-icon">−</span><span>Subtract</span></div>
-              <div class="palette-item" data-type="node" data-kind="math_mul"><span class="palette-item-icon">×</span><span>Multiply</span></div>
-              <div class="palette-item" data-type="node" data-kind="math_div"><span class="palette-item-icon">÷</span><span>Divide</span></div>
-              <div class="palette-item" data-type="node" data-kind="math_gain"><span class="palette-item-icon">K</span><span>Gain (Kp)</span></div>
-              <div class="palette-item" data-type="node" data-kind="math_sat"><span class="palette-item-icon">⫰</span><span>Saturation</span></div>
+              <div class="palette-item" data-type="node" data-kind="sig_const">
+                <span class="palette-item-icon" style="background:#3b82f6;color:#fff;">#</span>
+                <span>Constante Numérica</span>
+              </div>
+              <div class="palette-item" data-type="node" data-kind="math_add"><span class="palette-item-icon">+</span><span>Soma (+)</span></div>
+              <div class="palette-item" data-type="node" data-kind="math_sub"><span class="palette-item-icon">−</span><span>Subtração (−)</span></div>
+              <div class="palette-item" data-type="node" data-kind="math_mul"><span class="palette-item-icon">×</span><span>Multiplicação (×)</span></div>
+              <div class="palette-item" data-type="node" data-kind="math_div"><span class="palette-item-icon">÷</span><span>Divisão (÷)</span></div>
+              <div class="palette-item" data-type="node" data-kind="math_gain"><span class="palette-item-icon">K</span><span>Ganho (Kp)</span></div>
+              <div class="palette-item" data-type="node" data-kind="math_sat"><span class="palette-item-icon">⫰</span><span>Saturação</span></div>
             </div>
           </div>
 
@@ -2511,13 +2958,51 @@
           <div class="palette-category">
             <div class="category-title">⚖ Lógica & Comparação</div>
             <div class="category-grid">
-              <div class="palette-item" data-type="node" data-kind="logic_gt"><span class="palette-item-icon">></span><span>Greater?</span></div>
-              <div class="palette-item" data-type="node" data-kind="logic_lt"><span class="palette-item-icon"><</span><span>Less?</span></div>
-              <div class="palette-item" data-type="node" data-kind="logic_eq"><span class="palette-item-icon">=</span><span>Equal?</span></div>
-              <div class="palette-item" data-type="node" data-kind="logic_and"><span class="palette-item-icon">&</span><span>And</span></div>
-              <div class="palette-item" data-type="node" data-kind="logic_or"><span class="palette-item-icon">≥1</span><span>Or</span></div>
-              <div class="palette-item" data-type="node" data-kind="logic_not"><span class="palette-item-icon">!</span><span>Not</span></div>
-              <div class="palette-item" data-type="node" data-kind="logic_select"><span class="palette-item-icon">?</span><span>Select</span></div>
+              <div class="palette-item" data-type="node" data-kind="logic_gt"><span class="palette-item-icon">&gt;</span><span>Maior que? (&gt;)</span></div>
+              <div class="palette-item" data-type="node" data-kind="logic_lt"><span class="palette-item-icon">&lt;</span><span>Menor que? (&lt;)</span></div>
+              <div class="palette-item" data-type="node" data-kind="logic_eq"><span class="palette-item-icon">=</span><span>Igual a? (=)</span></div>
+              <div class="palette-item" data-type="node" data-kind="logic_and"><span class="palette-item-icon">&amp;</span><span>Porta E (AND)</span></div>
+              <div class="palette-item" data-type="node" data-kind="logic_or"><span class="palette-item-icon">≥1</span><span>Porta OU (OR)</span></div>
+              <div class="palette-item" data-type="node" data-kind="logic_not"><span class="palette-item-icon">!</span><span>Inversor (NOT)</span></div>
+              <div class="palette-item" data-type="node" data-kind="logic_select"><span class="palette-item-icon">?</span><span>Seletor (?)</span></div>
+            </div>
+          </div>
+
+          <!-- Controle de Processos -->
+          <div class="palette-category">
+            <div class="category-title">⚙ Controle de Processos</div>
+            <div class="category-grid">
+              <div class="palette-item" data-type="node" data-kind="ctrl_onoff">
+                <span class="palette-item-icon">⎍</span>
+                <span>Controle ON-OFF</span>
+              </div>
+              <div class="palette-item" data-type="node" data-kind="ctrl_pid">
+                <span class="palette-item-icon">PID</span>
+                <span>Controlador PID</span>
+              </div>
+              <div class="palette-item" data-type="node" data-kind="plant_tf">
+                <span class="palette-item-icon">G(s)</span>
+                <span>Processo G(s)</span>
+              </div>
+              <div class="palette-item" data-type="node" data-kind="formula_node">
+                <span class="palette-item-icon">fx</span>
+                <span>Nó de Fórmula</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aquisição (NI USB-6009) -->
+          <div class="palette-category">
+            <div class="category-title">🔌 Aquisição (NI USB-6009)</div>
+            <div class="category-grid">
+              <div class="palette-item" data-type="node" data-kind="daq_ai">
+                <span class="palette-item-icon" style="background:#38bdf8;color:#0369a1;">AI</span>
+                <span>Entrada Analógica (AI)</span>
+              </div>
+              <div class="palette-item" data-type="node" data-kind="daq_ao">
+                <span class="palette-item-icon" style="background:#f87171;color:#991b1b;">AO</span>
+                <span>Saída Analógica (AO)</span>
+              </div>
             </div>
           </div>
 
@@ -2525,12 +3010,12 @@
           <div class="palette-category">
             <div class="category-title">📦 Sinais & Arranjos</div>
             <div class="category-grid">
-              <div class="palette-item" data-type="node" data-kind="sig_random"><span class="palette-item-icon">🎲</span><span>Random (0-1)</span></div>
-              <div class="palette-item" data-type="node" data-kind="sig_sine"><span class="palette-item-icon">∿</span><span>Sine Wave</span></div>
-              <div class="palette-item" data-type="node" data-kind="sig_const"><span class="palette-item-icon">#</span><span>Constant</span></div>
-              <div class="palette-item" data-type="node" data-kind="cluster_bundle"><span class="palette-item-icon">📦</span><span>Bundle</span></div>
-              <div class="palette-item" data-type="node" data-kind="array_build"><span class="palette-item-icon">[+]</span><span>Build Array</span></div>
-              <div class="palette-item" data-type="node" data-kind="array_subset"><span class="palette-item-icon">[..]</span><span>Array Subset</span></div>
+              <div class="palette-item" data-type="node" data-kind="sig_const"><span class="palette-item-icon">#</span><span>Constante Numérica</span></div>
+              <div class="palette-item" data-type="node" data-kind="sig_random"><span class="palette-item-icon">🎲</span><span>Gerador Aleatório (0-1)</span></div>
+              <div class="palette-item" data-type="node" data-kind="sig_sine"><span class="palette-item-icon">∿</span><span>Onda Senoidal</span></div>
+              <div class="palette-item" data-type="node" data-kind="cluster_bundle"><span class="palette-item-icon">📦</span><span>Agrupar (Bundle)</span></div>
+              <div class="palette-item" data-type="node" data-kind="array_build"><span class="palette-item-icon">[+]</span><span>Criar Arranjo</span></div>
+              <div class="palette-item" data-type="node" data-kind="array_subset"><span class="palette-item-icon">[..]</span><span>Subconjunto</span></div>
             </div>
           </div>
 
@@ -2541,6 +3026,9 @@
       this.paletteEl = el;
 
       el.querySelector('#palette-close').addEventListener('click', () => this.toggle(false));
+
+      this.setupPaletteDrag(el);
+
       const items = el.querySelectorAll('.palette-item');
       items.forEach(item => {
         item.addEventListener('click', () => {
@@ -2560,20 +3048,83 @@
       });
     }
 
+    setupPaletteDrag(el) {
+      const header = el.querySelector('.palette-header');
+      let isDragging = false;
+      let startX = 0, startY = 0, origX = 0, origY = 0;
+
+      header.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.palette-close-btn')) return;
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+
+        const rect = el.getBoundingClientRect();
+        origX = rect.left;
+        origY = rect.top;
+
+        el.style.right = 'auto';
+        el.style.bottom = 'auto';
+        el.style.left = `${origX}px`;
+        el.style.top = `${origY}px`;
+        el.style.zIndex = '1100';
+        this.hasBeenMoved = true;
+
+        const onMouseMove = (ev) => {
+          if (!isDragging) return;
+          const dx = ev.clientX - startX;
+          const dy = ev.clientY - startY;
+
+          const maxLeft = window.innerWidth - el.offsetWidth - 10;
+          const maxTop = window.innerHeight - 80;
+          const newX = Math.max(10, Math.min(maxLeft, origX + dx));
+          const newY = Math.max(10, Math.min(maxTop, origY + dy));
+
+          el.style.left = `${newX}px`;
+          el.style.top = `${newY}px`;
+        };
+
+        const onMouseUp = () => {
+          isDragging = false;
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+        };
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+      });
+    }
+
     openAt(clientX, clientY) {
-      this.paletteEl.style.left = `${Math.min(window.innerWidth - 260, clientX)}px`;
-      this.paletteEl.style.top = `${Math.min(window.innerHeight - 380, clientY)}px`;
+      const w = this.paletteEl.offsetWidth || 265;
+      const h = this.paletteEl.offsetHeight || 420;
+      const posX = Math.max(10, Math.min(window.innerWidth - w - 20, clientX));
+      const posY = Math.max(10, Math.min(window.innerHeight - h - 20, clientY));
+
+      this.paletteEl.style.left = `${posX}px`;
+      this.paletteEl.style.top = `${posY}px`;
       this.paletteEl.style.right = 'auto';
+      this.hasBeenMoved = true;
       this.toggle(true);
     }
 
     toggle(forceState) {
       this.isOpen = (forceState !== undefined) ? forceState : !this.isOpen;
       this.paletteEl.style.display = this.isOpen ? 'flex' : 'none';
+
       if (this.isOpen) {
+        if (!this.hasBeenMoved) {
+          const w = 265;
+          this.paletteEl.style.left = `${Math.max(10, window.innerWidth - w - 25)}px`;
+          this.paletteEl.style.top = '55px';
+          this.paletteEl.style.right = 'auto';
+        }
+
         const search = this.paletteEl.querySelector('#palette-search-input');
         if (search) {
           search.value = '';
+          const items = this.paletteEl.querySelectorAll('.palette-item');
+          items.forEach(it => it.style.display = 'flex');
           search.focus();
         }
       }
@@ -2596,6 +3147,7 @@
       this.runtime = null;
       this.palette = null;
       this.activeView = 'split';
+      this.currentProjectName = 'meu_projeto.rosi';
     }
 
     init() {
@@ -2622,9 +3174,93 @@
       this.setupHardwareSelector();
       this.setupStatusBar();
       this.setupBeforeUnload();
+      this.setupUpdateChecker();
 
       // Inicia com a área de trabalho 100% limpa
       this.clearAll();
+    }
+
+    setupUpdateChecker() {
+      this.currentVersion = 'v0.1';
+      const versionEl = document.getElementById('status-app-version');
+      if (versionEl) versionEl.textContent = `RosiView ${this.currentVersion} — IFES`;
+
+      this.checkForUpdates();
+    }
+
+    async checkForUpdates() {
+      const VERSION_URL = 'https://raw.githubusercontent.com/rosirocha28/RosiView/main/version.json';
+      const REPO_URL = 'https://github.com/rosirocha28/RosiView';
+      const ZIP_URL = 'https://github.com/rosirocha28/RosiView/archive/refs/heads/main.zip';
+
+      const parseVer = (v) => (v || '').replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
+      const isNewer = (remote, local) => {
+        const r = parseVer(remote), l = parseVer(local);
+        for (let i = 0; i < Math.max(r.length, l.length); i++) {
+          const rPart = r[i] || 0, lPart = l[i] || 0;
+          if (rPart > lPart) return true;
+          if (rPart < lPart) return false;
+        }
+        return false;
+      };
+
+      try {
+        const res = await fetch(`${VERSION_URL}?t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) return;
+        const remoteData = await res.json();
+
+        if (remoteData && remoteData.version && isNewer(remoteData.version, this.currentVersion)) {
+          const badge = document.getElementById('status-update-badge');
+          const badgeText = document.getElementById('status-update-text');
+          const modal = document.getElementById('update-modal');
+          const curVerEl = document.getElementById('update-current-ver');
+          const newVerEl = document.getElementById('update-new-ver');
+          const notesEl = document.getElementById('update-notes-text');
+          const btnDownload = document.getElementById('btn-update-download');
+          const btnGithub = document.getElementById('btn-update-github');
+          const btnClose = document.getElementById('btn-update-close');
+          const btnDismiss = document.getElementById('btn-update-dismiss');
+
+          if (badge) {
+            if (badgeText) badgeText.textContent = `Nova versão ${remoteData.version} disponível!`;
+            badge.style.display = 'inline-flex';
+            badge.onclick = () => {
+              if (modal) modal.style.display = 'flex';
+            };
+          }
+
+          if (curVerEl) curVerEl.textContent = this.currentVersion;
+          if (newVerEl) newVerEl.textContent = remoteData.version;
+          if (notesEl) notesEl.textContent = remoteData.notes || 'Atualizações, correções e novas melhorias disponíveis no GitHub.';
+
+          const closeModal = () => { if (modal) modal.style.display = 'none'; };
+          if (btnClose) btnClose.onclick = closeModal;
+          if (btnDismiss) btnDismiss.onclick = closeModal;
+          if (modal) {
+            modal.onclick = (e) => {
+              if (e.target === modal) closeModal();
+            };
+          }
+
+          if (btnDownload) {
+            btnDownload.onclick = () => {
+              const a = document.createElement('a');
+              a.href = remoteData.downloadUrl || ZIP_URL;
+              a.download = `RosiView_${remoteData.version}.zip`;
+              a.target = '_blank';
+              a.click();
+            };
+          }
+
+          if (btnGithub) {
+            btnGithub.onclick = () => {
+              window.open(`${REPO_URL}/releases`, '_blank');
+            };
+          }
+        }
+      } catch (err) {
+        // Silencioso em caso de ausência de rede/offline
+      }
     }
 
     setupBeforeUnload() {
@@ -2781,51 +3417,83 @@
     }
 
     setupHardwareSelector() {
-      const selector = document.getElementById('mode-selector');
+      const btnHardware = document.getElementById('btn-hardware');
+      const menuHardware = document.getElementById('hardware-dropdown-menu');
+      const hwItems = document.querySelectorAll('.hw-dropdown-item');
       const hwDot = document.getElementById('status-hw-dot');
       const hwText = document.getElementById('status-hw-text');
 
+      const updateActiveItem = (mode) => {
+        hwItems.forEach(item => {
+          if (item.getAttribute('data-value') === mode) {
+            item.classList.add('active');
+          } else {
+            item.classList.remove('active');
+          }
+        });
+      };
+
       const applyMode = async (mode) => {
+        updateActiveItem(mode);
         if (mode === 'virtual') {
           this.currentDAQ = this.virtualDAQ;
           this.runtime.setDAQDevice(this.virtualDAQ);
           if (hwDot) hwDot.className = 'status-dot connected';
-          if (hwText) hwText.textContent = 'Planta Virtual (Ativa)';
+          if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
         } else if (mode === 'websocket') {
           try {
-            if (hwText) hwText.textContent = 'Conectando ao Bridge...';
+            if (hwText) hwText.textContent = 'Hardware: Conectando Bridge...';
             await this.wsBridge.connect();
             this.currentDAQ = this.wsBridge;
             this.runtime.setDAQDevice(this.wsBridge);
             if (hwDot) hwDot.className = 'status-dot connected';
-            if (hwText) hwText.textContent = 'NI USB-6009 (Bridge Conectado)';
+            if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Bridge)';
           } catch (err) {
             alert('Não foi possível conectar ao Bridge WebSocket (ws://127.0.0.1:8765).\nCertifique-se de executar o arquivo "INICIAR_ROSIVIEW_BRIDGE.bat".');
-            if (selector) selector.value = 'virtual';
+            updateActiveItem('virtual');
             this.currentDAQ = this.virtualDAQ;
             this.runtime.setDAQDevice(this.virtualDAQ);
-            if (hwText) hwText.textContent = 'Planta Virtual (Ativa)';
+            if (hwDot) hwDot.className = 'status-dot connected';
+            if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
           }
         } else if (mode === 'webusb') {
           try {
+            if (hwText) hwText.textContent = 'Hardware: Conectando WebUSB...';
             await this.webUSB.connect();
             this.currentDAQ = this.webUSB;
             this.runtime.setDAQDevice(this.webUSB);
             if (hwDot) hwDot.className = 'status-dot connected';
-            if (hwText) hwText.textContent = 'NI USB-6009 (WebUSB Conectado)';
+            if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (WebUSB)';
           } catch (err) {
             alert('Erro ao conectar via WebUSB: ' + err.message);
-            if (selector) selector.value = 'virtual';
+            updateActiveItem('virtual');
             this.currentDAQ = this.virtualDAQ;
             this.runtime.setDAQDevice(this.virtualDAQ);
-            if (hwText) hwText.textContent = 'Planta Virtual (Ativa)';
+            if (hwDot) hwDot.className = 'status-dot connected';
+            if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
           }
         }
       };
 
-      if (selector) {
-        selector.addEventListener('change', async (e) => {
-          await applyMode(e.target.value);
+      if (btnHardware && menuHardware) {
+        btnHardware.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isVisible = menuHardware.style.display === 'flex';
+          menuHardware.style.display = isVisible ? 'none' : 'flex';
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!menuHardware.contains(e.target) && e.target !== btnHardware) {
+            menuHardware.style.display = 'none';
+          }
+        });
+
+        hwItems.forEach(item => {
+          item.addEventListener('click', async () => {
+            const mode = item.getAttribute('data-value');
+            menuHardware.style.display = 'none';
+            await applyMode(mode);
+          });
         });
       }
 
@@ -2833,12 +3501,15 @@
       setTimeout(async () => {
         try {
           const res = await fetch('http://127.0.0.1:8765/data', { cache: 'no-store' });
-          if (res.ok && selector) {
-            selector.value = 'websocket';
+          if (res.ok) {
+            updateActiveItem('websocket');
             await applyMode('websocket');
           }
         } catch (e) {}
       }, 300);
+
+      if (hwDot) hwDot.className = 'status-dot connected';
+      if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
     }
 
     setupStatusBar() {
@@ -2860,6 +3531,12 @@
       let node = null;
 
       switch (kind) {
+        case 'knob':
+          widget = new KnobWidget({ id, title: 'Tensão de Controle [V]', min: 0, max: 10, step: 0.1, initialValue: 5.0, unit: 'V', x: fpX, y: fpY });
+          node = new FPControlTerminalNode({ id: `node_${id}`, title: 'Knob [V]', linkedWidgetId: id, dataType: DataTypes.DOUBLE, initialValue: 5.0, x: diagX, y: diagY });
+          this.frontPanel.bindWidgetToNode({ widgetId: id, nodeId: node.id, terminalName: 'value', isInputToDiagram: true });
+          break;
+
         case 'slider':
           widget = new SliderWidget({ id, title: 'Slider Setpoint', initialValue: 100, x: fpX, y: fpY });
           node = new FPControlTerminalNode({ id: `node_${id}`, title: 'Slider (SP)', linkedWidgetId: id, dataType: DataTypes.DOUBLE, initialValue: 100, x: diagX, y: diagY });
@@ -2876,6 +3553,12 @@
           widget = new ToggleSwitchWidget({ id, title: 'Chave Toggle', initialState: false, x: fpX, y: fpY });
           node = new FPControlTerminalNode({ id: `node_${id}`, title: 'Toggle Switch', linkedWidgetId: id, dataType: DataTypes.BOOLEAN, initialValue: false, x: diagX, y: diagY });
           this.frontPanel.bindWidgetToNode({ widgetId: id, nodeId: node.id, terminalName: 'value', isInputToDiagram: true });
+          break;
+
+        case 'gauge':
+          widget = new GaugeWidget({ id, title: 'Tacômetro [RPM]', min: 0, max: 3000, unit: 'RPM', x: fpX, y: fpY });
+          node = new FPIndicatorTerminalNode({ id: `node_${id}`, title: 'Tacômetro (RPM)', linkedWidgetId: id, dataType: DataTypes.DOUBLE, x: diagX, y: diagY });
+          this.frontPanel.bindWidgetToNode({ widgetId: id, nodeId: node.id, terminalName: 'value', isInputToDiagram: false });
           break;
 
         case 'tank':
@@ -2897,8 +3580,8 @@
           break;
 
         case 'led':
-          widget = new LEDWidget({ id, title: 'LED Status', color: 'green', initialState: false, x: fpX, y: fpY });
-          node = new FPIndicatorTerminalNode({ id: `node_${id}`, title: 'LED Status', linkedWidgetId: id, dataType: DataTypes.BOOLEAN, x: diagX, y: diagY });
+          widget = new LEDWidget({ id, title: 'LED Indicador', color: 'green', initialState: false, x: fpX, y: fpY });
+          node = new FPIndicatorTerminalNode({ id: `node_${id}`, title: 'LED Indicador', linkedWidgetId: id, dataType: DataTypes.BOOLEAN, x: diagX, y: diagY });
           this.frontPanel.bindWidgetToNode({ widgetId: id, nodeId: node.id, terminalName: 'value', isInputToDiagram: false });
           break;
 
@@ -2965,7 +3648,23 @@
       this.editor.render();
     }
 
-    saveProject() {
+    showToast(msg, duration = 3200) {
+      const existing = document.querySelector('.toast-notification');
+      if (existing) existing.remove();
+
+      const toast = document.createElement('div');
+      toast.className = 'toast-notification';
+      toast.innerHTML = `<span style="color:#38bdf8;">✓</span> <span>${msg}</span>`;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+
+    async saveProject() {
       const data = {
         version: '2.0',
         app: 'RosiView',
@@ -2973,18 +3672,147 @@
         graph: this.graph.toJSON(),
         frontPanel: this.frontPanel.toJSON()
       };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `rosiview_projeto_${Date.now()}.rosi`;
-      a.click();
-      URL.revokeObjectURL(url);
+      const jsonStr = JSON.stringify(data, null, 2);
+
+      // 1. Tenta a API nativa do Windows showSaveFilePicker (Salvar Como)
+      if (window.isSecureContext && typeof window.showSaveFilePicker === 'function') {
+        try {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: this.currentProjectName || 'meu_projeto.rosi',
+            types: [
+              {
+                description: 'Projeto RosiView (*.rosi)',
+                accept: { 'application/json': ['.rosi', '.json'] }
+              }
+            ]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(jsonStr);
+          await writable.close();
+          this.currentProjectName = handle.name;
+          this.showToast(`Projeto '${handle.name}' salvo com sucesso!`);
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            // Usuário cancelou a janela nativa do Windows
+            return;
+          }
+          console.warn('showSaveFilePicker não disponível no contexto atual:', err);
+        }
+      }
+
+      // 2. Abre a janela modal integrada do RosiView para digitar nome e salvar
+      this.openSaveProjectDialog(jsonStr);
+    }
+
+    openSaveProjectDialog(jsonStr) {
+      const existing = document.querySelector('.save-project-modal');
+      if (existing) existing.remove();
+
+      const nodeCount = this.graph ? this.graph.nodes.size : 0;
+      const wireCount = this.graph ? (this.graph.wires ? this.graph.wires.length : (this.graph.connections ? this.graph.connections.size : 0)) : 0;
+      const widgetCount = this.frontPanel && this.frontPanel.widgets ? this.frontPanel.widgets.size : 0;
+      const defaultName = (this.currentProjectName || 'meu_projeto.rosi').replace(/\.(rosi|json)$/i, '');
+
+      const modal = document.createElement('div');
+      modal.className = 'save-project-modal';
+      modal.innerHTML = `
+        <div class="save-project-box">
+          <div class="save-project-header">
+            <div class="save-project-title">
+              <span style="font-size: 15px;">💾</span>
+              <span>Salvar Projeto RosiView</span>
+            </div>
+            <button class="palette-close-btn" id="save_close_btn" title="Fechar">✕</button>
+          </div>
+          <div class="save-project-body">
+            <div class="save-field">
+              <label for="save_filename_input">Nome do Arquivo:</label>
+              <div class="save-input-wrapper">
+                <input type="text" id="save_filename_input" value="${defaultName}" placeholder="nome_do_projeto" spellcheck="false" autocomplete="off">
+                <span class="save-input-ext">.rosi</span>
+              </div>
+              <span class="save-field-hint">O projeto será salvo com a extensão <code>.rosi</code> (compatível com JSON).</span>
+            </div>
+
+            <div class="save-summary-card">
+              <div class="save-summary-title">Resumo do Projeto:</div>
+              <div class="save-summary-item">📊 Diagrama de Blocos: <strong>${nodeCount} blocos</strong>, <strong>${wireCount} conexões</strong></div>
+              <div class="save-summary-item">🎛️ Painel Frontal: <strong>${widgetCount} instrumentos</strong></div>
+            </div>
+
+            <div class="save-info-note">
+              <span class="save-info-icon">📁</span>
+              <div class="save-info-text">
+                <strong>Local de Salvamento:</strong> O arquivo será salvo na sua pasta de Downloads. Para que o navegador pergunte a pasta desejada a cada salvamento, ative <em>"Perguntar onde salvar cada arquivo"</em> nas configurações do navegador.
+              </div>
+            </div>
+          </div>
+          <div class="save-project-footer">
+            <button class="config-btn config-btn-cancel" id="save_cancel_btn">Cancelar</button>
+            <button class="config-btn config-btn-save" id="save_confirm_btn" style="display:inline-flex;align-items:center;gap:6px;">
+              <span>💾</span> Salvar Arquivo
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      const input = modal.querySelector('#save_filename_input');
+      input.focus();
+      input.select();
+
+      const close = () => modal.remove();
+      modal.querySelector('#save_close_btn').onclick = close;
+      modal.querySelector('#save_cancel_btn').onclick = close;
+
+      const executeSave = () => {
+        let rawName = input.value.trim();
+        if (!rawName) rawName = 'meu_projeto';
+        if (!rawName.toLowerCase().endsWith('.rosi') && !rawName.toLowerCase().endsWith('.json')) {
+          rawName += '.rosi';
+        }
+        this.currentProjectName = rawName;
+
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = rawName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        this.showToast(`Projeto '${rawName}' salvo com sucesso!`);
+        close();
+      };
+
+      modal.querySelector('#save_confirm_btn').onclick = executeSave;
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          executeSave();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          close();
+        }
+      });
+
+      modal.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          close();
+        }
+      });
     }
 
     loadProjectFile(e) {
       const file = e.target.files[0];
       if (!file) return;
+      this.currentProjectName = file.name;
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
@@ -3009,6 +3837,12 @@
                   break;
                 case 'chart':
                   widget = new ChartWidget({ id: w.id, title: w.title, maxPoints: w.maxPoints || 200, plots: w.plots, x: w.x, y: w.y });
+                  break;
+                case 'knob':
+                  widget = new KnobWidget({ id: w.id, title: w.title, min: w.min, max: w.max, step: w.step, initialValue: w.initialValue, unit: w.unit, x: w.x, y: w.y });
+                  break;
+                case 'gauge':
+                  widget = new GaugeWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, initialValue: w.initialValue, x: w.x, y: w.y });
                   break;
                 case 'switch':
                   widget = new ToggleSwitchWidget({ id: w.id, title: w.title, labelOn: w.labelOn || 'ON', labelOff: w.labelOff || 'OFF', initialState: Boolean(w.initialValue), x: w.x, y: w.y });

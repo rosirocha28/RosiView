@@ -43,7 +43,7 @@ export class SineNode extends BaseNode {
 
 export class ConstantNode extends BaseNode {
   constructor(opts = {}) {
-    super({ ...opts, type: 'sig_const', title: 'Numeric Constant', icon: '#' });
+    super({ ...opts, type: 'sig_const', title: opts.title || 'Constante', icon: '#' });
     this.constantValue = opts.constantValue !== undefined ? opts.constantValue : 0;
     this.addOutput('value', DataTypes.DOUBLE, this.constantValue);
   }

@@ -8,6 +8,8 @@ import { ThermometerWidget } from './widgets/thermometer_view.js';
 import { TankWidget } from './widgets/tank_view.js';
 import { ChartWidget } from './widgets/chart_view.js';
 import { SliderWidget } from './widgets/slider_view.js';
+import { KnobWidget } from './widgets/knob_view.js';
+import { GaugeWidget } from './widgets/gauge_view.js';
 import { ToggleSwitchWidget, LEDWidget } from './widgets/led_switch.js';
 import { NumericControlWidget } from './widgets/numeric_view.js';
 
@@ -106,6 +108,8 @@ export class FrontPanelManager {
     for (const [, widget] of this.widgets) {
       let kind = 'tank';
       if (widget.constructor.name === 'SliderWidget') kind = 'slider';
+      else if (widget.constructor.name === 'KnobWidget') kind = 'knob';
+      else if (widget.constructor.name === 'GaugeWidget') kind = 'gauge';
       else if (widget.constructor.name === 'TankWidget') kind = 'tank';
       else if (widget.constructor.name === 'ThermometerWidget') kind = 'thermometer';
       else if (widget.constructor.name === 'ChartWidget') kind = 'chart';

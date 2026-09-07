@@ -7,7 +7,9 @@
   <meta name="description" content="Ambiente web de instrumentação virtual e programação por fluxo de dados estilo LabVIEW para sistemas de controle e mecatrônica.">
   <meta name="theme-color" content="#1e222b">
 
-  <!-- PWA Manifest -->
+  <!-- Ícone e PWA Manifest -->
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="shortcut icon" href="assets/rosiview_icon.ico">
   <link rel="manifest" href="manifest.json">
 
   <!-- Estilos CSS -->
@@ -24,57 +26,55 @@
     <header id="app-header">
       <!-- Seção Brand / Logo -->
       <div class="brand-section">
-        <div class="brand-logo">RV</div>
-        <div>
+        <img src="assets/rosiview_icon.png" class="brand-logo" alt="RosiView Logo">
+        <div class="brand-text">
           <span class="brand-title">RosiView</span>
           <span class="brand-subtitle">IFES Mecatrônica</span>
         </div>
       </div>
 
-      <!-- Seção Toolbar de Controle da Execução -->
-      <div class="toolbar-section">
+      <!-- Seção Toolbar de Controle da Execução & Projeto -->
+      <div class="toolbar-section" id="toolbar-actions">
         <button class="tool-btn btn-run" id="btn-run" title="Executar uma iteração (Single Step)">
           <span>▶</span>
-          <span>Run</span>
+          <span class="btn-text">Run</span>
         </button>
 
         <button class="tool-btn" id="btn-cont-run" title="Execução contínua (While Loop)">
           <span>🔁</span>
-          <span>Cont. Run</span>
+          <span class="btn-text">Cont. Run</span>
         </button>
 
         <button class="tool-btn btn-stop" id="btn-stop" title="Parar Execução">
           <span>⏹</span>
-          <span>Stop</span>
+          <span class="btn-text">Stop</span>
         </button>
 
         <button class="tool-btn btn-highlight" id="btn-highlight" title="Destacar fluxo de dados e execução passo-a-passo">
           <span>💡</span>
-          <span>Highlight</span>
+          <span class="btn-text">Highlight</span>
         </button>
 
         <div class="divider-vertical"></div>
 
         <button class="tool-btn" id="btn-palette" title="Abrir paleta de nós e instrumentos">
           <span>🧰</span>
-          <span>Paleta</span>
+          <span class="btn-text">Paleta</span>
         </button>
 
-        <div class="divider-vertical"></div>
+        <div class="divider-vertical divider-project"></div>
 
+        <!-- Ferramentas de Projeto (Apenas ícones com tooltip) -->
         <button class="tool-btn" id="btn-new" title="Iniciar Novo Projeto">
           <span>📄</span>
-          <span>Novo</span>
         </button>
 
         <button class="tool-btn" id="btn-save" title="Salvar Projeto (.rosi)">
           <span>💾</span>
-          <span>Salvar</span>
         </button>
 
         <button class="tool-btn" id="btn-load" title="Abrir Projeto (.rosi)">
           <span>📁</span>
-          <span>Abrir</span>
         </button>
         <input type="file" id="file-input" accept=".rosi,.json" style="display: none;">
 
@@ -83,16 +83,39 @@
         </button>
       </div>
 
-      <!-- Seção Seletor de Modo de Hardware & Abas de Visualização -->
-      <div class="toolbar-section">
-        <!-- Modo Hardware -->
-        <div class="mode-selector">
-          <span class="mode-label">Hardware:</span>
-          <select class="mode-select" id="mode-selector">
-            <option value="virtual" selected>Planta Virtual (Simulador)</option>
-            <option value="websocket">NI USB-6009 (Bridge WebSocket)</option>
-            <option value="webusb">NI USB-6009 (WebUSB Direto)</option>
-          </select>
+      <!-- Seção Botão de Hardware & Abas de Visualização -->
+      <div class="toolbar-section" id="toolbar-right-section">
+        <!-- Botão de Hardware com Menu Dropdown Flutuante -->
+        <div class="hardware-btn-wrapper" style="position: relative;">
+          <button class="tool-btn" id="btn-hardware" title="Configurar Modo de Hardware e Aquisição">
+            <span>🔌</span>
+            <span>Hardware</span>
+          </button>
+
+          <div class="hardware-dropdown-menu" id="hardware-dropdown-menu" style="display: none;">
+            <div class="hw-dropdown-header">Selecionar Modo de Hardware</div>
+            <button class="hw-dropdown-item active" data-value="virtual">
+              <span class="hw-item-icon">🌱</span>
+              <div class="hw-item-info">
+                <strong>Planta Virtual (Simulador)</strong>
+                <small>Simulação de nível e temperatura integrada</small>
+              </div>
+            </button>
+            <button class="hw-dropdown-item" data-value="websocket">
+              <span class="hw-item-icon">⚡</span>
+              <div class="hw-item-info">
+                <strong>NI USB-6009 (Bridge WebSocket)</strong>
+                <small>Conexão local via bridge Python</small>
+              </div>
+            </button>
+            <button class="hw-dropdown-item" data-value="webusb">
+              <span class="hw-item-icon">🔌</span>
+              <div class="hw-item-info">
+                <strong>NI USB-6009 (WebUSB Direto)</strong>
+                <small>Comunicação direta USB pelo navegador</small>
+              </div>
+            </button>
+          </div>
         </div>
 
         <div class="divider-vertical"></div>
@@ -142,21 +165,26 @@
     <footer id="app-statusbar">
       <div class="status-group">
         <div class="status-item">
-          <div class="status-dot connected" id="status-hw-dot"></div>
-          <span id="status-hw-text">Planta Virtual (Ativa)</span>
-        </div>
-        <div class="status-item">
           <div class="status-dot" id="status-run-dot"></div>
           <span id="status-run-text">Parado (Idle)</span>
+        </div>
+        <div class="status-item">
+          <span id="status-iteration">Loop [i]: 0</span>
         </div>
       </div>
 
       <div class="status-group">
-        <div class="status-item">
-          <span id="status-iteration">Loop [i]: 0</span>
+        <div class="status-item update-badge-btn" id="status-update-badge" style="display: none;" title="Clique para ver os detalhes da atualização">
+          <span class="update-pulse-icon">🚀</span>
+          <span id="status-update-text">Atualização Disponível!</span>
+        </div>
+        <!-- Hardware em uso mostrado antes da versão do app -->
+        <div class="status-item" id="status-hw-item">
+          <div class="status-dot connected" id="status-hw-dot"></div>
+          <span id="status-hw-text">Hardware: Planta Virtual (Simulador)</span>
         </div>
         <div class="status-item">
-          <span>RosiView v1.0 — IFES Serra</span>
+          <span id="status-app-version">RosiView v0.1 — IFES</span>
         </div>
       </div>
     </footer>
@@ -188,6 +216,59 @@
             <span>✕</span>
             <span>Cancelar</span>
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Notificação: Atualização Disponível -->
+    <div class="modal-overlay" id="update-modal" style="display: none;">
+      <div class="modal-box update-dialog">
+        <div class="modal-header">
+          <span>🚀 Atualização do RosiView Disponível</span>
+          <button class="palette-close-btn" id="btn-update-close" title="Fechar">✕</button>
+        </div>
+        <div class="modal-body" style="padding: 24px;">
+          <div class="update-version-header">
+            <div class="version-tag current-ver">
+              <span class="tag-label">Versão Atual:</span>
+              <strong id="update-current-ver">v0.0</strong>
+            </div>
+            <div class="version-arrow">➜</div>
+            <div class="version-tag new-ver">
+              <span class="tag-label">Nova Versão:</span>
+              <strong id="update-new-ver">v0.1</strong>
+            </div>
+          </div>
+          
+          <div class="update-notes-container">
+            <h4 style="font-size: 13px; color: #94a3b8; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">O que há de novo:</h4>
+            <div class="update-notes-content" id="update-notes-text">
+              Carregando notas da versão...
+            </div>
+          </div>
+
+          <div class="update-options-box">
+            <div class="update-option-card">
+              <div class="option-icon">📦</div>
+              <div class="option-info">
+                <strong>Baixar Pacote ZIP Completo</strong>
+                <p>Baixe a versão atualizada diretamente do repositório no GitHub.</p>
+              </div>
+              <button class="modal-btn btn-update-download" id="btn-update-download">Baixar .ZIP</button>
+            </div>
+
+            <div class="update-option-card">
+              <div class="option-icon">⚡</div>
+              <div class="option-info">
+                <strong>Atualização em 1 Clique (Windows)</strong>
+                <p>Execute o arquivo <code>ATUALIZAR_ROSIVIEW.bat</code> na pasta raiz para atualizar automaticamente.</p>
+              </div>
+              <button class="modal-btn btn-update-gh" id="btn-update-github">Ver no GitHub</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+          <button class="modal-btn btn-cancel-action" id="btn-update-dismiss">Lembrar Mais Tarde</button>
         </div>
       </div>
     </div>

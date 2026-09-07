@@ -33,3 +33,13 @@ $RECYCLE.BIN/
 obj/
 bin/Debug/
 bin/Release/
+
+# Pacotes de distribuição para alunos (AVA)
+dist_ava/
+
+# Arquivos auxiliares de compilação LaTeX
+*.aux
+*.toc
+*.out
+*.synctex.gz
+

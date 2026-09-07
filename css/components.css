@@ -4,31 +4,33 @@
 
 /* Floating Palette (Paleta de Funções / Controles) */
 .floating-palette {
-  position: absolute;
-  top: 60px;
-  right: 20px;
-  width: 240px;
+  position: fixed;
+  top: 55px;
+  right: 25px;
+  width: 265px;
+  max-height: calc(100vh - 80px);
   background: #252936;
   border: 1px solid #475569;
-  border-radius: 6px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-  z-index: 80;
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  z-index: 1000;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  max-height: 80vh;
 }
 
 .palette-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 9px 12px;
   background: #1e222d;
   border-bottom: 1px solid #3b4254;
   font-weight: 700;
   font-size: 12px;
   color: #e2e8f0;
+  cursor: move;
+  user-select: none;
 }
 
 .palette-close-btn {
@@ -66,7 +68,25 @@
 .palette-categories {
   overflow-y: auto;
   flex: 1;
-  padding: 6px;
+  max-height: calc(100vh - 180px);
+  padding: 8px;
+}
+
+.palette-categories::-webkit-scrollbar {
+  width: 6px;
+}
+
+.palette-categories::-webkit-scrollbar-track {
+  background: #1e222d;
+}
+
+.palette-categories::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+
+.palette-categories::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 .palette-category {
@@ -301,4 +321,391 @@
   background: #475569;
   color: #ffffff;
 }
+
+/* ==========================================================================
+   Update Checker UI (Badge e Modal de Atualização)
+   ========================================================================== */
+.update-badge-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.15));
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  padding: 2px 10px;
+  border-radius: 12px;
+  color: #34d399;
+  font-weight: 600;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  animation: updateGlow 2.5s infinite alternate;
+}
+
+.update-badge-btn:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(6, 182, 212, 0.3));
+  border-color: #34d399;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+@keyframes updateGlow {
+  0% { box-shadow: 0 0 4px rgba(16, 185, 129, 0.2); }
+  100% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.6); }
+}
+
+.update-pulse-icon {
+  display: inline-block;
+  animation: rocketBounce 1.5s infinite ease-in-out;
+}
+
+@keyframes rocketBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+/* Modal de Atualização */
+.update-dialog {
+  max-width: 560px;
+  width: 90%;
+  border: 1px solid #3b82f6;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.7);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.update-version-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 12px;
+  background: #151821;
+  border-radius: 8px;
+  border: 1px solid #282e3f;
+}
+
+.version-tag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 6px;
+}
+
+.version-tag.current-ver {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #94a3b8;
+}
+
+.version-tag.new-ver {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid #10b981;
+  color: #34d399;
+}
+
+.tag-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.version-arrow {
+  color: #64748b;
+  font-size: 18px;
+}
+
+.update-notes-container {
+  margin-bottom: 18px;
+}
+
+.update-notes-content {
+  background: #111319;
+  border: 1px solid #232733;
+  border-radius: 6px;
+  padding: 12px;
+  color: #e2e8f0;
+  font-size: 12px;
+  line-height: 1.6;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.update-options-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.update-option-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #1a1e29;
+  border: 1px solid #2e3547;
+  padding: 10px 14px;
+  border-radius: 6px;
+}
+
+.option-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.option-info {
+  flex: 1;
+}
+
+.option-info strong {
+  display: block;
+  font-size: 13px;
+  color: #f1f5f9;
+  margin-bottom: 2px;
+}
+
+.option-info p {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.option-info code {
+  background: #0f172a;
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: #38bdf8;
+}
+
+.btn-update-download {
+  background: #059669;
+  border-color: #047857;
+  color: #ffffff;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.btn-update-download:hover {
+  background: #10b981;
+}
+
+.btn-update-gh {
+  background: #334155;
+  border-color: #475569;
+  color: #f1f5f9;
+  flex-shrink: 0;
+}
+
+.btn-update-gh:hover {
+  background: #475569;
+}
+
+/* ==========================================================================
+   Save Project Dialog (Salvar Como) & Toasts
+   ========================================================================== */
+.save-project-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: modalFadeIn 0.15s ease-out;
+}
+
+.save-project-box {
+  background: #1e222d;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  width: 380px;
+  max-width: 92vw;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  color: #f1f5f9;
+}
+
+.save-project-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #181b24;
+  border-bottom: 1px solid #333a4c;
+}
+
+.save-project-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.save-project-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.save-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.save-field label {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.save-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.save-input-wrapper:focus-within {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+}
+
+.save-input-wrapper input {
+  flex: 1;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f8fafc;
+  font-size: 13px;
+  font-family: var(--font-sans);
+}
+
+.save-input-ext {
+  padding: 8px 12px;
+  background: #1e293b;
+  color: #94a3b8;
+  font-size: 12px;
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+  border-left: 1px solid #334155;
+}
+
+.save-field-hint {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.save-field-hint code {
+  color: #38bdf8;
+  background: #0f172a;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.save-summary-card {
+  background: #141822;
+  border: 1px solid #283042;
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.save-summary-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.save-summary-item {
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.save-summary-item strong {
+  color: #f8fafc;
+}
+
+.save-info-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.save-info-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.save-info-text {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+.save-info-text strong {
+  color: #e2e8f0;
+}
+
+.save-info-text em {
+  color: #38bdf8;
+  font-style: normal;
+}
+
+.save-project-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #181b24;
+  border-top: 1px solid #333a4c;
+}
+
+.toast-notification {
+  position: fixed;
+  bottom: 35px;
+  right: 25px;
+  background: #1e293b;
+  border: 1px solid #38bdf8;
+  color: #f8fafc;
+  padding: 10px 16px;
+  border-radius: 6px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 3000;
+  animation: toastFadeIn 0.2s ease-out;
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+@keyframes toastFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 

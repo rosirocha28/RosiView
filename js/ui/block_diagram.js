@@ -117,6 +117,17 @@ export class BlockDiagramEditor {
       `;
     }
 
+    // Se for Constante Numérica, renderiza campo de edição direta no diagrama
+    if (node.type === 'sig_const') {
+      const val = node.constantValue !== undefined ? node.constantValue : 0;
+      bodyContent = `
+        <div class="constant-node-box" style="padding: 2px 4px; display: flex; align-items: center;">
+          <input type="number" class="constant-input" id="const_${node.id}" value="${val}" step="any"
+                 style="width: 68px; background: #0f172a; border: 1px solid #38bdf8; border-radius: 4px; color: #38bdf8; font-family: monospace; font-size: 12px; font-weight: 700; padding: 2px 4px; text-align: right; outline: none;">
+        </div>
+      `;
+    }
+
     el.innerHTML = `
       <div class="node-header">
         <div class="node-icon">${node.icon || 'ƒ'}</div>
@@ -161,6 +172,19 @@ export class BlockDiagramEditor {
         textarea.addEventListener('input', (e) => {
           node.setCode(e.target.value);
         });
+      }
+    }
+
+    // Listener para a Constante Numérica (edição direta)
+    if (node.type === 'sig_const') {
+      const constInput = el.querySelector(`#const_${node.id}`);
+      if (constInput) {
+        const updateVal = (e) => {
+          node.setValue(e.target.value);
+        };
+        constInput.addEventListener('input', updateVal);
+        constInput.addEventListener('change', updateVal);
+        constInput.addEventListener('mousedown', (e) => e.stopPropagation());
       }
     }
 

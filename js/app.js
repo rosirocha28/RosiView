@@ -29,6 +29,8 @@ import { ThermometerWidget } from './ui/widgets/thermometer_view.js';
 import { TankWidget } from './ui/widgets/tank_view.js';
 import { ChartWidget } from './ui/widgets/chart_view.js';
 import { SliderWidget } from './ui/widgets/slider_view.js';
+import { KnobWidget } from './ui/widgets/knob_view.js';
+import { GaugeWidget } from './ui/widgets/gauge_view.js';
 import { ToggleSwitchWidget, LEDWidget } from './ui/widgets/led_switch.js';
 import { NumericControlWidget } from './ui/widgets/numeric_view.js';
 
@@ -46,6 +48,7 @@ class RosiViewApp {
     this.runtime = null;
     this.palette = null;
     this.activeView = 'split'; // 'front', 'diagram', 'split'
+    this.currentProjectName = 'meu_projeto.rosi';
   }
 
   init() {
@@ -77,9 +80,93 @@ class RosiViewApp {
     this.setupHardwareSelector();
     this.setupStatusBar();
     this.setupBeforeUnload();
+    this.setupUpdateChecker();
 
     // 5. Inicia com a área de trabalho 100% limpa
     this.clearAll();
+  }
+
+  setupUpdateChecker() {
+    this.currentVersion = 'v0.1';
+    const versionEl = document.getElementById('status-app-version');
+    if (versionEl) versionEl.textContent = `RosiView ${this.currentVersion} — IFES`;
+
+    this.checkForUpdates();
+  }
+
+  async checkForUpdates() {
+    const VERSION_URL = 'https://raw.githubusercontent.com/rosirocha28/RosiView/main/version.json';
+    const REPO_URL = 'https://github.com/rosirocha28/RosiView';
+    const ZIP_URL = 'https://github.com/rosirocha28/RosiView/archive/refs/heads/main.zip';
+
+    const parseVer = (v) => (v || '').replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
+    const isNewer = (remote, local) => {
+      const r = parseVer(remote), l = parseVer(local);
+      for (let i = 0; i < Math.max(r.length, l.length); i++) {
+        const rPart = r[i] || 0, lPart = l[i] || 0;
+        if (rPart > lPart) return true;
+        if (rPart < lPart) return false;
+      }
+      return false;
+    };
+
+    try {
+      const res = await fetch(`${VERSION_URL}?t=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) return;
+      const remoteData = await res.json();
+
+      if (remoteData && remoteData.version && isNewer(remoteData.version, this.currentVersion)) {
+        const badge = document.getElementById('status-update-badge');
+        const badgeText = document.getElementById('status-update-text');
+        const modal = document.getElementById('update-modal');
+        const curVerEl = document.getElementById('update-current-ver');
+        const newVerEl = document.getElementById('update-new-ver');
+        const notesEl = document.getElementById('update-notes-text');
+        const btnDownload = document.getElementById('btn-update-download');
+        const btnGithub = document.getElementById('btn-update-github');
+        const btnClose = document.getElementById('btn-update-close');
+        const btnDismiss = document.getElementById('btn-update-dismiss');
+
+        if (badge) {
+          if (badgeText) badgeText.textContent = `Nova versão ${remoteData.version} disponível!`;
+          badge.style.display = 'inline-flex';
+          badge.onclick = () => {
+            if (modal) modal.style.display = 'flex';
+          };
+        }
+
+        if (curVerEl) curVerEl.textContent = this.currentVersion;
+        if (newVerEl) newVerEl.textContent = remoteData.version;
+        if (notesEl) notesEl.textContent = remoteData.notes || 'Atualizações, correções e novas melhorias disponíveis no GitHub.';
+
+        const closeModal = () => { if (modal) modal.style.display = 'none'; };
+        if (btnClose) btnClose.onclick = closeModal;
+        if (btnDismiss) btnDismiss.onclick = closeModal;
+        if (modal) {
+          modal.onclick = (e) => {
+            if (e.target === modal) closeModal();
+          };
+        }
+
+        if (btnDownload) {
+          btnDownload.onclick = () => {
+            const a = document.createElement('a');
+            a.href = remoteData.downloadUrl || ZIP_URL;
+            a.download = `RosiView_${remoteData.version}.zip`;
+            a.target = '_blank';
+            a.click();
+          };
+        }
+
+        if (btnGithub) {
+          btnGithub.onclick = () => {
+            window.open(`${REPO_URL}/releases`, '_blank');
+          };
+        }
+      }
+    } catch (err) {
+      // Silencioso em caso de ausência de rede/offline
+    }
   }
 
   setupBeforeUnload() {
@@ -241,48 +328,88 @@ class RosiViewApp {
   }
 
   setupHardwareSelector() {
-    const selector = document.getElementById('mode-selector');
+    const btnHardware = document.getElementById('btn-hardware');
+    const menuHardware = document.getElementById('hardware-dropdown-menu');
+    const hwItems = document.querySelectorAll('.hw-dropdown-item');
     const hwDot = document.getElementById('status-hw-dot');
     const hwText = document.getElementById('status-hw-text');
 
-    selector.addEventListener('change', async (e) => {
-      const mode = e.target.value;
+    const updateActiveItem = (mode) => {
+      hwItems.forEach(item => {
+        if (item.getAttribute('data-value') === mode) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    };
+
+    const applyMode = async (mode) => {
+      updateActiveItem(mode);
       if (mode === 'virtual') {
         this.currentDAQ = this.virtualDAQ;
         this.runtime.setDAQDevice(this.virtualDAQ);
         if (hwDot) hwDot.className = 'status-dot connected';
-        if (hwText) hwText.textContent = 'Planta Virtual (Ativa)';
+        if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
       } else if (mode === 'websocket') {
         try {
-          if (hwText) hwText.textContent = 'Conectando WebSocket...';
+          if (hwText) hwText.textContent = 'Hardware: Conectando Bridge...';
           await this.wsBridge.connect();
           this.currentDAQ = this.wsBridge;
           this.runtime.setDAQDevice(this.wsBridge);
           if (hwDot) hwDot.className = 'status-dot connected';
-          if (hwText) hwText.textContent = 'NI USB-6009 (Bridge Conectado)';
+          if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Bridge)';
         } catch (err) {
-          alert('Não foi possível conectar ao Bridge WebSocket (ws://127.0.0.1:8765).\nCertifique-se de executar "python rosiview_bridge.py" no computador.');
-          selector.value = 'virtual';
+          alert('Não foi possível conectar ao Bridge WebSocket (ws://127.0.0.1:8765).\nCertifique-se de executar o arquivo "INICIAR_ROSIVIEW_BRIDGE.bat".');
+          updateActiveItem('virtual');
           this.currentDAQ = this.virtualDAQ;
           this.runtime.setDAQDevice(this.virtualDAQ);
-          if (hwText) hwText.textContent = 'Planta Virtual (Ativa)';
+          if (hwDot) hwDot.className = 'status-dot connected';
+          if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
         }
       } else if (mode === 'webusb') {
         try {
+          if (hwText) hwText.textContent = 'Hardware: Conectando WebUSB...';
           await this.webUSB.connect();
           this.currentDAQ = this.webUSB;
           this.runtime.setDAQDevice(this.webUSB);
           if (hwDot) hwDot.className = 'status-dot connected';
-          if (hwText) hwText.textContent = 'NI USB-6009 (WebUSB Conectado)';
+          if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (WebUSB)';
         } catch (err) {
           alert('Erro ao conectar via WebUSB: ' + err.message);
-          selector.value = 'virtual';
+          updateActiveItem('virtual');
+          this.currentDAQ = this.virtualDAQ;
+          this.runtime.setDAQDevice(this.virtualDAQ);
+          if (hwDot) hwDot.className = 'status-dot connected';
+          if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
         }
       }
-    });
+    };
+
+    if (btnHardware && menuHardware) {
+      btnHardware.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isVisible = menuHardware.style.display === 'flex';
+        menuHardware.style.display = isVisible ? 'none' : 'flex';
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!menuHardware.contains(e.target) && e.target !== btnHardware) {
+          menuHardware.style.display = 'none';
+        }
+      });
+
+      hwItems.forEach(item => {
+        item.addEventListener('click', async () => {
+          const mode = item.getAttribute('data-value');
+          menuHardware.style.display = 'none';
+          await applyMode(mode);
+        });
+      });
+    }
 
     if (hwDot) hwDot.className = 'status-dot connected';
-    if (hwText) hwText.textContent = 'Planta Virtual (Ativa)';
+    if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
   }
 
   setupStatusBar() {
@@ -332,12 +459,16 @@ class RosiViewApp {
     const y = 50 + Math.random() * 50;
 
     switch (kind) {
+      case 'knob': widget = new KnobWidget({ id, x, y }); break;
+      case 'gauge': widget = new GaugeWidget({ id, x, y }); break;
       case 'tank': widget = new TankWidget({ id, x, y }); break;
       case 'thermometer': widget = new ThermometerWidget({ id, x, y }); break;
       case 'chart': widget = new ChartWidget({ id, x, y }); break;
       case 'slider': widget = new SliderWidget({ id, x, y }); break;
       case 'switch': widget = new ToggleSwitchWidget({ id, x, y }); break;
       case 'led': widget = new LEDWidget({ id, x, y }); break;
+      case 'num_ctrl': widget = new NumericControlWidget({ id, isIndicator: false, x, y }); break;
+      case 'num_ind': widget = new NumericControlWidget({ id, isIndicator: true, x, y }); break;
     }
 
     if (widget) {
@@ -353,7 +484,23 @@ class RosiViewApp {
     this.editor.render();
   }
 
-  saveProject() {
+  showToast(msg, duration = 3200) {
+    const existing = document.querySelector('.toast-notification');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.innerHTML = `<span style="color:#38bdf8;">✓</span> <span>${msg}</span>`;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(10px)';
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+
+  async saveProject() {
     const data = {
       version: '2.0',
       app: 'RosiView',
@@ -361,18 +508,147 @@ class RosiViewApp {
       graph: this.graph.toJSON(),
       frontPanel: this.frontPanel.toJSON()
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `rosiview_projeto_${Date.now()}.rosi`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const jsonStr = JSON.stringify(data, null, 2);
+
+    // 1. Tenta a API nativa do Windows showSaveFilePicker (Salvar Como)
+    if (window.isSecureContext && typeof window.showSaveFilePicker === 'function') {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: this.currentProjectName || 'meu_projeto.rosi',
+          types: [
+            {
+              description: 'Projeto RosiView (*.rosi)',
+              accept: { 'application/json': ['.rosi', '.json'] }
+            }
+          ]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(jsonStr);
+        await writable.close();
+        this.currentProjectName = handle.name;
+        this.showToast(`Projeto '${handle.name}' salvo com sucesso!`);
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          // Usuário cancelou a janela nativa do Windows
+          return;
+        }
+        console.warn('showSaveFilePicker não disponível no contexto atual:', err);
+      }
+    }
+
+    // 2. Abre a janela modal integrada do RosiView para digitar nome e salvar
+    this.openSaveProjectDialog(jsonStr);
+  }
+
+  openSaveProjectDialog(jsonStr) {
+    const existing = document.querySelector('.save-project-modal');
+    if (existing) existing.remove();
+
+    const nodeCount = this.graph ? this.graph.nodes.size : 0;
+    const wireCount = this.graph ? this.graph.wires.length : 0;
+    const widgetCount = this.frontPanel && this.frontPanel.widgets ? this.frontPanel.widgets.size : 0;
+    const defaultName = (this.currentProjectName || 'meu_projeto.rosi').replace(/\.(rosi|json)$/i, '');
+
+    const modal = document.createElement('div');
+    modal.className = 'save-project-modal';
+    modal.innerHTML = `
+      <div class="save-project-box">
+        <div class="save-project-header">
+          <div class="save-project-title">
+            <span style="font-size: 15px;">💾</span>
+            <span>Salvar Projeto RosiView</span>
+          </div>
+          <button class="palette-close-btn" id="save_close_btn" title="Fechar">✕</button>
+        </div>
+        <div class="save-project-body">
+          <div class="save-field">
+            <label for="save_filename_input">Nome do Arquivo:</label>
+            <div class="save-input-wrapper">
+              <input type="text" id="save_filename_input" value="${defaultName}" placeholder="nome_do_projeto" spellcheck="false" autocomplete="off">
+              <span class="save-input-ext">.rosi</span>
+            </div>
+            <span class="save-field-hint">O projeto será salvo com a extensão <code>.rosi</code> (compatível com JSON).</span>
+          </div>
+
+          <div class="save-summary-card">
+            <div class="save-summary-title">Resumo do Projeto:</div>
+            <div class="save-summary-item">📊 Diagrama de Blocos: <strong>${nodeCount} blocos</strong>, <strong>${wireCount} conexões</strong></div>
+            <div class="save-summary-item">🎛️ Painel Frontal: <strong>${widgetCount} instrumentos</strong></div>
+          </div>
+
+          <div class="save-info-note">
+            <span class="save-info-icon">📁</span>
+            <div class="save-info-text">
+              <strong>Local de Salvamento:</strong> O arquivo será salvo na sua pasta de Downloads. Para que o navegador pergunte a pasta desejada a cada salvamento, ative <em>"Perguntar onde salvar cada arquivo"</em> nas configurações do navegador.
+            </div>
+          </div>
+        </div>
+        <div class="save-project-footer">
+          <button class="config-btn config-btn-cancel" id="save_cancel_btn">Cancelar</button>
+          <button class="config-btn config-btn-save" id="save_confirm_btn" style="display:inline-flex;align-items:center;gap:6px;">
+            <span>💾</span> Salvar Arquivo
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const input = modal.querySelector('#save_filename_input');
+    input.focus();
+    input.select();
+
+    const close = () => modal.remove();
+    modal.querySelector('#save_close_btn').onclick = close;
+    modal.querySelector('#save_cancel_btn').onclick = close;
+
+    const executeSave = () => {
+      let rawName = input.value.trim();
+      if (!rawName) rawName = 'meu_projeto';
+      if (!rawName.toLowerCase().endsWith('.rosi') && !rawName.toLowerCase().endsWith('.json')) {
+        rawName += '.rosi';
+      }
+      this.currentProjectName = rawName;
+
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = rawName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      this.showToast(`Projeto '${rawName}' salvo com sucesso!`);
+      close();
+    };
+
+    modal.querySelector('#save_confirm_btn').onclick = executeSave;
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        executeSave();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+      }
+    });
+
+    modal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+      }
+    });
   }
 
   loadProjectFile(e) {
     const file = e.target.files[0];
     if (!file) return;
+    this.currentProjectName = file.name;
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -397,6 +673,12 @@ class RosiViewApp {
                 break;
               case 'chart':
                 widget = new ChartWidget({ id: w.id, title: w.title, maxPoints: w.maxPoints || 200, plots: w.plots, x: w.x, y: w.y });
+                break;
+              case 'knob':
+                widget = new KnobWidget({ id: w.id, title: w.title, min: w.min, max: w.max, step: w.step, initialValue: w.initialValue, unit: w.unit, x: w.x, y: w.y });
+                break;
+              case 'gauge':
+                widget = new GaugeWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, initialValue: w.initialValue, x: w.x, y: w.y });
                 break;
               case 'switch':
                 widget = new ToggleSwitchWidget({ id: w.id, title: w.title, labelOn: w.labelOn || 'ON', labelOff: w.labelOff || 'OFF', initialState: Boolean(w.initialValue), x: w.x, y: w.y });

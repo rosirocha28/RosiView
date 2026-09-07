@@ -1,0 +1,28 @@
+==============================================================================
+               RosiView - Instrumentacao Virtual e Controle
+               Instituto Federal do Espirito Santo (IFES)
+==============================================================================
+
+Ola! Este e o pacote de instalacao do RosiView para as aulas de Sistemas de Controle.
+
+COMO INSTALAR (EM 3 PASSOS SIMPLES):
+
+1. Extraia todos os arquivos deste arquivo .ZIP para qualquer pasta no seu computador
+   (por exemplo, na sua pasta Downloads).
+
+2. De um duplo clique no arquivo:
+   --> Instalar_RosiView.bat
+
+3. Pronto! O instalador ira configurar o RosiView no seu computador e criar um atalho
+   com o icone oficial na sua Area de Trabalho. O aplicativo abrira automaticamente.
+
+A partir de agora, para abrir o RosiView no dia a dia, basta clicar no atalho
+"RosiView" na sua Area de Trabalho!
+
+------------------------------------------------------------------------------
+DICAS IMPORTANTES:
+- Nao precisa de senha de administrador para instalar.
+- O RosiView roda direto no seu navegador de internet favorito (Chrome, Edge, Firefox).
+- Sempre que houver melhorias publicadas pelo professor, o RosiView avisara e
+  podera se atualizar automaticamente ao abrir.
+==============================================================================

@@ -34,15 +34,24 @@ Desenvolvido para apoio às aulas de **Sistemas de Controle Integrado** do **IFE
 
 ## 💻 Como Executar
 
-### 1. Execução Standalone (Apenas Simulação / Planta Virtual)
-Não requer nenhuma instalação de dependências ou servidores:
-1. Faça o clone ou baixe este repositório.
-2. Dê um duplo clique no arquivo **`index.html`** no seu navegador preferido (Google Chrome, Microsoft Edge, Firefox).
-3. O RosiView estará pronto para desenhar diagramas e rodar simulações!
+### 1. Execução Rápida com Atualização Automática (Recomendada no Windows)
+O RosiView conta com um inicializador inteligente que verifica automaticamente no GitHub se há novas versões antes de abrir:
+1. Dê um duplo clique no arquivo:
+   ```bash
+   INICIAR_ROSIVIEW.bat
+   ```
+2. O inicializador verifica a versão remota em menos de 1 segundo. Se houver novidades, ele baixa e instala a atualização automaticamente preservando todos os seus arquivos `.rosi`. Em seguida, abre o navegador padrão com o RosiView rodando!
+3. **Dica (Atalho no Desktop):** Para criar um atalho na Área de Trabalho com o ícone oficial do RosiView, execute uma única vez:
+   ```bash
+   CRIAR_ATALHO_AREA_DE_TRABALHO.bat
+   ```
 
-*(Opcional: você também pode servir via servidor local, executando `npx serve .` na pasta raiz).*
+### 2. Execução Standalone Manual (Apenas Abrir o Navegador)
+Você também pode abrir o aplicativo diretamente:
+1. Dê um duplo clique no arquivo **`index.html`** no seu navegador preferido (Chrome, Edge, Firefox).
+2. *(Opcional: servir via servidor local, executando `npx serve .` na pasta raiz).*
 
-### 2. Execução com Hardware Físico (Placa NI USB-6009)
+### 3. Execução com Hardware Físico (Placa NI USB-6009)
 Para comunicar com a placa física conectada à porta USB:
 1. Certifique-se de ter os drivers **NI-DAQmx** e o **Python 3** instalados no computador.
 2. Dê um duplo clique no arquivo:
@@ -58,23 +67,30 @@ Para comunicar com a placa física conectada à porta USB:
 
 ```text
 ROSIVIEW/
-├── index.html                    # Interface principal da aplicação
-├── manifest.json                 # Metadados de PWA / Web App
-├── INICIAR_ROSIVIEW_BRIDGE.bat   # Inicializador do bridge de hardware para Windows
-├── bridge/                       # Servidor WebSocket em Python para NI-DAQmx
+├── index.html                         # Interface principal da aplicação
+├── version.json                       # Metadados de versão e release
+├── manifest.json                      # Metadados de PWA / Web App
+├── INICIAR_ROSIVIEW.bat               # Inicializador oficial com auto-update
+├── CRIAR_ATALHO_AREA_DE_TRABALHO.bat  # Gerador de atalho no Desktop com ícone
+├── INICIAR_ROSIVIEW_BRIDGE.bat        # Inicializador do bridge de hardware
+├── assets/                            # Ícone oficial e imagens
+│   ├── rosiview_icon.ico              # Ícone para atalhos Windows
+│   ├── rosiview_icon.png              # Logotipo em alta resolução
+│   └── favicon.png                    # Favicon do navegador
+├── bridge/                            # Servidor WebSocket em Python para NI-DAQmx
 │   ├── daq_bridge.py
 │   └── requirements.txt
-├── css/                          # Folhas de estilo modularizadas
+├── css/                               # Folhas de estilo modularizadas
 │   ├── main.css
 │   ├── components.css
 │   └── responsive.css
-└── js/                           # Motores e lógica do RosiView
-    ├── rosiview_bundle.js        # Bundle standalone otimizado para carregamento direto
-    ├── app.js                    # Inicialização e orquestração do sistema
-    ├── core/                     # Modelos de dados (Graph, Dataflow, Runtime)
-    ├── nodes/                    # Blocos do Diagrama de Blocos (Math, Logic, Control, DAQ)
-    ├── ui/                       # Gerenciador do Painel Frontal e Editor
-    └── hardware/                 # Drivers de comunicação (Virtual e WebUSB/WebSocket)
+└── js/                                # Motores e lógica do RosiView
+    ├── rosiview_bundle.js             # Bundle standalone otimizado para carregamento direto
+    ├── app.js                         # Inicialização e orquestração do sistema
+    ├── core/                          # Modelos de dados (Graph, Dataflow, Runtime)
+    ├── nodes/                         # Blocos do Diagrama de Blocos (Math, Logic, Control, DAQ)
+    ├── ui/                            # Gerenciador do Painel Frontal e Editor
+    └── hardware/                      # Drivers de comunicação (Virtual e WebUSB/WebSocket)
 ```
 
 ---

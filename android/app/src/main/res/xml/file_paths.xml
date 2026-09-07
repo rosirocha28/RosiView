@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <cache-path name="cached_docs" path="docs/" />
+    <cache-path name="cached_apk" path="apk/" />
+    <files-path name="internal_docs" path="docs/" />
+    <files-path name="internal_apk" path="apk/" />
+</paths>
+

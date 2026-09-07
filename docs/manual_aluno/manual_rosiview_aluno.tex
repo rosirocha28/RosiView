@@ -32,7 +32,7 @@
     linkcolor=rosiblue,
     citecolor=rosiblue,
     urlcolor=rosiblue,
-    pdftitle={Manual do Usuário - RosiView v0.2.1},
+    pdftitle={Manual do Usuário - RosiView v0.3},
     pdfauthor={Profª Rosiane Ribeiro Rocha - IFES},
     pdfsubject={Técnico em Mecatrônica - Sistemas de Controle}
 }
@@ -40,7 +40,7 @@
 % Configuração de Cabeçalho e Rodapé das páginas de conteúdo
 \pagestyle{fancy}
 \fancyhf{}
-\lhead{\small\textcolor{rosigray}{\textbf{RosiView v0.2.1} --- Manual do Usuário}}
+\lhead{\small\textcolor{rosigray}{\textbf{RosiView v0.3} --- Manual do Usuário}}
 \rhead{\small\textcolor{rosigray}{IFES --- Técnico em Mecatrônica --- Sistemas de Controle}}
 \cfoot{\small\thepage}
 \renewcommand{\headrulewidth}{0.6pt}
@@ -102,14 +102,14 @@
     {\LARGE \bfseries \textcolor{rosiblue}{Ambiente de Instrumentação Virtual}}\\[0.25cm]
     {\LARGE \bfseries \textcolor{rosiblue}{e Programação por Fluxo de Dados}}\\[1.6cm]
 
-    {\huge \bfseries Manual do Usuário --- Versão v0.2.1}\\[1.8cm]
+    {\huge \bfseries Manual do Usuário --- Versão v0.3}\\[1.8cm]
 
     \vfill
 
     \begin{tcolorbox}[colback=rosilight,colframe=rosiblue,arc=3.5mm,width=0.88\textwidth,center,halign=center]
         \vspace{0.25cm}
         {\normalsize \textbf{Desenvolvido por:} Prof\textsuperscript{a} Rosiane Ribeiro Rocha}\\[0.25cm]
-        {\normalsize \textbf{Versão da Plataforma:} v0.2.1 (Distribuição Acadêmica)}\\[0.25cm]
+        {\normalsize \textbf{Versão da Plataforma:} v0.3 (Distribuição Acadêmica Multiplataforma)}\\[0.25cm]
         {\normalsize \textbf{Ano Letivo:} 2026}
         \vspace{0.25cm}
     \end{tcolorbox}
@@ -346,7 +346,26 @@ Agora, olhe para a metade direita da tela (Diagrama de Blocos):
     \item \textbf{Atualizações Contínuas:} O RosiView verifica automaticamente se há novas versões disponibilizadas pela professora sempre que você o inicia com acesso à internet. Mantenha seu app sempre atualizado.
 \end{itemize}
 
-\vspace{0.8cm}
+% ==============================================================================
+% SEÇÃO 7: ROSIVIEW MOBILE (VERSÃO ANDROID)
+% ==============================================================================
+\section{RosiView Mobile --- Versão para Android}
+
+Para permitir que os alunos realizem experimentos didáticos, criem seus diagramas e testem malhas de controle diretamente em tablets ou smartphones, foi desenvolvida a versão móvel oficial do RosiView (\texttt{RosiView.apk}):
+
+\begin{destaque}
+\textbf{Características e Operação da Versão Android:}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Modo Paisagem Imersivo (\textit{Landscape}):} A interface roda travada na horizontal em tela cheia, aproveitando toda a área útil do dispositivo sem interferência de barras do sistema operacional.
+    \item \textbf{Navegação por Gestos (\textit{Pinch-to-Zoom} e \textit{Pan}):} Aproxime ou afaste dois dedos sobre a tela para aplicar zoom no Painel Frontal ou no Diagrama de Blocos. Arraste com os dedos para deslocar a visualização com fluidez.
+    \item \textbf{Barra de Ferramentas Retrátil:} Toque no botão \textbf{$\blacktriangle$ Ocultar Barra} para recolher o cabeçalho e ganhar espaço precioso de desenho. Um botão flutuante discreto (\textbf{$\blacktriangledown$ RosiView}) reabre a barra a qualquer momento.
+    \item \textbf{Planta Virtual Integrada (100\% Offline):} No ambiente móvel, a execução ocorre pelo simulador didático da Planta Virtual incorporada, garantindo total funcionamento mesmo sem rede.
+    \item \textbf{Manual em PDF Offline Integrado:} O botão de ajuda (\textbf{?}) abre este manual instantaneamente no leitor de PDF do próprio aparelho, sem travar o aplicativo.
+    \item \textbf{Atualizador Integrado:} Quando uma nova versão for publicada no repositório, o app notificará o aluno e possibilitará o download e a instalação automática da atualização diretamente na tela.
+\end{itemize}
+\end{destaque}
+
+\vspace{0.6cm}
 \begin{center}
     \textit{Bons estudos e bem-vindo(a) ao mundo da instrumentação virtual com o RosiView!}\\[0.2cm]
     \textbf{Instituto Federal do Espírito Santo --- Técnico em Mecatrônica}

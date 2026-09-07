@@ -3181,7 +3181,7 @@
     }
 
     setupUpdateChecker() {
-      this.currentVersion = 'v0.2';
+      this.currentVersion = 'v0.2.1';
       const versionEl = document.getElementById('status-app-version');
       if (versionEl) versionEl.textContent = `RosiView ${this.currentVersion} — IFES`;
 

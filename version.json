@@ -1,7 +1,6 @@
 {
-  "version": "v0.2",
-  "name": "RosiView v0.2",
+  "version": "v0.2.1",
+  "name": "RosiView v0.2.1",
   "releaseDate": "2026-09-07",
-  "notes": "Lançamento v0.2: Instalador de 1 clique dos alunos resiliente e autônomo; botão de Ajuda (?) na barra de ferramentas integrado ao Manual do Usuário em PDF; novo gerador oficial de pacotes para o AVA (Moodle); capa e diagramação oficial do manual em LaTeX atualizadas para o Técnico em Mecatrônica."
+  "notes": "Lançamento v0.2.1: Reformulação visual completa da tela de apresentação (Splash Screen) com novo card de logs de status, indicador luminoso dinâmico (azul para verificação e verde para conclusão), badge de versão e correção definitiva de codificação de caracteres UTF-8."
 }
-

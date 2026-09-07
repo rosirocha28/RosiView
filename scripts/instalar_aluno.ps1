@@ -13,14 +13,31 @@ Write-Host "============================================================" -Foreg
 Write-Host ""
 Write-Host " Instalando o RosiView no seu computador..." -ForegroundColor Yellow
 
-# Determina a pasta de origem dos arquivos
+# Determina a pasta de origem dos arquivos localizando onde está o RosiView.exe
 $scriptDir = $PSScriptRoot
-$sourceDir = (Resolve-Path (Join-Path $scriptDir "..")).Path
-if (Test-Path (Join-Path $sourceDir "app")) {
-    $sourceDir = Join-Path $sourceDir "app"
+$sourceDir = $null
+
+$possibleDirs = @(
+    (Join-Path $scriptDir "..\app"),
+    (Join-Path $scriptDir ".."),
+    (Join-Path $scriptDir "app"),
+    $scriptDir
+)
+
+foreach ($d in $possibleDirs) {
+    if (Test-Path (Join-Path $d "RosiView.exe")) {
+        try {
+            $sourceDir = (Resolve-Path $d).Path
+            break
+        } catch {}
+    }
 }
 
-# Cria o diretório de destino
+if (-not $sourceDir) {
+    $sourceDir = (Resolve-Path (Join-Path $scriptDir "..")).Path
+}
+
+# Cria o diretório de destino no perfil do usuário
 if (-not (Test-Path $installRoot)) {
     New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
 }
@@ -37,65 +54,76 @@ foreach ($item in $itemsToCopy) {
 
 Write-Host " [OK] Arquivos instalados em: $installRoot" -ForegroundColor Green
 
-# Criação do atalho oficial na Área de Trabalho do aluno
-$WshShell = New-Object -ComObject WScript.Shell
-$Desktop = [System.Environment]::GetFolderPath('Desktop')
-if (-not (Test-Path $Desktop)) {
-    $Desktop = $WshShell.SpecialFolders.Item("Desktop")
-}
-
 $targetExe = Join-Path $installRoot "RosiView.exe"
 $targetVbs = Join-Path $installRoot "RosiView.vbs"
 $iconPath = Join-Path $installRoot "assets\rosiview_icon.ico"
-$shortcutPath = Join-Path $Desktop "RosiView.lnk"
 
-$Shortcut = $WshShell.CreateShortcut($shortcutPath)
-if (Test-Path $targetExe) {
-    $Shortcut.TargetPath = $targetExe
-    $Shortcut.Arguments = ""
-    $Shortcut.IconLocation = "$targetExe,0"
-} else {
-    $Shortcut.TargetPath = "$env:SystemRoot\System32\wscript.exe"
-    $Shortcut.Arguments = "`"$targetVbs`""
-    if (Test-Path $iconPath) {
-        $Shortcut.IconLocation = "$iconPath,0"
+# Criação do atalho oficial na Área de Trabalho do aluno
+try {
+    $WshShell = New-Object -ComObject WScript.Shell
+    $Desktop = [System.Environment]::GetFolderPath('Desktop')
+    if (-not (Test-Path $Desktop)) {
+        $Desktop = $WshShell.SpecialFolders.Item("Desktop")
     }
-}
-$Shortcut.WorkingDirectory = $installRoot
-$Shortcut.Description = "RosiView - Instrumentacao Virtual e Controle (IFES)"
-$Shortcut.Save()
-
-# Criação do atalho no Menu Iniciar do aluno
-$programsFolder = [System.Environment]::GetFolderPath('Programs')
-if (Test-Path $programsFolder) {
-    $startShortcutPath = Join-Path $programsFolder "RosiView.lnk"
-    $StartShortcut = $WshShell.CreateShortcut($startShortcutPath)
+    $shortcutPath = Join-Path $Desktop "RosiView.lnk"
+    $Shortcut = $WshShell.CreateShortcut($shortcutPath)
     if (Test-Path $targetExe) {
-        $StartShortcut.TargetPath = $targetExe
-        $StartShortcut.Arguments = ""
-        $StartShortcut.IconLocation = "$targetExe,0"
+        $Shortcut.TargetPath = $targetExe
+        $Shortcut.Arguments = ""
+        $Shortcut.IconLocation = "$targetExe,0"
     } else {
-        $StartShortcut.TargetPath = "$env:SystemRoot\System32\wscript.exe"
-        $StartShortcut.Arguments = "`"$targetVbs`""
+        $Shortcut.TargetPath = "$env:SystemRoot\System32\wscript.exe"
+        $Shortcut.Arguments = "`"$targetVbs`""
         if (Test-Path $iconPath) {
-            $StartShortcut.IconLocation = "$iconPath,0"
+            $Shortcut.IconLocation = "$iconPath,0"
         }
     }
-    $StartShortcut.WorkingDirectory = $installRoot
-    $StartShortcut.Description = "RosiView - Instrumentacao Virtual e Controle (IFES)"
-    $StartShortcut.Save()
+    $Shortcut.WorkingDirectory = $installRoot
+    $Shortcut.Description = "RosiView - Instrumentacao Virtual e Controle (IFES)"
+    $Shortcut.Save()
+    Write-Host " [OK] Atalho na Area de Trabalho criado com sucesso!" -ForegroundColor Green
+} catch {
+    Write-Warning "Nao foi possivel criar o atalho na Area de Trabalho: $_"
 }
 
-Write-Host " [OK] Atalho nativo com icone criado na Area de Trabalho e no Menu Iniciar!" -ForegroundColor Green
-Write-Host ""
-Write-Host " Iniciando o RosiView pela primeira vez..." -ForegroundColor Cyan
-Write-Host "============================================================" -ForegroundColor Cyan
+# Criação do atalho no Menu Iniciar do aluno
+try {
+    $programsFolder = [System.Environment]::GetFolderPath('Programs')
+    if (Test-Path $programsFolder) {
+        $startShortcutPath = Join-Path $programsFolder "RosiView.lnk"
+        $StartShortcut = $WshShell.CreateShortcut($startShortcutPath)
+        if (Test-Path $targetExe) {
+            $StartShortcut.TargetPath = $targetExe
+            $StartShortcut.Arguments = ""
+            $StartShortcut.IconLocation = "$targetExe,0"
+        } else {
+            $StartShortcut.TargetPath = "$env:SystemRoot\System32\wscript.exe"
+            $StartShortcut.Arguments = "`"$targetVbs`""
+            if (Test-Path $iconPath) {
+                $StartShortcut.IconLocation = "$iconPath,0"
+            }
+        }
+        $StartShortcut.WorkingDirectory = $installRoot
+        $StartShortcut.Description = "RosiView - Instrumentacao Virtual e Controle (IFES)"
+        $StartShortcut.Save()
+        Write-Host " [OK] Atalho no Menu Iniciar criado com sucesso!" -ForegroundColor Green
+    }
+} catch {
+    Write-Warning "Nao foi possivel criar o atalho no Menu Iniciar: $_"
+}
 
-# Dispara o aplicativo silenciosamente
+Write-Host ""
+Write-Host "============================================================" -ForegroundColor Green
+Write-Host " [SUCESSO] RosiView instalado com sucesso!" -ForegroundColor Green
+Write-Host "============================================================" -ForegroundColor Green
+Write-Host ""
+Write-Host " Iniciando o RosiView..." -ForegroundColor Cyan
+
+# Dispara o aplicativo
 if (Test-Path $targetExe) {
     Start-Process -FilePath $targetExe -WorkingDirectory $installRoot
 } else {
     Start-Process "$env:SystemRoot\System32\wscript.exe" -ArgumentList "`"$targetVbs`"" -WorkingDirectory $installRoot
 }
 
-Start-Sleep -Seconds 2
+Start-Sleep -Seconds 3

@@ -87,7 +87,7 @@ class RosiViewApp {
   }
 
   setupUpdateChecker() {
-    this.currentVersion = 'v0.1';
+    this.currentVersion = 'v0.2';
     const versionEl = document.getElementById('status-app-version');
     if (versionEl) versionEl.textContent = `RosiView ${this.currentVersion} — IFES`;
 
@@ -205,6 +205,7 @@ class RosiViewApp {
     const btnPalette = document.getElementById('btn-palette');
     const btnNew = document.getElementById('btn-new');
     const btnClear = document.getElementById('btn-clear');
+    const btnHelp = document.getElementById('btn-help');
     const btnSave = document.getElementById('btn-save');
     const btnLoad = document.getElementById('btn-load');
     const fileInput = document.getElementById('file-input');
@@ -239,6 +240,7 @@ class RosiViewApp {
     if (btnPalette) btnPalette.addEventListener('click', () => this.palette.toggle());
     if (btnNew) btnNew.addEventListener('click', () => this.promptNewProject());
     if (btnClear) btnClear.addEventListener('click', () => this.promptNewProject());
+    if (btnHelp) btnHelp.addEventListener('click', () => this.openManualHelp());
 
     // Salvar e Abrir Projeto
     if (btnSave) btnSave.addEventListener('click', () => this.saveProject());
@@ -643,6 +645,26 @@ class RosiViewApp {
         close();
       }
     });
+  }
+
+  openManualHelp() {
+    const manualPdf = 'docs/manual_aluno/manual_rosiview_aluno.pdf#page=2';
+    try {
+      const win = window.open(manualPdf, '_blank');
+      if (!win) {
+        const a = document.createElement('a');
+        a.href = manualPdf;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+      this.showToast('Abrindo Manual do Usuário (Sumário)...', 'info');
+    } catch (err) {
+      console.error('Erro ao abrir o manual:', err);
+      window.location.href = manualPdf;
+    }
   }
 
   loadProjectFile(e) {

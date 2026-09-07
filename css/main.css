@@ -221,6 +221,25 @@ body, html {
   box-shadow: 0 0 6px rgba(0, 122, 204, 0.5);
 }
 
+#btn-help span {
+  font-weight: 700;
+  font-size: 15px;
+  color: #38bdf8;
+  display: inline-block;
+  min-width: 12px;
+  text-align: center;
+}
+
+#btn-help:hover {
+  border-color: #0284c7;
+  background: linear-gradient(180deg, #1e3a5f 0%, #152844 100%);
+}
+
+#btn-help:hover span {
+  color: #ffffff;
+}
+
+
 .divider-vertical {
   width: 1px;
   height: 20px;

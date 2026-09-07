@@ -1,6 +1,7 @@
 {
-  "version": "v0.1",
-  "name": "RosiView v0.1",
+  "version": "v0.2",
+  "name": "RosiView v0.2",
   "releaseDate": "2026-09-07",
-  "notes": "Lançamento v0.1: Aplicativo autônomo com executável nativo e ícone embutido; paleta móvel 100% em português; novos widgets (Knob e Gauge); edição direta de constantes no diagrama; janela interativa 'Salvar Projeto' (Salvar Como) e sincronização automática."
+  "notes": "Lançamento v0.2: Instalador de 1 clique dos alunos resiliente e autônomo; botão de Ajuda (?) na barra de ferramentas integrado ao Manual do Usuário em PDF; novo gerador oficial de pacotes para o AVA (Moodle); capa e diagramação oficial do manual em LaTeX atualizadas para o Técnico em Mecatrônica."
 }
+

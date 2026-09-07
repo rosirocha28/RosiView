@@ -43,7 +43,7 @@ if (-not (Test-Path $installRoot)) {
 }
 
 # Itens essenciais do aplicativo
-$itemsToCopy = @("assets", "css", "js", "scripts", "launcher", "RosiView.exe", "index.html", "version.json", "manifest.json", "RosiView.vbs", "INICIAR_ROSIVIEW.bat")
+$itemsToCopy = @("assets", "css", "js", "scripts", "docs", "launcher", "RosiView.exe", "index.html", "version.json", "manifest.json", "RosiView.vbs", "INICIAR_ROSIVIEW.bat")
 
 foreach ($item in $itemsToCopy) {
     $srcItem = Join-Path $sourceDir $item

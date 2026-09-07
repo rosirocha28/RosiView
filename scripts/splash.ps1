@@ -11,7 +11,7 @@ Add-Type -AssemblyName WindowsBase
 
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $localVerPath = Join-Path $projectRoot "version.json"
-$localVer = "v0.1"
+$localVer = "v0.2"
 
 if (Test-Path $localVerPath) {
     try {

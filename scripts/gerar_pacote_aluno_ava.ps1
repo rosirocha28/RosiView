@@ -46,11 +46,15 @@ Write-Host "-> Copiando arquivos essenciais para o pacote do aluno..." -Foregrou
 Copy-Item (Join-Path $projectRoot "Instalar_RosiView.bat") -Destination $tempStaging
 Copy-Item (Join-Path $projectRoot "LEIA-ME_ALUNO.txt") -Destination $tempStaging
 
-# NOTA: O manual esta sendo revisado pelo professor e fica temporariamente fora da distribuicao dos alunos
-# $manualPdf = Join-Path $projectRoot "docs\manual_aluno\manual_rosiview_aluno.pdf"
-# if (Test-Path $manualPdf) {
-#     Copy-Item $manualPdf -Destination (Join-Path $tempStaging "Manual_RosiView_Aluno.pdf")
-# }
+# Copia manual do aluno em PDF na raiz do pacote e dentro da pasta app/docs
+$manualPdf = Join-Path $projectRoot "docs\manual_aluno\manual_rosiview_aluno.pdf"
+if (Test-Path $manualPdf) {
+    Copy-Item $manualPdf -Destination (Join-Path $tempStaging "Manual_RosiView_Aluno.pdf")
+    $dstManualDir = Join-Path $stagingApp "docs\manual_aluno"
+    New-Item -ItemType Directory -Path $dstManualDir -Force | Out-Null
+    Copy-Item $manualPdf -Destination (Join-Path $dstManualDir "manual_rosiview_aluno.pdf")
+    Copy-Item $manualPdf -Destination (Join-Path $stagingApp "docs\Manual_RosiView_Aluno.pdf")
+}
 
 # Copia arquivos do app para subpasta app
 $appFiles = @("index.html", "version.json", "manifest.json", "RosiView.exe", "RosiView.vbs", "INICIAR_ROSIVIEW.bat", "CRIAR_ATALHO_AREA_DE_TRABALHO.bat")
@@ -69,6 +73,7 @@ foreach ($fld in $appFolders) {
         Copy-Item $src -Destination (Join-Path $stagingApp $fld) -Recurse -Force
     }
 }
+
 
 # Copia pasta scripts (apenas scripts operacionais do aluno, ignorando o gerador)
 $srcScripts = Join-Path $projectRoot "scripts"

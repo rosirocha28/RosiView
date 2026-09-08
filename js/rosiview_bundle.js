@@ -3571,7 +3571,15 @@
       if (btnHelp) btnHelp.addEventListener('click', () => this.openManualHelp());
 
       if (btnSave) btnSave.addEventListener('click', () => this.saveProject());
-      if (btnLoad) btnLoad.addEventListener('click', () => fileInput.click());
+      if (btnLoad) {
+        btnLoad.addEventListener('click', () => {
+          if (window.AndroidBridge && typeof window.AndroidBridge.openProjectFile === 'function') {
+            window.AndroidBridge.openProjectFile();
+          } else if (fileInput) {
+            fileInput.click();
+          }
+        });
+      }
       if (fileInput) fileInput.addEventListener('change', (e) => this.loadProjectFile(e));
 
       // Listeners do Modal Novo Projeto
@@ -4024,6 +4032,14 @@
         }
         this.currentProjectName = rawName;
 
+        // Suporte nativo para ambiente Android
+        if (window.AndroidBridge && typeof window.AndroidBridge.saveProjectFile === 'function') {
+          window.AndroidBridge.saveProjectFile(rawName, jsonStr);
+          this.showToast(`Projeto '${rawName}' salvo com sucesso!`);
+          close();
+          return;
+        }
+
         const blob = new Blob([jsonStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -4086,14 +4102,21 @@
     }
 
     loadProjectFile(e) {
-      const file = e.target.files[0];
+      const file = e.target.files && e.target.files[0];
       if (!file) return;
-      this.currentProjectName = file.name;
       const reader = new FileReader();
       reader.onload = (event) => {
-        try {
-          const json = JSON.parse(event.target.result);
-          this.clearAll();
+        this.loadProjectJson(event.target.result, file.name);
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    loadProjectJson(jsonOrStr, fileName) {
+      try {
+        const json = typeof jsonOrStr === 'string' ? JSON.parse(jsonOrStr) : jsonOrStr;
+        this.currentProjectName = fileName || 'meu_projeto.rosi';
+        this.clearAll();
 
           // 1. Restaura widgets do Painel Frontal
           if (json.frontPanel && Array.isArray(json.frontPanel.widgets)) {
@@ -4222,15 +4245,20 @@
           }
 
           this.editor.render();
-        } catch (err) {
-          alert('Erro ao abrir o arquivo .rosi: ' + err.message);
-        } finally {
-          e.target.value = '';
-        }
-      };
-      reader.readAsText(file);
+        this.showToast(`Projeto '${this.currentProjectName}' carregado com sucesso!`);
+      } catch (err) {
+        console.error('Erro ao carregar o arquivo .rosi:', err);
+        alert('Erro ao abrir o arquivo .rosi: ' + err.message);
+      }
     }
   }
+
+  // Ponte global para carregar projeto a partir do Android nativo
+  window.loadProjectFromAndroid = (jsonStr, fileName) => {
+    if (window.rosiViewApp && typeof window.rosiViewApp.loadProjectJson === 'function') {
+      window.rosiViewApp.loadProjectJson(jsonStr, fileName);
+    }
+  };
 
   // Inicialização no carregamento
   if (document.readyState === 'loading') {

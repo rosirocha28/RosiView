@@ -265,8 +265,17 @@ class RosiViewApp {
 
     // Salvar e Abrir Projeto
     if (btnSave) btnSave.addEventListener('click', () => this.saveProject());
-    if (btnLoad) btnLoad.addEventListener('click', () => fileInput.click());
+    if (btnLoad) {
+      btnLoad.addEventListener('click', () => {
+        if (window.AndroidBridge && typeof window.AndroidBridge.openProjectFile === 'function') {
+          window.AndroidBridge.openProjectFile();
+        } else {
+          fileInput.click();
+        }
+      });
+    }
     if (fileInput) fileInput.addEventListener('change', (e) => this.loadProjectFile(e));
+
 
     // Listeners do Modal Novo Projeto
     if (modalClose) modalClose.addEventListener('click', () => this.closeNewProjectModal());
@@ -644,6 +653,15 @@ class RosiViewApp {
       }
       this.currentProjectName = rawName;
 
+      // Suporte nativo para ambiente Android
+      if (window.AndroidBridge && typeof window.AndroidBridge.saveProjectFile === 'function') {
+        window.AndroidBridge.saveProjectFile(rawName, jsonStr);
+        this.showToast(`Projeto '${rawName}' salvo com sucesso!`);
+        close();
+        return;
+      }
+
+      // Download no navegador Desktop
       const blob = new Blob([jsonStr], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -657,6 +675,7 @@ class RosiViewApp {
       this.showToast(`Projeto '${rawName}' salvo com sucesso!`);
       close();
     };
+
 
     modal.querySelector('#save_confirm_btn').onclick = executeSave;
 
@@ -706,145 +725,157 @@ class RosiViewApp {
   }
 
   loadProjectFile(e) {
-    const file = e.target.files[0];
+    const file = e.target.files && e.target.files[0];
     if (!file) return;
-    this.currentProjectName = file.name;
-
     const reader = new FileReader();
     reader.onload = (event) => {
-      try {
-        const json = JSON.parse(event.target.result);
-        this.clearAll();
-
-        if (json.frontPanel && Array.isArray(json.frontPanel.widgets)) {
-          for (const w of json.frontPanel.widgets) {
-            let widget = null;
-            switch (w.kind) {
-              case 'slider':
-                widget = new SliderWidget({ id: w.id, title: w.title, min: w.min, max: w.max, step: w.step, initialValue: w.initialValue, x: w.x, y: w.y });
-                break;
-              case 'tank':
-                widget = new TankWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, x: w.x, y: w.y });
-                if (w.initialValue !== undefined) widget.setValue(w.initialValue);
-                break;
-              case 'thermometer':
-                widget = new ThermometerWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, x: w.x, y: w.y });
-                if (w.initialValue !== undefined) widget.setValue(w.initialValue);
-                break;
-              case 'chart':
-                widget = new ChartWidget({ id: w.id, title: w.title, maxPoints: w.maxPoints || 200, plots: w.plots, x: w.x, y: w.y });
-                break;
-              case 'knob':
-                widget = new KnobWidget({ id: w.id, title: w.title, min: w.min, max: w.max, step: w.step, initialValue: w.initialValue, unit: w.unit, x: w.x, y: w.y });
-                break;
-              case 'gauge':
-                widget = new GaugeWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, initialValue: w.initialValue, x: w.x, y: w.y });
-                break;
-              case 'switch':
-                widget = new ToggleSwitchWidget({ id: w.id, title: w.title, labelOn: w.labelOn || 'ON', labelOff: w.labelOff || 'OFF', initialState: Boolean(w.initialValue), x: w.x, y: w.y });
-                break;
-              case 'led':
-                widget = new LEDWidget({ id: w.id, title: w.title, color: w.color || 'green', initialState: Boolean(w.initialValue), x: w.x, y: w.y });
-                break;
-              case 'num_ctrl':
-                widget = new NumericControlWidget({ id: w.id, title: w.title, initialValue: w.initialValue, isIndicator: false, x: w.x, y: w.y });
-                break;
-              case 'num_ind':
-                widget = new NumericControlWidget({ id: w.id, title: w.title, initialValue: w.initialValue, isIndicator: true, x: w.x, y: w.y });
-                break;
-            }
-            if (widget) this.frontPanel.addWidget(widget);
-          }
-        }
-
-        if (json.graph && Array.isArray(json.graph.nodes)) {
-          for (const n of json.graph.nodes) {
-            let node = null;
-            switch (n.type) {
-              case 'math_add': node = new AddNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'math_sub': node = new SubtractNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'math_mul': node = new MultiplyNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'math_div': node = new DivideNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'math_gain': node = new GainNode({ id: n.id, gain: n.gain || 1, x: n.x, y: n.y }); break;
-              case 'math_sat': node = new SaturationNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'logic_gt': node = new GreaterNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'logic_lt': node = new LessNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'logic_eq': node = new EqualNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'logic_and': node = new AndNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'logic_or': node = new OrNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'logic_not': node = new NotNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'logic_select': node = new SelectNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'sig_const':
-                node = new ConstantNode({ id: n.id, constantValue: n.constantValue !== undefined ? n.constantValue : 0, x: n.x, y: n.y });
-                break;
-              case 'sig_sine': node = new SineNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'sig_random': node = new RandomNumberNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'sig_timestep': node = new TimeStepNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'daq_ai': node = new DAQAssistantAINode({ id: n.id, channel: n.channel !== undefined ? n.channel : 0, x: n.x, y: n.y }); break;
-              case 'daq_ao': node = new DAQAssistantAONode({ id: n.id, channel: n.channel !== undefined ? n.channel : 0, x: n.x, y: n.y }); break;
-              case 'ctrl_onoff': node = new OnOffControllerNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'ctrl_pid': node = new PIDControllerNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'plant_tf': node = new TransferFunctionNode({ id: n.id, kp: n.kp, tau: n.tau, theta: n.theta, x: n.x, y: n.y }); break;
-              case 'formula_node':
-                node = new FormulaNode({
-                  id: n.id,
-                  title: n.title,
-                  code: n.code,
-                  inputNames: n.inputNames,
-                  outputNames: n.outputNames,
-                  x: n.x,
-                  y: n.y
-                });
-                break;
-              case 'cluster_bundle': node = new BundleNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'array_build': node = new BuildArrayNode({ id: n.id, x: n.x, y: n.y }); break;
-              case 'array_subset': node = new ArraySubsetNode({ id: n.id, x: n.x, y: n.y }); break;
-            }
-
-            if (node) {
-              if (n.title) node.title = n.title;
-              if (n.inputs && Array.isArray(n.inputs)) {
-                for (const iv of n.inputs) {
-                  const inTerm = node.getInput(iv.name);
-                  if (inTerm && iv.value !== undefined) inTerm.value = iv.value;
-                }
-              }
-              this.graph.addNode(node);
-            }
-          }
-        }
-
-        if (json.graph && Array.isArray(json.graph.connections)) {
-          for (const c of json.graph.connections) {
-            this.graph.addConnection({
-              fromNodeId: c.fromNodeId,
-              fromTerminalId: c.fromTerminalId,
-              toNodeId: c.toNodeId,
-              toTerminalId: c.toTerminalId,
-              type: c.type
-            });
-          }
-        }
-
-        if (json.frontPanel && Array.isArray(json.frontPanel.bindings)) {
-          for (const b of json.frontPanel.bindings) {
-            this.frontPanel.bindWidgetToNode(b);
-          }
-        }
-
-        this.editor.render();
-      } catch (err) {
-        alert('Erro ao carregar o arquivo .rosi: ' + err.message);
-      } finally {
-        e.target.value = '';
-      }
+      this.loadProjectJson(event.target.result, file.name);
     };
     reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  loadProjectJson(jsonOrStr, fileName) {
+    try {
+      const json = typeof jsonOrStr === 'string' ? JSON.parse(jsonOrStr) : jsonOrStr;
+      this.currentProjectName = fileName || 'meu_projeto.rosi';
+      this.clearAll();
+
+      if (json.frontPanel && Array.isArray(json.frontPanel.widgets)) {
+        for (const w of json.frontPanel.widgets) {
+          let widget = null;
+          switch (w.kind) {
+            case 'slider':
+              widget = new SliderWidget({ id: w.id, title: w.title, min: w.min, max: w.max, step: w.step, initialValue: w.initialValue, x: w.x, y: w.y });
+              break;
+            case 'tank':
+              widget = new TankWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, x: w.x, y: w.y });
+              if (w.initialValue !== undefined) widget.setValue(w.initialValue);
+              break;
+            case 'thermometer':
+              widget = new ThermometerWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, x: w.x, y: w.y });
+              if (w.initialValue !== undefined) widget.setValue(w.initialValue);
+              break;
+            case 'chart':
+              widget = new ChartWidget({ id: w.id, title: w.title, maxPoints: w.maxPoints || 200, plots: w.plots, x: w.x, y: w.y });
+              break;
+            case 'knob':
+              widget = new KnobWidget({ id: w.id, title: w.title, min: w.min, max: w.max, step: w.step, initialValue: w.initialValue, unit: w.unit, x: w.x, y: w.y });
+              break;
+            case 'gauge':
+              widget = new GaugeWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, initialValue: w.initialValue, x: w.x, y: w.y });
+              break;
+            case 'switch':
+              widget = new ToggleSwitchWidget({ id: w.id, title: w.title, labelOn: w.labelOn || 'ON', labelOff: w.labelOff || 'OFF', initialState: Boolean(w.initialValue), x: w.x, y: w.y });
+              break;
+            case 'led':
+              widget = new LEDWidget({ id: w.id, title: w.title, color: w.color || 'green', initialState: Boolean(w.initialValue), x: w.x, y: w.y });
+              break;
+            case 'num_ctrl':
+              widget = new NumericControlWidget({ id: w.id, title: w.title, initialValue: w.initialValue, isIndicator: false, x: w.x, y: w.y });
+              break;
+            case 'num_ind':
+              widget = new NumericControlWidget({ id: w.id, title: w.title, initialValue: w.initialValue, isIndicator: true, x: w.x, y: w.y });
+              break;
+          }
+          if (widget) this.frontPanel.addWidget(widget);
+        }
+      }
+
+      if (json.graph && Array.isArray(json.graph.nodes)) {
+        for (const n of json.graph.nodes) {
+          let node = null;
+          switch (n.type) {
+            case 'math_add': node = new AddNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'math_sub': node = new SubtractNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'math_mul': node = new MultiplyNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'math_div': node = new DivideNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'math_gain': node = new GainNode({ id: n.id, gain: n.gain || 1, x: n.x, y: n.y }); break;
+            case 'math_sat': node = new SaturationNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'logic_gt': node = new GreaterNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'logic_lt': node = new LessNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'logic_eq': node = new EqualNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'logic_and': node = new AndNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'logic_or': node = new OrNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'logic_not': node = new NotNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'logic_select': node = new SelectNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'sig_const':
+              node = new ConstantNode({ id: n.id, constantValue: n.constantValue !== undefined ? n.constantValue : 0, x: n.x, y: n.y });
+              break;
+            case 'sig_sine': node = new SineNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'sig_random': node = new RandomNumberNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'sig_timestep': node = new TimeStepNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'daq_ai': node = new DAQAssistantAINode({ id: n.id, channel: n.channel !== undefined ? n.channel : 0, x: n.x, y: n.y }); break;
+            case 'daq_ao': node = new DAQAssistantAONode({ id: n.id, channel: n.channel !== undefined ? n.channel : 0, x: n.x, y: n.y }); break;
+            case 'ctrl_onoff': node = new OnOffControllerNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'ctrl_pid': node = new PIDControllerNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'plant_tf': node = new TransferFunctionNode({ id: n.id, kp: n.kp, tau: n.tau, theta: n.theta, x: n.x, y: n.y }); break;
+            case 'formula_node':
+              node = new FormulaNode({
+                id: n.id,
+                title: n.title,
+                code: n.code,
+                inputNames: n.inputNames,
+                outputNames: n.outputNames,
+                x: n.x,
+                y: n.y
+              });
+              break;
+            case 'cluster_bundle': node = new BundleNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'array_build': node = new BuildArrayNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'array_subset': node = new ArraySubsetNode({ id: n.id, x: n.x, y: n.y }); break;
+          }
+
+          if (node) {
+            if (n.title) node.title = n.title;
+            if (n.inputs && Array.isArray(n.inputs)) {
+              for (const iv of n.inputs) {
+                const inTerm = node.getInput(iv.name);
+                if (inTerm && iv.value !== undefined) inTerm.value = iv.value;
+              }
+            }
+            this.graph.addNode(node);
+          }
+        }
+      }
+
+      if (json.graph && Array.isArray(json.graph.connections)) {
+        for (const c of json.graph.connections) {
+          this.graph.addConnection({
+            fromNodeId: c.fromNodeId,
+            fromTerminalId: c.fromTerminalId,
+            toNodeId: c.toNodeId,
+            toTerminalId: c.toTerminalId,
+            type: c.type
+          });
+        }
+      }
+
+      if (json.frontPanel && Array.isArray(json.frontPanel.bindings)) {
+        for (const b of json.frontPanel.bindings) {
+          this.frontPanel.bindWidgetToNode(b);
+        }
+      }
+
+      this.editor.render();
+      this.showToast(`Projeto '${this.currentProjectName}' carregado com sucesso!`);
+    } catch (err) {
+      console.error('Erro ao carregar o arquivo .rosi:', err);
+      alert('Erro ao carregar o arquivo .rosi: ' + err.message);
+    }
   }
 }
+
+// Ponte global para carregar projeto a partir do Android nativo
+window.loadProjectFromAndroid = (jsonStr, fileName) => {
+  if (window.rosiViewApp && typeof window.rosiViewApp.loadProjectJson === 'function') {
+    window.rosiViewApp.loadProjectJson(jsonStr, fileName);
+  }
+};
 
 // Inicializa quando a página carregar
 window.addEventListener('DOMContentLoaded', () => {
   window.rosiViewApp = new RosiViewApp();
   window.rosiViewApp.init();
 });
+

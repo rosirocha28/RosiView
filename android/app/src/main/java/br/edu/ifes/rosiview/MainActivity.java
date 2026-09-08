@@ -19,9 +19,19 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
+import android.webkit.ValueCallback;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,9 +39,14 @@ import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "RosiViewApp";
+    private static final int REQUEST_FILE_CHOOSER = 2001;
+    private static final int REQUEST_OPEN_PROJECT = 2002;
+
     private WebView webView;
+    private ValueCallback<Uri[]> fileUploadCallback;
 
     @SuppressLint("SetJavaScriptEnabled")
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         settings.setDisplayZoomControls(false);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
-        // Log de depuração do JavaScript integrado ao Logcat
+        // WebChromeClient com suporte a depuração e seleção de arquivos nativos
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
@@ -71,7 +86,32 @@ public class MainActivity extends AppCompatActivity {
                         + consoleMessage.lineNumber() + ")");
                 return true;
             }
+
+            @Override
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+                if (fileUploadCallback != null) {
+                    fileUploadCallback.onReceiveValue(null);
+                    fileUploadCallback = null;
+                }
+                fileUploadCallback = filePathCallback;
+
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
+                try {
+                    startActivityForResult(Intent.createChooser(intent, "Selecionar Projeto RosiView (*.rosi)"), REQUEST_FILE_CHOOSER);
+                    return true;
+                } catch (Exception e) {
+                    Log.e(TAG, "Erro no onShowFileChooser: " + e.getMessage());
+                    if (fileUploadCallback != null) {
+                        fileUploadCallback.onReceiveValue(null);
+                        fileUploadCallback = null;
+                    }
+                    return false;
+                }
+            }
         });
+
 
         // Intercepta links externos (como GitHub ou links do manual) para abrir no navegador padrão
         webView.setWebViewClient(new WebViewClient() {
@@ -137,14 +177,114 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_FILE_CHOOSER) {
+            if (fileUploadCallback == null) return;
+            Uri[] results = null;
+            if (resultCode == RESULT_OK && data != null) {
+                if (data.getData() != null) {
+                    results = new Uri[]{ data.getData() };
+                } else if (data.getClipData() != null) {
+                    int count = data.getClipData().getItemCount();
+                    results = new Uri[count];
+                    for (int i = 0; i < count; i++) {
+                        results[i] = data.getClipData().getItemAt(i).getUri();
+                    }
+                }
+            }
+            fileUploadCallback.onReceiveValue(results);
+            fileUploadCallback = null;
+        } else if (requestCode == REQUEST_OPEN_PROJECT) {
+            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+                handleProjectFileUri(data.getData());
+            }
+        }
+    }
+
+    private void handleProjectFileUri(Uri uri) {
+        try {
+            String fileName = "projeto.rosi";
+            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    if (nameIndex >= 0) {
+                        String name = cursor.getString(nameIndex);
+                        if (name != null && !name.isEmpty()) {
+                            fileName = name;
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try (InputStream in = getContentResolver().openInputStream(uri)) {
+                if (in == null) {
+                    throw new Exception("Não foi possível acessar o arquivo selecionado.");
+                }
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = in.read(buffer)) != -1) {
+                    baos.write(buffer, 0, read);
+                }
+            }
+            final String jsonContent = baos.toString("UTF-8");
+            final String finalFileName = fileName;
+
+            webView.post(() -> {
+                String js = "if (window.loadProjectFromAndroid) { window.loadProjectFromAndroid(" 
+                            + org.json.JSONObject.quote(jsonContent) + ", " 
+                            + org.json.JSONObject.quote(finalFileName) + "); }";
+                webView.evaluateJavascript(js, null);
+            });
+
+        } catch (Exception e) {
+            Log.e(TAG, "Erro ao abrir projeto: " + e.getMessage(), e);
+            Toast.makeText(this, "Falha ao abrir arquivo: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void showProjectSavedDialog(String fileName, File fileToShare) {
+        new AlertDialog.Builder(this)
+            .setTitle("💾 Projeto Salvo!")
+            .setMessage("O arquivo '" + fileName + "' foi salvo com sucesso na pasta Downloads do seu dispositivo.\n\nDeseja compartilhar este projeto?")
+            .setPositiveButton("Compartilhar", (dialog, which) -> shareProjectFile(fileName, fileToShare))
+            .setNegativeButton("OK", null)
+            .show();
+    }
+
+    public void shareProjectFile(String fileName, File file) {
+        try {
+            if (file == null || !file.exists()) return;
+            Uri fileUri = androidx.core.content.FileProvider.getUriForFile(
+                this,
+                getPackageName() + ".provider",
+                file
+            );
+            Intent sendIntent = new Intent(Intent.ACTION_SEND);
+            sendIntent.setType("application/json");
+            sendIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+            sendIntent.putExtra(Intent.EXTRA_SUBJECT, "Projeto RosiView: " + fileName);
+            sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(sendIntent, "Compartilhar Projeto RosiView"));
+        } catch (Exception e) {
+            Log.e(TAG, "Erro ao compartilhar arquivo: " + e.getMessage());
+            Toast.makeText(this, "Não foi possível compartilhar: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
     /**
      * Ponte de comunicação Javascript <-> Android
      */
     public static class RosiViewNativeBridge {
+        private final MainActivity activity;
         private final Context context;
 
-        public RosiViewNativeBridge(Context context) {
-            this.context = context;
+        public RosiViewNativeBridge(MainActivity activity) {
+            this.activity = activity;
+            this.context = activity;
         }
 
         @JavascriptInterface
@@ -156,6 +296,7 @@ public class MainActivity extends AppCompatActivity {
         public String getVersion() {
             return "0.3.0";
         }
+
 
         @JavascriptInterface
         public boolean isAndroidApp() {
@@ -311,6 +452,85 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "Falha no download da atualização: " + err.getMessage(), err);
                     new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
                         Toast.makeText(context, "Falha ao baixar atualização: " + err.getMessage(), Toast.LENGTH_LONG).show();
+                    });
+                }
+            }).start();
+        }
+
+        @JavascriptInterface
+        public void openProjectFile() {
+            activity.runOnUiThread(() -> {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
+                try {
+                    activity.startActivityForResult(Intent.createChooser(intent, "Abrir Projeto RosiView (*.rosi)"), REQUEST_OPEN_PROJECT);
+                } catch (Exception e) {
+                    Toast.makeText(activity, "Erro ao abrir seletor: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void saveProjectFile(final String fileName, final String jsonContent) {
+            if (fileName == null || jsonContent == null) return;
+
+            new Thread(() -> {
+                try {
+                    boolean saved = false;
+                    File savedFile = null;
+
+                    // 1. Android 10+ (API 29+): Salva via MediaStore na pasta Downloads pública (sem exigir permissão de storage)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        ContentValues values = new ContentValues();
+                        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+                        values.put(MediaStore.MediaColumns.MIME_TYPE, "application/json");
+                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/RosiView");
+
+                        Uri uri = activity.getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                        if (uri != null) {
+                            try (OutputStream os = activity.getContentResolver().openOutputStream(uri)) {
+                                if (os != null) {
+                                    os.write(jsonContent.getBytes(StandardCharsets.UTF_8));
+                                    os.flush();
+                                    saved = true;
+                                }
+                            }
+                        }
+                    }
+
+                    // 2. Fallback para Android 9 ou se MediaStore falhar: pasta Downloads pública direta
+                    if (!saved) {
+                        File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                        File rosiDir = new File(downloadsDir, "RosiView");
+                        if (!rosiDir.exists()) rosiDir.mkdirs();
+                        File file = new File(rosiDir, fileName);
+                        try (FileOutputStream fos = new FileOutputStream(file)) {
+                            fos.write(jsonContent.getBytes(StandardCharsets.UTF_8));
+                            fos.flush();
+                            saved = true;
+                            savedFile = file;
+                        }
+                    }
+
+                    // 3. Salva também cópia nos arquivos locais do app para compartilhamento imediato via FileProvider
+                    File backupDir = new File(activity.getCacheDir(), "projects");
+                    if (!backupDir.exists()) backupDir.mkdirs();
+                    File shareableFile = new File(backupDir, fileName);
+                    try (FileOutputStream fos = new FileOutputStream(shareableFile)) {
+                        fos.write(jsonContent.getBytes(StandardCharsets.UTF_8));
+                        fos.flush();
+                    }
+
+                    final File fileToShare = shareableFile;
+                    activity.runOnUiThread(() -> {
+                        activity.showProjectSavedDialog(fileName, fileToShare);
+                    });
+
+                } catch (Exception e) {
+                    Log.e(TAG, "Erro ao salvar projeto: " + e.getMessage(), e);
+                    activity.runOnUiThread(() -> {
+                        Toast.makeText(activity, "Erro ao salvar projeto: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     });
                 }
             }).start();

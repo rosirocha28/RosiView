@@ -2,7 +2,10 @@
 <paths>
     <cache-path name="cached_docs" path="docs/" />
     <cache-path name="cached_apk" path="apk/" />
+    <cache-path name="cached_projects" path="projects/" />
     <files-path name="internal_docs" path="docs/" />
     <files-path name="internal_apk" path="apk/" />
+    <external-files-path name="ext_files" path="." />
+    <external-cache-path name="ext_cache" path="." />
 </paths>
 

@@ -11,12 +11,12 @@
     "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.3.0.zip"
   },
   "android": {
-    "version": "v0.3.0",
-    "versionCode": 3,
-    "name": "RosiView Android v0.3.0",
+    "version": "v0.3.1",
+    "versionCode": 4,
+    "name": "RosiView Android v0.3.1",
     "releaseDate": "2026-09-07",
-    "notes": "Lançamento oficial do RosiView para Android v0.3.0: Planta Virtual integrada, gestos de pinça (zoom/pan), barra retrátil, manual em PDF offline e auto-instalador de atualizações.",
-    "apkUrl": "https://github.com/rosirocha28/RosiView/releases/download/android-v0.3.0/RosiView.apk"
+    "notes": "Atualização Android v0.3.1: Correção completa dos botões Abrir e Salvar (.rosi), suporte a compartilhamento via WhatsApp/Drive/E-mail e correção de exibição de versão na tela de splash.",
+    "apkUrl": "https://github.com/rosirocha28/RosiView/releases/download/android-v0.3.1/RosiView.apk"
   }
 }
 

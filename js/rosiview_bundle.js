@@ -3340,9 +3340,14 @@
 
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.AndroidBridge !== undefined;
       
+      const myVer = (window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function') 
+        ? ('v' + window.AndroidBridge.getVersion()) 
+        : (isMobile ? 'v0.3.1' : 'v0.3.0');
+      this.currentVersion = myVer;
+
       const badge = splash.querySelector('.mobile-splash-badge');
       if (badge) {
-        badge.textContent = isMobile ? 'v0.1.0' : 'v0.2.1';
+        badge.textContent = myVer;
       }
 
       // Exibe splash overlay se for mobile ou se o parâmetro mobile existir
@@ -3364,7 +3369,6 @@
         .then(res => res.json())
         .then(data => {
           const targetRemote = (isMobile && data.android && data.android.version) ? data.android.version : (data.desktop && data.desktop.version ? data.desktop.version : data.version);
-          const myVer = 'v0.3.0';
           const parseVer = (v) => (v || '').replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
           const r = parseVer(targetRemote), l = parseVer(myVer);
           let hasNewer = false;
@@ -3398,8 +3402,9 @@
 
     setupUpdateChecker() {
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.AndroidBridge !== undefined;
-      this.isAndroid = isMobile;
-      this.currentVersion = 'v0.3.0';
+      this.currentVersion = (isMobile && window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function')
+        ? ('v' + window.AndroidBridge.getVersion())
+        : (isMobile ? 'v0.3.1' : 'v0.3.0');
       const versionEl = document.getElementById('status-app-version');
       if (versionEl) {
         versionEl.textContent = isMobile ? `RosiView Android ${this.currentVersion} — IFES` : `RosiView ${this.currentVersion} — IFES`;

@@ -1,4 +1,4 @@
-﻿# ==============================================================================
+# ==============================================================================
 # RosiView - Tela de Apresentacao (Splash Screen) e Verificador de Atualizacao
 # IFES - Sistemas de Controle Integrado
 # ==============================================================================
@@ -11,7 +11,7 @@ Add-Type -AssemblyName WindowsBase
 
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $localVerPath = Join-Path $projectRoot "version.json"
-$localVer = "v0.2.1"
+$localVer = "v0.3.0"
 
 if (Test-Path $localVerPath) {
     try {
@@ -56,7 +56,7 @@ $xaml = @"
             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="RosiView" FontSize="30" FontWeight="Bold" Foreground="#f8fafc" FontFamily="Segoe UI"/>
                 <Border Background="#0369a1" CornerRadius="6" Padding="6,2" Margin="10,2,0,0" VerticalAlignment="Center">
-                    <TextBlock x:Name="VerBadge" Text="v0.2.1" FontSize="11" FontWeight="Bold" Foreground="#e0f2fe" FontFamily="Segoe UI"/>
+                    <TextBlock x:Name="VerBadge" Text="v0.3.0" FontSize="11" FontWeight="Bold" Foreground="#e0f2fe" FontFamily="Segoe UI"/>
                 </Border>
             </StackPanel>
 

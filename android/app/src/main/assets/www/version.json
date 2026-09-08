@@ -5,18 +5,22 @@
   "notes": "Lançamento v0.4.0: Configuração universal de instrumentos (Duplo clique), menu de contexto no Painel Frontal (Duplicar, Resetar, Deletar, Configurações), suporte a gestos touch e salvamento aprimorado no Android.",
   "desktop": {
     "version": "v0.4.0",
+    "tag": "v0.4.0",
     "name": "RosiView Desktop v0.4.0",
     "releaseDate": "2026-09-08",
     "notes": "Versão Desktop v0.4.0: Menu de contexto no Painel Frontal, exclusão via tecla Delete/Backspace, configuração universal e estabilidade aprimorada.",
-    "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.4.0.zip"
+    "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.4.0.zip",
+    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/v0.4.0"
   },
   "android": {
     "version": "v0.4.0",
     "versionCode": 5,
+    "tag": "android-v0.4.0",
     "name": "RosiView Android v0.4.0",
     "releaseDate": "2026-09-08",
     "notes": "Atualização Android v0.4.0: Menu de contexto ao pressionar e segurar, suporte a arrasto touch em instrumentos e blocos, correção de conexões com zoom e salvamento de projetos via seletor nativo do sistema.",
-    "apkUrl": "https://github.com/rosirocha28/RosiView/releases/download/android-v0.4.0/RosiView.apk"
+    "apkUrl": "https://github.com/rosirocha28/RosiView/releases/download/android-v0.4.0/RosiView.apk",
+    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/android-v0.4.0"
   }
 }
 

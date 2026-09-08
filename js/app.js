@@ -120,9 +120,11 @@ class RosiViewApp {
       const res = await fetch(`${VERSION_URL}?t=${Date.now()}`, { cache: 'no-store' });
       if (!res.ok) return;
       const remoteData = await res.json();
+      const isAndroid = this.isAndroid || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.AndroidBridge !== undefined;
+      this.isAndroid = isAndroid;
 
       // Separação estrita de dados remotos por plataforma (Android vs Desktop)
-      const targetData = (this.isAndroid && remoteData.android) ? remoteData.android : ((remoteData.desktop) || remoteData);
+      const targetData = (isAndroid && remoteData.android) ? remoteData.android : ((remoteData.desktop) || remoteData);
       const remoteVersion = targetData.version;
 
       if (remoteVersion && isNewer(remoteVersion, this.currentVersion)) {
@@ -159,10 +161,16 @@ class RosiViewApp {
         }
 
         if (btnDownload) {
-          if (this.isAndroid) {
-            btnDownload.textContent = 'Baixar e Instalar Atualização';
+          if (isAndroid) {
+            btnDownload.textContent = 'Baixar e Instalar APK';
+            const cardTitle = btnDownload.closest('.update-option-card')?.querySelector('strong');
+            if (cardTitle) cardTitle.textContent = 'Instalar Atualização (.APK)';
+            const cardDesc = btnDownload.closest('.update-option-card')?.querySelector('p');
+            if (cardDesc) cardDesc.textContent = 'Baixa e instala automaticamente o novo APK do RosiView Android.';
+
             btnDownload.onclick = () => {
-              const apkUrl = targetData.apkUrl || `https://github.com/rosirocha28/RosiView/releases/download/android-${remoteVersion}/RosiView.apk`;
+              const tagStr = targetData.tag || `android-${remoteVersion}`;
+              const apkUrl = targetData.apkUrl || `https://github.com/rosirocha28/RosiView/releases/download/${tagStr}/RosiView.apk`;
               if (window.AndroidBridge && typeof window.AndroidBridge.downloadAndInstallUpdate === 'function') {
                 window.AndroidBridge.downloadAndInstallUpdate(apkUrl);
                 closeModal();
@@ -183,7 +191,10 @@ class RosiViewApp {
 
         if (btnGithub) {
           btnGithub.onclick = () => {
-            window.open(`${REPO_URL}/releases`, '_blank');
+            const releaseUrl = targetData.releaseUrl || (isAndroid
+              ? `https://github.com/rosirocha28/RosiView/releases/tag/android-${remoteVersion}`
+              : `${REPO_URL}/releases`);
+            window.open(releaseUrl, '_blank');
           };
         }
       }

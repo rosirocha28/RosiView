@@ -1,22 +1,22 @@
 {
-  "version": "v0.3.0",
-  "name": "RosiView v0.3.0",
-  "releaseDate": "2026-09-07",
-  "notes": "Lançamento v0.3.0: Arquitetura multiplataforma correlacionada (Desktop e Android), suporte ao novo Manual do Usuário v0.3 unificado e correções de usabilidade.",
+  "version": "v0.4.0",
+  "name": "RosiView v0.4.0",
+  "releaseDate": "2026-09-08",
+  "notes": "Lançamento v0.4.0: Configuração universal de instrumentos (Duplo clique), menu de contexto no Painel Frontal (Duplicar, Resetar, Deletar, Configurações), suporte a gestos touch e salvamento aprimorado no Android.",
   "desktop": {
-    "version": "v0.3.0",
-    "name": "RosiView Desktop v0.3.0",
-    "releaseDate": "2026-09-07",
-    "notes": "Versão Desktop v0.3.0 para Windows com simulador virtual, bridge WebSocket, aquisição NI-DAQmx e alinhamento com a versão móvel.",
-    "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.3.0.zip"
+    "version": "v0.4.0",
+    "name": "RosiView Desktop v0.4.0",
+    "releaseDate": "2026-09-08",
+    "notes": "Versão Desktop v0.4.0: Menu de contexto no Painel Frontal, exclusão via tecla Delete/Backspace, configuração universal e estabilidade aprimorada.",
+    "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.4.0.zip"
   },
   "android": {
-    "version": "v0.3.1",
-    "versionCode": 4,
-    "name": "RosiView Android v0.3.1",
-    "releaseDate": "2026-09-07",
-    "notes": "Atualização Android v0.3.1: Correção completa dos botões Abrir e Salvar (.rosi), suporte a compartilhamento via WhatsApp/Drive/E-mail e correção de exibição de versão na tela de splash.",
-    "apkUrl": "https://github.com/rosirocha28/RosiView/releases/download/android-v0.3.1/RosiView.apk"
+    "version": "v0.4.0",
+    "versionCode": 5,
+    "name": "RosiView Android v0.4.0",
+    "releaseDate": "2026-09-08",
+    "notes": "Atualização Android v0.4.0: Menu de contexto ao pressionar e segurar, suporte a arrasto touch em instrumentos e blocos, correção de conexões com zoom e salvamento de projetos via seletor nativo do sistema.",
+    "apkUrl": "https://github.com/rosirocha28/RosiView/releases/download/android-v0.4.0/RosiView.apk"
   }
 }
 

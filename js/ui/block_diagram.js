@@ -46,9 +46,10 @@ export class BlockDiagramEditor {
     // Movimento do mouse para fiação temporária
     canvas.addEventListener('mousemove', (e) => {
       if (this.pendingWire && this.previewPathEl) {
-        const rect = canvas.getBoundingClientRect();
-        const endX = e.clientX - rect.left + canvas.scrollLeft;
-        const endY = e.clientY - rect.top + canvas.scrollTop;
+        const zoomRect = (this.zoomWrapper || canvas).getBoundingClientRect();
+        const scale = this.getCurrentScale();
+        const endX = (e.clientX - zoomRect.left) / scale;
+        const endY = (e.clientY - zoomRect.top) / scale;
 
         const pathD = WireRouter.getCubicBezierPath(
           this.pendingWire.startX,
@@ -218,20 +219,20 @@ export class BlockDiagramEditor {
       });
     });
 
-    // 2. Arraste do Bloco (Drag & Drop)
+    // 2. Arraste do Bloco (Drag & Drop com compensação de escala de Zoom)
     el.addEventListener('mousedown', (e) => {
-      if (e.target.closest('.terminal-dot') || e.target.tagName === 'TEXTAREA') return;
+      if (e.target.closest('.terminal-dot') || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
       this.selectNode(node.id);
 
-      const canvas = this.container.querySelector('#diagram-canvas');
       const startX = e.clientX;
       const startY = e.clientY;
       const origX = node.x;
       const origY = node.y;
+      const scale = this.getCurrentScale();
 
       const onMouseMove = (ev) => {
-        node.x = origX + (ev.clientX - startX);
-        node.y = origY + (ev.clientY - startY);
+        node.x = origX + (ev.clientX - startX) / scale;
+        node.y = origY + (ev.clientY - startY) / scale;
         el.style.left = `${node.x}px`;
         el.style.top = `${node.y}px`;
         this.renderWires();
@@ -245,15 +246,64 @@ export class BlockDiagramEditor {
       window.addEventListener('mousemove', onMouseMove);
       window.addEventListener('mouseup', onMouseUp);
     });
+
+    // 3. Arraste Touch no Android / Mobile (1 dedo com limiar de toque)
+    el.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) return;
+      if (e.target.closest('.terminal-dot') || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+
+      const touch = e.touches[0];
+      const startTouchX = touch.clientX;
+      const startTouchY = touch.clientY;
+      const origX = node.x;
+      const origY = node.y;
+      const scale = this.getCurrentScale();
+      let isDragging = false;
+
+      const onTouchMove = (ev) => {
+        if (ev.touches.length !== 1) return;
+        const t = ev.touches[0];
+        const dx = t.clientX - startTouchX;
+        const dy = t.clientY - startTouchY;
+        if (!isDragging && Math.hypot(dx, dy) > 8) {
+          isDragging = true;
+          this.selectNode(node.id);
+        }
+        if (isDragging) {
+          ev.preventDefault();
+          node.x = origX + dx / scale;
+          node.y = origY + dy / scale;
+          el.style.left = `${node.x}px`;
+          el.style.top = `${node.y}px`;
+          this.renderWires();
+        }
+      };
+
+      const onTouchEnd = () => {
+        window.removeEventListener('touchmove', onTouchMove);
+        window.removeEventListener('touchend', onTouchEnd);
+      };
+
+      window.addEventListener('touchmove', onTouchMove, { passive: false });
+      window.addEventListener('touchend', onTouchEnd);
+    }, { passive: true });
+  }
+
+  getCurrentScale() {
+    if (!this.zoomWrapper) return 1;
+    const rect = this.zoomWrapper.getBoundingClientRect();
+    const scale = rect.width / 3000;
+    return (scale > 0.05 && scale < 50) ? scale : 1;
   }
 
   startPendingWire(fromNodeId, fromTerminalId, dotEl) {
     const canvas = this.container.querySelector('#diagram-canvas');
+    const zoomRect = (this.zoomWrapper || canvas).getBoundingClientRect();
+    const scale = this.getCurrentScale();
     const dotRect = dotEl.getBoundingClientRect();
-    const canvasRect = canvas.getBoundingClientRect();
 
-    const startX = dotRect.left - canvasRect.left + dotRect.width / 2 + canvas.scrollLeft;
-    const startY = dotRect.top - canvasRect.top + dotRect.height / 2 + canvas.scrollTop;
+    const startX = (dotRect.left - zoomRect.left + dotRect.width / 2) / scale;
+    const startY = (dotRect.top - zoomRect.top + dotRect.height / 2) / scale;
 
     const fromNode = this.graph.getNode(fromNodeId);
     const term = fromNode ? fromNode.outputs.get(fromTerminalId) : null;
@@ -296,7 +346,8 @@ export class BlockDiagramEditor {
     this.svgLayer.innerHTML = '';
     const canvas = this.container.querySelector('#diagram-canvas');
     if (!canvas) return;
-    const canvasRect = canvas.getBoundingClientRect();
+    const zoomRect = (this.zoomWrapper || canvas).getBoundingClientRect();
+    const scale = this.getCurrentScale();
 
     for (const [, conn] of this.graph.connections) {
       const fromNodeEl = this.container.querySelector(`#node_${conn.fromNodeId}`);
@@ -310,10 +361,10 @@ export class BlockDiagramEditor {
           const fromRect = fromDot.getBoundingClientRect();
           const toRect = toDot.getBoundingClientRect();
 
-          const x1 = fromRect.left - canvasRect.left + fromRect.width / 2 + canvas.scrollLeft;
-          const y1 = fromRect.top - canvasRect.top + fromRect.height / 2 + canvas.scrollTop;
-          const x2 = toRect.left - canvasRect.left + toRect.width / 2 + canvas.scrollLeft;
-          const y2 = toRect.top - canvasRect.top + toRect.height / 2 + canvas.scrollTop;
+          const x1 = (fromRect.left - zoomRect.left + fromRect.width / 2) / scale;
+          const y1 = (fromRect.top - zoomRect.top + fromRect.height / 2) / scale;
+          const x2 = (toRect.left - zoomRect.left + toRect.width / 2) / scale;
+          const y2 = (toRect.top - zoomRect.top + toRect.height / 2) / scale;
 
           const pathD = WireRouter.getCubicBezierPath(x1, y1, x2, y2);
           const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');

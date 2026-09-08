@@ -41,9 +41,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "RosiViewApp";
     private static final int REQUEST_FILE_CHOOSER = 2001;
     private static final int REQUEST_OPEN_PROJECT = 2002;
+    private static final int REQUEST_SAVE_PROJECT = 2003;
 
     private WebView webView;
     private ValueCallback<Uri[]> fileUploadCallback;
+    private String pendingSaveContent = null;
+    private String pendingSaveFileName = null;
 
     @SuppressLint("SetJavaScriptEnabled")
 
@@ -201,6 +204,37 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK && data != null && data.getData() != null) {
                 handleProjectFileUri(data.getData());
             }
+        } else if (requestCode == REQUEST_SAVE_PROJECT) {
+            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+                handleSaveProjectUri(data.getData());
+            } else {
+                pendingSaveContent = null;
+                pendingSaveFileName = null;
+            }
+        }
+    }
+
+    private void handleSaveProjectUri(Uri uri) {
+        try {
+            if (pendingSaveContent == null) return;
+            try (OutputStream os = getContentResolver().openOutputStream(uri, "wt")) {
+                if (os != null) {
+                    os.write(pendingSaveContent.getBytes(StandardCharsets.UTF_8));
+                    os.flush();
+                }
+            }
+            final String savedName = pendingSaveFileName != null ? pendingSaveFileName : "projeto.rosi";
+            runOnUiThread(() -> {
+                Toast.makeText(this, "💾 Projeto '" + savedName + "' salvo com sucesso!", Toast.LENGTH_SHORT).show();
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Erro ao salvar via SAF: " + e.getMessage(), e);
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Falha ao salvar arquivo: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            });
+        } finally {
+            pendingSaveContent = null;
+            pendingSaveFileName = null;
         }
     }
 
@@ -294,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public String getVersion() {
-            return "0.3.1";
+            return "0.4.0";
         }
 
 
@@ -467,6 +501,24 @@ public class MainActivity extends AppCompatActivity {
                     activity.startActivityForResult(Intent.createChooser(intent, "Abrir Projeto RosiView (*.rosi)"), REQUEST_OPEN_PROJECT);
                 } catch (Exception e) {
                     Toast.makeText(activity, "Erro ao abrir seletor: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void launchSaveProjectPicker(final String fileName, final String jsonContent) {
+            activity.runOnUiThread(() -> {
+                try {
+                    activity.pendingSaveContent = jsonContent;
+                    activity.pendingSaveFileName = (fileName != null && !fileName.isEmpty()) ? fileName : "projeto.rosi";
+                    Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("application/json");
+                    intent.putExtra(Intent.EXTRA_TITLE, activity.pendingSaveFileName);
+                    activity.startActivityForResult(intent, REQUEST_SAVE_PROJECT);
+                } catch (Exception e) {
+                    Log.e(TAG, "Erro ao abrir seletor SAF de salvamento: " + e.getMessage());
+                    saveProjectFile(fileName, jsonContent);
                 }
             });
         }

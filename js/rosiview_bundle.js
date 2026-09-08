@@ -1131,30 +1131,7 @@
       this.setValue(this.value);
     }
 
-    setupDrag() {
-      let isDragging = false, startX, startY, origX, origY;
-      this.element.addEventListener('mousedown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.getAttribute('contenteditable') === 'true') return;
-        isDragging = true;
-        startX = e.clientX; startY = e.clientY; origX = this.x; origY = this.y;
-        this.element.style.zIndex = 100;
-        const onMouseMove = (ev) => {
-          if (!isDragging) return;
-          this.x = origX + (ev.clientX - startX);
-          this.y = origY + (ev.clientY - startY);
-          this.element.style.left = `${this.x}px`;
-          this.element.style.top = `${this.y}px`;
-        };
-        const onMouseUp = () => {
-          isDragging = false;
-          this.element.style.zIndex = 10;
-          window.removeEventListener('mousemove', onMouseMove);
-          window.removeEventListener('mouseup', onMouseUp);
-        };
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-      });
-    }
+    setupDrag() {}
   }
 
   class TankWidget {
@@ -1218,30 +1195,7 @@
       if (this.displayValEl) this.displayValEl.textContent = this.value.toFixed(2);
     }
 
-    setupDrag() {
-      let isDragging = false, startX, startY, origX, origY;
-      this.element.addEventListener('mousedown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.getAttribute('contenteditable') === 'true') return;
-        isDragging = true;
-        startX = e.clientX; startY = e.clientY; origX = this.x; origY = this.y;
-        this.element.style.zIndex = 100;
-        const onMouseMove = (ev) => {
-          if (!isDragging) return;
-          this.x = origX + (ev.clientX - startX);
-          this.y = origY + (ev.clientY - startY);
-          this.element.style.left = `${this.x}px`;
-          this.element.style.top = `${this.y}px`;
-        };
-        const onMouseUp = () => {
-          isDragging = false;
-          this.element.style.zIndex = 10;
-          window.removeEventListener('mousemove', onMouseMove);
-          window.removeEventListener('mouseup', onMouseUp);
-        };
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-      });
-    }
+    setupDrag() {}
   }
 
   class ChartWidget {
@@ -1407,30 +1361,7 @@
       });
     }
 
-    setupDrag() {
-      let isDragging = false, startX, startY, origX, origY;
-      this.element.addEventListener('mousedown', (e) => {
-        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'CANVAS' || e.target.getAttribute('contenteditable') === 'true') return;
-        isDragging = true;
-        startX = e.clientX; startY = e.clientY; origX = this.x; origY = this.y;
-        this.element.style.zIndex = 100;
-        const onMouseMove = (ev) => {
-          if (!isDragging) return;
-          this.x = origX + (ev.clientX - startX);
-          this.y = origY + (ev.clientY - startY);
-          this.element.style.left = `${this.x}px`;
-          this.element.style.top = `${this.y}px`;
-        };
-        const onMouseUp = () => {
-          isDragging = false;
-          this.element.style.zIndex = 10;
-          window.removeEventListener('mousemove', onMouseMove);
-          window.removeEventListener('mouseup', onMouseUp);
-        };
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-      });
-    }
+    setupDrag() {}
   }
 
   class KnobWidget {
@@ -1617,30 +1548,7 @@
       };
     }
 
-    setupDrag() {
-      let isDragging = false, startX, startY, origX, origY;
-      this.element.addEventListener('mousedown', (e) => {
-        if (e.target.closest('.knob-dial-wrapper') || e.target.tagName === 'INPUT' || e.target.getAttribute('contenteditable') === 'true') return;
-        isDragging = true;
-        startX = e.clientX; startY = e.clientY; origX = this.x; origY = this.y;
-        this.element.style.zIndex = 100;
-        const onMouseMove = (ev) => {
-          if (!isDragging) return;
-          this.x = origX + (ev.clientX - startX);
-          this.y = origY + (ev.clientY - startY);
-          this.element.style.left = `${this.x}px`;
-          this.element.style.top = `${this.y}px`;
-        };
-        const onMouseUp = () => {
-          isDragging = false;
-          this.element.style.zIndex = 10;
-          window.removeEventListener('mousemove', onMouseMove);
-          window.removeEventListener('mouseup', onMouseUp);
-        };
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-      });
-    }
+    setupDrag() {}
   }
 
   class GaugeWidget {
@@ -1807,30 +1715,7 @@
       };
     }
 
-    setupDrag() {
-      let isDragging = false, startX, startY, origX, origY;
-      this.element.addEventListener('mousedown', (e) => {
-        if (e.target.getAttribute('contenteditable') === 'true') return;
-        isDragging = true;
-        startX = e.clientX; startY = e.clientY; origX = this.x; origY = this.y;
-        this.element.style.zIndex = 100;
-        const onMouseMove = (ev) => {
-          if (!isDragging) return;
-          this.x = origX + (ev.clientX - startX);
-          this.y = origY + (ev.clientY - startY);
-          this.element.style.left = `${this.x}px`;
-          this.element.style.top = `${this.y}px`;
-        };
-        const onMouseUp = () => {
-          isDragging = false;
-          this.element.style.zIndex = 10;
-          window.removeEventListener('mousemove', onMouseMove);
-          window.removeEventListener('mouseup', onMouseUp);
-        };
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-      });
-    }
+    setupDrag() {}
   }
 
   class SliderWidget {
@@ -1889,30 +1774,7 @@
 
     getValue() { return this.value; }
 
-    setupDrag() {
-      let isDragging = false, startX, startY, origX, origY;
-      this.element.addEventListener('mousedown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.getAttribute('contenteditable') === 'true') return;
-        isDragging = true;
-        startX = e.clientX; startY = e.clientY; origX = this.x; origY = this.y;
-        this.element.style.zIndex = 100;
-        const onMouseMove = (ev) => {
-          if (!isDragging) return;
-          this.x = origX + (ev.clientX - startX);
-          this.y = origY + (ev.clientY - startY);
-          this.element.style.left = `${this.x}px`;
-          this.element.style.top = `${this.y}px`;
-        };
-        const onMouseUp = () => {
-          isDragging = false;
-          this.element.style.zIndex = 10;
-          window.removeEventListener('mousemove', onMouseMove);
-          window.removeEventListener('mouseup', onMouseUp);
-        };
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-      });
-    }
+    setupDrag() {}
   }
 
   class ToggleSwitchWidget {
@@ -1967,30 +1829,7 @@
 
     getState() { return this.state; }
 
-    setupDrag() {
-      let isDragging = false, startX, startY, origX, origY;
-      this.element.addEventListener('mousedown', (e) => {
-        if (e.target.closest('.toggle-switch') || e.target.getAttribute('contenteditable') === 'true') return;
-        isDragging = true;
-        startX = e.clientX; startY = e.clientY; origX = this.x; origY = this.y;
-        this.element.style.zIndex = 100;
-        const onMouseMove = (ev) => {
-          if (!isDragging) return;
-          this.x = origX + (ev.clientX - startX);
-          this.y = origY + (ev.clientY - startY);
-          this.element.style.left = `${this.x}px`;
-          this.element.style.top = `${this.y}px`;
-        };
-        const onMouseUp = () => {
-          isDragging = false;
-          this.element.style.zIndex = 10;
-          window.removeEventListener('mousemove', onMouseMove);
-          window.removeEventListener('mouseup', onMouseUp);
-        };
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-      });
-    }
+    setupDrag() {}
   }
 
   class LEDWidget {
@@ -2033,30 +1872,7 @@
       }
     }
 
-    setupDrag() {
-      let isDragging = false, startX, startY, origX, origY;
-      this.element.addEventListener('mousedown', (e) => {
-        if (e.target.getAttribute('contenteditable') === 'true') return;
-        isDragging = true;
-        startX = e.clientX; startY = e.clientY; origX = this.x; origY = this.y;
-        this.element.style.zIndex = 100;
-        const onMouseMove = (ev) => {
-          if (!isDragging) return;
-          this.x = origX + (ev.clientX - startX);
-          this.y = origY + (ev.clientY - startY);
-          this.element.style.left = `${this.x}px`;
-          this.element.style.top = `${this.y}px`;
-        };
-        const onMouseUp = () => {
-          isDragging = false;
-          this.element.style.zIndex = 10;
-          window.removeEventListener('mousemove', onMouseMove);
-          window.removeEventListener('mouseup', onMouseUp);
-        };
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-      });
-    }
+    setupDrag() {}
   }
 
   class NumericControlWidget {
@@ -2113,30 +1929,7 @@
 
     getValue() { return this.value; }
 
-    setupDrag() {
-      let isDragging = false, startX, startY, origX, origY;
-      this.element.addEventListener('mousedown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.getAttribute('contenteditable') === 'true') return;
-        isDragging = true;
-        startX = e.clientX; startY = e.clientY; origX = this.x; origY = this.y;
-        this.element.style.zIndex = 100;
-        const onMouseMove = (ev) => {
-          if (!isDragging) return;
-          this.x = origX + (ev.clientX - startX);
-          this.y = origY + (ev.clientY - startY);
-          this.element.style.left = `${this.x}px`;
-          this.element.style.top = `${this.y}px`;
-        };
-        const onMouseUp = () => {
-          isDragging = false;
-          this.element.style.zIndex = 10;
-          window.removeEventListener('mousemove', onMouseMove);
-          window.removeEventListener('mouseup', onMouseUp);
-        };
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-      });
-    }
+    setupDrag() {}
   }
 
 
@@ -2248,6 +2041,8 @@
       this.app = app;
       this.widgets = new Map();
       this.bindings = [];
+      this.selectedWidgetId = null;
+      this.contextMenuEl = null;
       this.init();
     }
 
@@ -2263,13 +2058,521 @@
         maxScale: 2.5
       });
       
-      // Right-click abre a paleta no local
+      // Clique no fundo vazio desseleciona elemento e fecha menu de contexto
+      this.container.addEventListener('click', (e) => {
+        if (!e.target.closest('.fp-widget') && !e.target.closest('.fp-context-menu') && !e.target.closest('.widget-config-modal')) {
+          this.selectWidget(null);
+          this.closeContextMenu();
+        }
+      });
+
+      // Right-click no fundo do canvas abre a paleta (se não for sobre um widget)
       this.container.addEventListener('contextmenu', (e) => {
+        if (e.target.closest('.fp-widget')) return;
         e.preventDefault();
+        this.closeContextMenu();
         if (this.app && this.app.palette) {
           this.app.palette.openAt(e.clientX, e.clientY);
         }
       });
+
+      // Tecla Delete / Backspace para excluir o elemento selecionado no Painel Frontal
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+          if (this.selectedWidgetId) {
+            e.preventDefault();
+            this.deleteWidget(this.selectedWidgetId);
+          }
+        }
+      });
+    }
+
+    getCurrentScale() {
+      if (!this.zoomWrapper) return 1;
+      const rect = this.zoomWrapper.getBoundingClientRect();
+      const scale = rect.width / 3000;
+      return (scale > 0.05 && scale < 50) ? scale : 1;
+    }
+
+    selectWidget(widgetId) {
+      this.selectedWidgetId = widgetId || null;
+
+      for (const [id, w] of this.widgets) {
+        if (w && w.element) {
+          if (this.selectedWidgetId && id === this.selectedWidgetId) {
+            w.element.classList.add('selected');
+          } else {
+            w.element.classList.remove('selected');
+          }
+        }
+      }
+    }
+
+    closeContextMenu() {
+      if (this.contextMenuEl && this.contextMenuEl.parentNode) {
+        this.contextMenuEl.parentNode.removeChild(this.contextMenuEl);
+      }
+      this.contextMenuEl = null;
+    }
+
+    openContextMenu(widget, clientX, clientY) {
+      this.closeContextMenu();
+      this.selectWidget(widget.id);
+
+      const menu = document.createElement('div');
+      menu.className = 'fp-context-menu';
+      menu.innerHTML = `
+        <div class="fp-context-item" data-action="duplicate">
+          <span class="fp-context-icon">📋</span>
+          <span>Duplicar</span>
+        </div>
+        <div class="fp-context-item" data-action="reset">
+          <span class="fp-context-icon">🔄</span>
+          <span>Resetar</span>
+        </div>
+        <div class="fp-context-divider"></div>
+        <div class="fp-context-item" data-action="config">
+          <span class="fp-context-icon">⚙️</span>
+          <span>Configurações</span>
+        </div>
+        <div class="fp-context-divider"></div>
+        <div class="fp-context-item item-delete" data-action="delete">
+          <span class="fp-context-icon">🗑️</span>
+          <span>Deletar</span>
+        </div>
+      `;
+
+      document.body.appendChild(menu);
+      this.contextMenuEl = menu;
+
+      // Posicionamento com proteção contra bordas da janela
+      const rect = menu.getBoundingClientRect();
+      let posX = clientX;
+      let posY = clientY;
+      if (posX + rect.width > window.innerWidth - 10) {
+        posX = window.innerWidth - rect.width - 10;
+      }
+      if (posY + rect.height > window.innerHeight - 10) {
+        posY = window.innerHeight - rect.height - 10;
+      }
+      menu.style.left = `${Math.max(10, posX)}px`;
+      menu.style.top = `${Math.max(10, posY)}px`;
+
+      menu.querySelector('[data-action="duplicate"]').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        this.closeContextMenu();
+        this.duplicateWidget(widget.id);
+      });
+
+      menu.querySelector('[data-action="reset"]').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        this.closeContextMenu();
+        this.resetWidget(widget.id);
+      });
+
+      menu.querySelector('[data-action="config"]').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        this.closeContextMenu();
+        this.openWidgetConfig(widget);
+      });
+
+      menu.querySelector('[data-action="delete"]').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        this.closeContextMenu();
+        this.deleteWidget(widget.id);
+      });
+
+      const onDismiss = (ev) => {
+        if (!ev.target.closest('.fp-context-menu')) {
+          this.closeContextMenu();
+          document.removeEventListener('click', onDismiss);
+          document.removeEventListener('contextmenu', onDismiss);
+          document.removeEventListener('touchstart', onDismiss);
+        }
+      };
+      setTimeout(() => {
+        document.addEventListener('click', onDismiss);
+        document.addEventListener('contextmenu', onDismiss);
+        document.addEventListener('touchstart', onDismiss);
+      }, 50);
+    }
+
+    openWidgetConfig(widget) {
+      const existing = document.querySelector('.widget-config-modal');
+      if (existing) existing.remove();
+
+      const minVal = widget.min !== undefined ? widget.min : 0;
+      const maxVal = widget.max !== undefined ? widget.max : 100;
+      const stepVal = widget.step !== undefined ? widget.step : 1;
+      const unitVal = widget.unit || '';
+      const titleVal = widget.title || 'Instrumento';
+
+      const modal = document.createElement('div');
+      modal.className = 'widget-config-modal';
+      modal.innerHTML = `
+        <div class="widget-config-box">
+          <div class="widget-config-header">
+            <div class="widget-config-title">
+              <span style="font-size: 15px;">⚙️</span>
+              <span>Configurar Instrumento</span>
+            </div>
+            <button class="palette-close-btn" id="cfg_close" title="Fechar">✕</button>
+          </div>
+          <div class="widget-config-body">
+            <div class="config-field">
+              <label for="cfg_title">Rótulo / Título:</label>
+              <input type="text" id="cfg_title" value="${titleVal}" placeholder="Nome do instrumento">
+            </div>
+            <div class="config-grid-2">
+              <div class="config-field">
+                <label for="cfg_min">Escala Mínima:</label>
+                <input type="number" id="cfg_min" value="${minVal}" step="any">
+              </div>
+              <div class="config-field">
+                <label for="cfg_max">Escala Máxima:</label>
+                <input type="number" id="cfg_max" value="${maxVal}" step="any">
+              </div>
+            </div>
+            <div class="config-grid-2">
+              <div class="config-field">
+                <label for="cfg_step">Passo (Step):</label>
+                <input type="number" id="cfg_step" value="${stepVal}" step="any">
+              </div>
+              <div class="config-field">
+                <label for="cfg_unit">Unidade (ex: V, RPM, °C):</label>
+                <input type="text" id="cfg_unit" value="${unitVal}" placeholder="ex: V, RPM, mm">
+              </div>
+            </div>
+          </div>
+          <div class="widget-config-footer">
+            <button class="config-btn config-btn-cancel" id="cfg_cancel">Cancelar</button>
+            <button class="config-btn config-btn-save" id="cfg_save">Salvar</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      const close = () => modal.remove();
+      modal.querySelector('#cfg_close').onclick = close;
+      modal.querySelector('#cfg_cancel').onclick = close;
+
+      modal.querySelector('#cfg_save').onclick = () => {
+        const newTitle = modal.querySelector('#cfg_title').value.trim() || 'Instrumento';
+        const newMin = Number(modal.querySelector('#cfg_min').value) || 0;
+        const newMax = Number(modal.querySelector('#cfg_max').value) || 100;
+        const newStep = Number(modal.querySelector('#cfg_step').value) || 1;
+        const newUnit = modal.querySelector('#cfg_unit').value.trim();
+
+        widget.title = newTitle;
+        widget.min = newMin;
+        widget.max = newMax;
+        widget.step = newStep;
+        widget.unit = newUnit;
+
+        this.applyWidgetConfig(widget);
+        close();
+        if (this.app && typeof this.app.showToast === 'function') {
+          this.app.showToast(`Instrumento '${newTitle}' atualizado!`);
+        }
+      };
+    }
+
+    applyWidgetConfig(widget) {
+      if (!widget || !widget.element) return;
+
+      const header = widget.element.querySelector('.fp-widget-header, .widget-title, .chart-title, .switch-title, .led-title, .num-title, h4');
+      if (header) {
+        header.textContent = widget.title;
+      }
+
+      if (typeof widget.applyConfig === 'function') {
+        widget.applyConfig({
+          title: widget.title,
+          min: widget.min,
+          max: widget.max,
+          step: widget.step,
+          unit: widget.unit
+        });
+      }
+
+      const unitEls = widget.element.querySelectorAll('.widget-unit, .tank-scale-unit, .chart-unit, .num-unit');
+      unitEls.forEach(u => u.textContent = widget.unit ? `[${widget.unit}]` : '');
+
+      const sliderInput = widget.element.querySelector('input[type="range"]');
+      if (sliderInput) {
+        if (widget.min !== undefined) sliderInput.min = widget.min;
+        if (widget.max !== undefined) sliderInput.max = widget.max;
+        if (widget.step !== undefined) sliderInput.step = widget.step;
+        const minSpan = widget.element.querySelector('.slider-min');
+        const maxSpan = widget.element.querySelector('.slider-max');
+        if (minSpan) minSpan.textContent = widget.min;
+        if (maxSpan) maxSpan.textContent = widget.max;
+      }
+
+      const numInput = widget.element.querySelector('input[type="number"]');
+      if (numInput) {
+        if (widget.min !== undefined) numInput.min = widget.min;
+        if (widget.max !== undefined) numInput.max = widget.max;
+        if (widget.step !== undefined) numInput.step = widget.step;
+      }
+
+      const tankScale = widget.element.querySelector('.tank-scale');
+      if (tankScale) {
+        const spans = tankScale.querySelectorAll('span');
+        if (spans.length >= 3) {
+          spans[0].textContent = widget.max;
+          spans[1].textContent = ((widget.min + widget.max) / 2).toFixed(0);
+          spans[2].textContent = widget.min;
+        }
+        if (typeof widget.setValue === 'function' && widget.value !== undefined) {
+          widget.setValue(widget.value);
+        }
+      }
+
+      const thermoScale = widget.element.querySelector('.thermometer-scale');
+      if (thermoScale) {
+        const spans = thermoScale.querySelectorAll('span');
+        if (spans.length >= 3) {
+          spans[0].textContent = `${widget.max}°`;
+          spans[1].textContent = `${((widget.min + widget.max) / 2).toFixed(0)}°`;
+          spans[2].textContent = `${widget.min}°`;
+        }
+        if (typeof widget.setValue === 'function' && widget.value !== undefined) {
+          widget.setValue(widget.value);
+        }
+      }
+
+      if (typeof widget.drawGauge === 'function') {
+        widget.drawGauge();
+      } else if (typeof widget.setValue === 'function' && widget.value !== undefined) {
+        widget.setValue(widget.value);
+      }
+
+      if (typeof widget.updateTicks === 'function') {
+        widget.updateTicks();
+      }
+
+      if (this.app && this.app.graph) {
+        const binding = this.bindings.find(b => b.widgetId === widget.id);
+        if (binding) {
+          const node = this.app.graph.getNode(binding.nodeId);
+          if (node) {
+            node.title = widget.title;
+            const nodeTitleEl = document.querySelector(`#node_${node.id} .node-title`);
+            if (nodeTitleEl) nodeTitleEl.textContent = widget.title;
+          }
+        }
+      }
+    }
+
+    deleteWidget(widgetId) {
+      if (!widgetId) return;
+      const widget = this.widgets.get(widgetId);
+      const title = widget ? widget.title : 'Instrumento';
+
+      const bindings = this.bindings.filter(b => b.widgetId === widgetId);
+      if (this.app && this.app.graph) {
+        for (const b of bindings) {
+          this.app.graph.removeNode(b.nodeId);
+        }
+        if (this.app.editor) {
+          this.app.editor.render();
+        }
+      }
+
+      this.removeWidget(widgetId);
+      if (this.selectedWidgetId === widgetId) {
+        this.selectWidget(null);
+      }
+      if (this.app && typeof this.app.showToast === 'function') {
+        this.app.showToast(`Instrumento '${title}' excluído.`);
+      }
+    }
+
+    resetWidget(widgetId) {
+      const widget = this.widgets.get(widgetId);
+      if (!widget) return;
+
+      const defaultVal = widget.min !== undefined ? widget.min : 0;
+      if (typeof widget.setState === 'function') {
+        widget.setState(false);
+      } else if (typeof widget.setValue === 'function') {
+        widget.setValue(defaultVal);
+      } else if (widget.data && Array.isArray(widget.data)) {
+        widget.data = [];
+        if (typeof widget.redraw === 'function') widget.redraw();
+      } else {
+        widget.value = defaultVal;
+      }
+
+      this.syncControlsToDiagram(this.app ? this.app.graph : null);
+      if (this.app && typeof this.app.showToast === 'function') {
+        this.app.showToast(`Instrumento '${widget.title || ''}' resetado para valores padrão.`);
+      }
+    }
+
+    getWidgetKind(widget) {
+      if (widget.kind) return widget.kind;
+      const name = widget.constructor ? widget.constructor.name : '';
+      if (name === 'KnobWidget') return 'knob';
+      if (name === 'SliderWidget') return 'slider';
+      if (name === 'GaugeWidget') return 'gauge';
+      if (name === 'TankWidget') return 'tank';
+      if (name === 'ThermometerWidget') return 'thermometer';
+      if (name === 'ChartWidget') return 'chart';
+      if (name === 'ToggleSwitchWidget') return 'switch';
+      if (name === 'LEDWidget') return 'led';
+      if (name === 'NumericControlWidget') return widget.isIndicator ? 'num_ind' : 'num_ctrl';
+      return 'knob';
+    }
+
+    duplicateWidget(widgetId) {
+      const orig = this.widgets.get(widgetId);
+      if (!orig) return;
+
+      if (this.app && typeof this.app.duplicateFrontPanelWidget === 'function') {
+        this.app.duplicateFrontPanelWidget(orig);
+      }
+    }
+
+    attachWidgetInteractions(widget) {
+      const el = widget.element;
+      if (!el) return;
+
+      // 1. Clique seleciona o elemento (desselecionando qualquer outro anterior)
+      el.addEventListener('click', (e) => {
+        if (e.target.closest('.fp-context-menu') || e.target.closest('.widget-config-modal')) return;
+        this.selectWidget(widget.id);
+      });
+
+      // 2. Duplo clique abre Configurações com os 5 campos universais
+      el.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openWidgetConfig(widget);
+      });
+
+      // 3. Botão direito (Desktop) abre Menu de Contexto
+      el.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openContextMenu(widget, e.clientX, e.clientY);
+      });
+
+      // 4. Arraste com Mouse no Desktop (com compensação de escala de Zoom)
+      el.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        if (e.target.closest('.knob-dial-wrapper, input, button, select, textarea, [contenteditable="true"], .fp-context-menu, .widget-config-modal')) {
+          this.selectWidget(widget.id);
+          return;
+        }
+
+        this.selectWidget(widget.id);
+        this.closeContextMenu();
+
+        const scale = this.getCurrentScale();
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const origX = widget.x || parseInt(el.style.left, 10) || 40;
+        const origY = widget.y || parseInt(el.style.top, 10) || 40;
+        let isDragging = false;
+
+        const onMouseMove = (ev) => {
+          const dx = ev.clientX - startX;
+          const dy = ev.clientY - startY;
+          if (!isDragging && Math.hypot(dx, dy) > 5) {
+            isDragging = true;
+            el.style.zIndex = '100';
+          }
+          if (isDragging) {
+            widget.x = Math.max(10, origX + dx / scale);
+            widget.y = Math.max(10, origY + dy / scale);
+            el.style.left = `${widget.x}px`;
+            el.style.top = `${widget.y}px`;
+          }
+        };
+
+        const onMouseUp = () => {
+          if (isDragging) {
+            el.style.zIndex = '10';
+          }
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+        };
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+      });
+
+      // 5. Arraste Touch & Pressionar e Segurar (Long-Press 500ms) no Android
+      let longPressTimer = null;
+      el.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        if (e.target.closest('.widget-config-modal') || e.target.closest('.fp-context-menu')) return;
+
+        const touch = e.touches[0];
+        const startTouchX = touch.clientX;
+        const startTouchY = touch.clientY;
+        const origX = widget.x || parseInt(el.style.left, 10) || 40;
+        const origY = widget.y || parseInt(el.style.top, 10) || 40;
+        const scale = this.getCurrentScale();
+        let isDragging = false;
+        let longPressFired = false;
+
+        // Menu de Contexto ao manter pressionado (500ms)
+        longPressTimer = setTimeout(() => {
+          if (!isDragging) {
+            longPressFired = true;
+            this.openContextMenu(widget, startTouchX, startTouchY);
+            if (navigator.vibrate) {
+              try { navigator.vibrate(40); } catch (vErr) {}
+            }
+          }
+        }, 500);
+
+        const onTouchMove = (ev) => {
+          if (ev.touches.length !== 1) return;
+          const t = ev.touches[0];
+          const dx = t.clientX - startTouchX;
+          const dy = t.clientY - startTouchY;
+
+          if (Math.hypot(dx, dy) > 8) {
+            clearTimeout(longPressTimer);
+            if (longPressFired) return;
+
+            if (e.target.closest('.knob-dial-wrapper, input, button, select, textarea')) {
+              return;
+            }
+
+            if (!isDragging) {
+              isDragging = true;
+              this.selectWidget(widget.id);
+              el.style.zIndex = '100';
+            }
+            ev.preventDefault();
+            widget.x = Math.max(10, origX + dx / scale);
+            widget.y = Math.max(10, origY + dy / scale);
+            el.style.left = `${widget.x}px`;
+            el.style.top = `${widget.y}px`;
+          }
+        };
+
+        const onTouchEnd = () => {
+          clearTimeout(longPressTimer);
+          if (isDragging) {
+            el.style.zIndex = '10';
+          } else if (!longPressFired) {
+            this.selectWidget(widget.id);
+          }
+          window.removeEventListener('touchmove', onTouchMove);
+          window.removeEventListener('touchend', onTouchEnd);
+        };
+
+        window.addEventListener('touchmove', onTouchMove, { passive: false });
+        window.addEventListener('touchend', onTouchEnd);
+      }, { passive: true });
     }
 
     addWidget(widget) {
@@ -2278,28 +2581,7 @@
         this.container.appendChild(this.zoomWrapper);
       }
       (this.zoomWrapper || this.container).appendChild(widget.element);
-
-      const header = widget.element.querySelector('.fp-widget-header');
-      if (header) {
-        header.addEventListener('input', () => {
-          widget.title = header.textContent.trim();
-          if (this.app && this.app.graph) {
-            const node = this.app.graph.getNode(`node_${widget.id}`);
-            if (node) {
-              node.title = widget.title;
-              const nodeTitleEl = document.querySelector(`#node_${node.id} .node-title`);
-              if (nodeTitleEl) nodeTitleEl.textContent = widget.title;
-            }
-          }
-        });
-        header.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            header.blur();
-          }
-        });
-      }
-
+      this.attachWidgetInteractions(widget);
       return widget;
     }
 
@@ -2468,9 +2750,10 @@
       
       canvas.addEventListener('mousemove', (e) => {
         if (this.pendingWire && this.previewPathEl) {
-          const rect = canvas.getBoundingClientRect();
-          const endX = e.clientX - rect.left + canvas.scrollLeft;
-          const endY = e.clientY - rect.top + canvas.scrollTop;
+          const zoomRect = (this.zoomWrapper || canvas).getBoundingClientRect();
+          const scale = this.getCurrentScale();
+          const endX = (e.clientX - zoomRect.left) / scale;
+          const endY = (e.clientY - zoomRect.top) / scale;
           const pathD = WireRouter.getCubicBezierPath(this.pendingWire.startX, this.pendingWire.startY, endX, endY);
           this.previewPathEl.setAttribute('d', pathD);
         }
@@ -2733,12 +3016,13 @@
       });
 
       el.addEventListener('mousedown', (e) => {
-        if (e.target.closest('.terminal-dot') || e.target.tagName === 'TEXTAREA') return;
+        if (e.target.closest('.terminal-dot') || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
         this.selectNode(node.id);
         const startX = e.clientX, startY = e.clientY, origX = node.x, origY = node.y;
+        const scale = this.getCurrentScale();
         const onMouseMove = (ev) => {
-          node.x = origX + (ev.clientX - startX);
-          node.y = origY + (ev.clientY - startY);
+          node.x = origX + (ev.clientX - startX) / scale;
+          node.y = origY + (ev.clientY - startY) / scale;
           el.style.left = `${node.x}px`;
           el.style.top = `${node.y}px`;
           this.renderWires();
@@ -2750,15 +3034,64 @@
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mouseup', onMouseUp);
       });
+
+      // Touch drag para dispositivos móveis (1 dedo com limiar de toque)
+      el.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        if (e.target.closest('.terminal-dot') || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+
+        const touch = e.touches[0];
+        const startTouchX = touch.clientX;
+        const startTouchY = touch.clientY;
+        const origX = node.x;
+        const origY = node.y;
+        const scale = this.getCurrentScale();
+        let isDragging = false;
+
+        const onTouchMove = (ev) => {
+          if (ev.touches.length !== 1) return;
+          const t = ev.touches[0];
+          const dx = t.clientX - startTouchX;
+          const dy = t.clientY - startTouchY;
+          if (!isDragging && Math.hypot(dx, dy) > 8) {
+            isDragging = true;
+            this.selectNode(node.id);
+          }
+          if (isDragging) {
+            ev.preventDefault();
+            node.x = origX + dx / scale;
+            node.y = origY + dy / scale;
+            el.style.left = `${node.x}px`;
+            el.style.top = `${node.y}px`;
+            this.renderWires();
+          }
+        };
+
+        const onTouchEnd = () => {
+          window.removeEventListener('touchmove', onTouchMove);
+          window.removeEventListener('touchend', onTouchEnd);
+        };
+
+        window.addEventListener('touchmove', onTouchMove, { passive: false });
+        window.addEventListener('touchend', onTouchEnd);
+      }, { passive: true });
+    }
+
+    getCurrentScale() {
+      if (!this.zoomWrapper) return 1;
+      const rect = this.zoomWrapper.getBoundingClientRect();
+      const scale = rect.width / 3000;
+      return (scale > 0.05 && scale < 50) ? scale : 1;
     }
 
     startPendingWire(fromNodeId, fromTerminalId, dotEl) {
       const canvas = this.container.querySelector('#diagram-canvas');
+      const zoomRect = (this.zoomWrapper || canvas).getBoundingClientRect();
+      const scale = this.getCurrentScale();
       const dotRect = dotEl.getBoundingClientRect();
-      const canvasRect = canvas.getBoundingClientRect();
 
-      const startX = dotRect.left - canvasRect.left + dotRect.width / 2 + canvas.scrollLeft;
-      const startY = dotRect.top - canvasRect.top + dotRect.height / 2 + canvas.scrollTop;
+      const startX = (dotRect.left - zoomRect.left + dotRect.width / 2) / scale;
+      const startY = (dotRect.top - zoomRect.top + dotRect.height / 2) / scale;
 
       const fromNode = this.graph.getNode(fromNodeId);
       const term = fromNode ? fromNode.outputs.get(fromTerminalId) : null;
@@ -2797,7 +3130,8 @@
       this.svgLayer.innerHTML = '';
       const canvas = this.container.querySelector('#diagram-canvas');
       if (!canvas) return;
-      const canvasRect = canvas.getBoundingClientRect();
+      const zoomRect = (this.zoomWrapper || canvas).getBoundingClientRect();
+      const scale = this.getCurrentScale();
 
       for (const [, conn] of this.graph.connections) {
         const fromNodeEl = this.container.querySelector(`#node_${conn.fromNodeId}`);
@@ -2811,10 +3145,10 @@
             const fromRect = fromDot.getBoundingClientRect();
             const toRect = toDot.getBoundingClientRect();
 
-            const x1 = fromRect.left - canvasRect.left + fromRect.width / 2 + canvas.scrollLeft;
-            const y1 = fromRect.top - canvasRect.top + fromRect.height / 2 + canvas.scrollTop;
-            const x2 = toRect.left - canvasRect.left + toRect.width / 2 + canvas.scrollLeft;
-            const y2 = toRect.top - canvasRect.top + toRect.height / 2 + canvas.scrollTop;
+            const x1 = (fromRect.left - zoomRect.left + fromRect.width / 2) / scale;
+            const y1 = (fromRect.top - zoomRect.top + fromRect.height / 2) / scale;
+            const x2 = (toRect.left - zoomRect.left + toRect.width / 2) / scale;
+            const y2 = (toRect.top - zoomRect.top + toRect.height / 2) / scale;
 
             const pathD = WireRouter.getCubicBezierPath(x1, y1, x2, y2);
             const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -3342,7 +3676,7 @@
       
       const myVer = (window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function') 
         ? ('v' + window.AndroidBridge.getVersion()) 
-        : (isMobile ? 'v0.3.1' : 'v0.3.0');
+        : 'v0.4.0';
       this.currentVersion = myVer;
 
       const badge = splash.querySelector('.mobile-splash-badge');
@@ -3384,7 +3718,7 @@
           }
         })
         .catch(() => {
-          const myVer = 'v0.3.0';
+          const myVer = 'v0.4.0';
           setStatus(`Modo offline (${myVer}) • Abrindo...`, '#38bdf8');
         });
 
@@ -3404,7 +3738,7 @@
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.AndroidBridge !== undefined;
       this.currentVersion = (isMobile && window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function')
         ? ('v' + window.AndroidBridge.getVersion())
-        : (isMobile ? 'v0.3.1' : 'v0.3.0');
+        : 'v0.4.0';
       const versionEl = document.getElementById('status-app-version');
       if (versionEl) {
         versionEl.textContent = isMobile ? `RosiView Android ${this.currentVersion} — IFES` : `RosiView ${this.currentVersion} — IFES`;
@@ -3863,6 +4197,94 @@
       this.palette.toggle(false);
     }
 
+    duplicateFrontPanelWidget(origWidget) {
+      const kind = this.frontPanel.getWidgetKind(origWidget);
+      const id = `widget_${Date.now()}`;
+      const fpX = (origWidget.x || parseInt(origWidget.element.style.left, 10) || 50) + 30;
+      const fpY = (origWidget.y || parseInt(origWidget.element.style.top, 10) || 50) + 30;
+      const diagX = 80 + (this.graph.nodes.size % 5) * 160;
+      const diagY = 80 + Math.floor(this.graph.nodes.size / 5) * 120;
+
+      const origBinding = this.frontPanel.bindings.find(b => b.widgetId === origWidget.id);
+      const isInput = origBinding ? origBinding.isInputToDiagram : false;
+
+      let widget = null;
+      let node = null;
+
+      const config = {
+        id,
+        title: origWidget.title ? `${origWidget.title} (Cópia)` : 'Instrumento',
+        min: origWidget.min !== undefined ? origWidget.min : 0,
+        max: origWidget.max !== undefined ? origWidget.max : 100,
+        step: origWidget.step !== undefined ? origWidget.step : 1,
+        unit: origWidget.unit || '',
+        initialValue: origWidget.value !== undefined ? origWidget.value : (origWidget.state !== undefined ? origWidget.state : 0),
+        isIndicator: origWidget.isIndicator,
+        color: origWidget.color || 'green',
+        x: fpX,
+        y: fpY
+      };
+
+      switch (kind) {
+        case 'knob':
+          widget = new KnobWidget(config);
+          node = new FPControlTerminalNode({ id: `node_${id}`, title: config.title, linkedWidgetId: id, dataType: DataTypes.DOUBLE, initialValue: config.initialValue, x: diagX, y: diagY });
+          break;
+        case 'slider':
+          widget = new SliderWidget(config);
+          node = new FPControlTerminalNode({ id: `node_${id}`, title: config.title, linkedWidgetId: id, dataType: DataTypes.DOUBLE, initialValue: config.initialValue, x: diagX, y: diagY });
+          break;
+        case 'num_ctrl':
+          widget = new NumericControlWidget({ ...config, isIndicator: false });
+          node = new FPControlTerminalNode({ id: `node_${id}`, title: config.title, linkedWidgetId: id, dataType: DataTypes.DOUBLE, initialValue: config.initialValue, x: diagX, y: diagY });
+          break;
+        case 'switch':
+          widget = new ToggleSwitchWidget({ ...config, initialState: !!config.initialValue });
+          node = new FPControlTerminalNode({ id: `node_${id}`, title: config.title, linkedWidgetId: id, dataType: DataTypes.BOOLEAN, initialValue: !!config.initialValue, x: diagX, y: diagY });
+          break;
+        case 'gauge':
+          widget = new GaugeWidget(config);
+          node = new FPIndicatorTerminalNode({ id: `node_${id}`, title: config.title, linkedWidgetId: id, dataType: DataTypes.DOUBLE, x: diagX, y: diagY });
+          break;
+        case 'tank':
+          widget = new TankWidget(config);
+          node = new FPIndicatorTerminalNode({ id: `node_${id}`, title: config.title, linkedWidgetId: id, dataType: DataTypes.DOUBLE, x: diagX, y: diagY });
+          break;
+        case 'thermometer':
+          widget = new ThermometerWidget(config);
+          node = new FPIndicatorTerminalNode({ id: `node_${id}`, title: config.title, linkedWidgetId: id, dataType: DataTypes.DOUBLE, x: diagX, y: diagY });
+          break;
+        case 'chart':
+          widget = new ChartWidget(config);
+          node = new FPIndicatorTerminalNode({ id: `node_${id}`, title: config.title, linkedWidgetId: id, dataType: DataTypes.ANY, x: diagX, y: diagY });
+          break;
+        case 'led':
+          widget = new LEDWidget({ ...config, initialState: !!config.initialValue });
+          node = new FPIndicatorTerminalNode({ id: `node_${id}`, title: config.title, linkedWidgetId: id, dataType: DataTypes.BOOLEAN, x: diagX, y: diagY });
+          break;
+        case 'num_ind':
+          widget = new NumericControlWidget({ ...config, isIndicator: true });
+          node = new FPIndicatorTerminalNode({ id: `node_${id}`, title: config.title, linkedWidgetId: id, dataType: DataTypes.DOUBLE, x: diagX, y: diagY });
+          break;
+        default:
+          widget = new KnobWidget(config);
+          node = new FPControlTerminalNode({ id: `node_${id}`, title: config.title, linkedWidgetId: id, dataType: DataTypes.DOUBLE, initialValue: 0, x: diagX, y: diagY });
+          break;
+      }
+
+      if (widget) {
+        widget.kind = kind;
+        this.frontPanel.addWidget(widget);
+        this.frontPanel.bindWidgetToNode({ widgetId: id, nodeId: node.id, terminalName: 'value', isInputToDiagram: isInput });
+      }
+      if (node) {
+        this.graph.addNode(node);
+        this.editor.render();
+      }
+      this.frontPanel.selectWidget(id);
+      this.showToast(`Instrumento '${config.title}' duplicado!`);
+    }
+
     addFunctionNode(kind) {
       const diagX = 80 + (this.graph.nodes.size % 5) * 140;
       const diagY = 80 + Math.floor(this.graph.nodes.size / 5) * 120;
@@ -3935,6 +4357,19 @@
         frontPanel: this.frontPanel.toJSON()
       };
       const jsonStr = JSON.stringify(data, null, 2);
+
+      // 0. Suporte nativo para Android (SAF - Storage Access Framework)
+      if (window.AndroidBridge) {
+        const defaultName = (this.currentProjectName || 'meu_projeto.rosi').replace(/\.(rosi|json)$/i, '') + '.rosi';
+        if (typeof window.AndroidBridge.launchSaveProjectPicker === 'function') {
+          window.AndroidBridge.launchSaveProjectPicker(defaultName, jsonStr);
+          return;
+        }
+        if (typeof window.AndroidBridge.saveProjectFile === 'function') {
+          window.AndroidBridge.saveProjectFile(defaultName, jsonStr);
+          return;
+        }
+      }
 
       // 1. Tenta a API nativa do Windows showSaveFilePicker (Salvar Como)
       if (window.isSecureContext && typeof window.showSaveFilePicker === 'function') {
@@ -4022,8 +4457,11 @@
       document.body.appendChild(modal);
 
       const input = modal.querySelector('#save_filename_input');
-      input.focus();
-      input.select();
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.AndroidBridge !== undefined;
+      if (!isMobile) {
+        input.focus();
+        input.select();
+      }
 
       const close = () => modal.remove();
       modal.querySelector('#save_close_btn').onclick = close;
@@ -4038,11 +4476,18 @@
         this.currentProjectName = rawName;
 
         // Suporte nativo para ambiente Android
-        if (window.AndroidBridge && typeof window.AndroidBridge.saveProjectFile === 'function') {
-          window.AndroidBridge.saveProjectFile(rawName, jsonStr);
-          this.showToast(`Projeto '${rawName}' salvo com sucesso!`);
-          close();
-          return;
+        if (window.AndroidBridge) {
+          if (typeof window.AndroidBridge.launchSaveProjectPicker === 'function') {
+            window.AndroidBridge.launchSaveProjectPicker(rawName, jsonStr);
+            close();
+            return;
+          }
+          if (typeof window.AndroidBridge.saveProjectFile === 'function') {
+            window.AndroidBridge.saveProjectFile(rawName, jsonStr);
+            this.showToast(`Projeto '${rawName}' salvo com sucesso!`);
+            close();
+            return;
+          }
         }
 
         const blob = new Blob([jsonStr], { type: 'application/json' });

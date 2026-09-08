@@ -89,7 +89,9 @@ class RosiViewApp {
   setupUpdateChecker() {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.AndroidBridge !== undefined;
     this.isAndroid = isMobile;
-    this.currentVersion = 'v0.3.0';
+    this.currentVersion = (isMobile && window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function')
+      ? ('v' + window.AndroidBridge.getVersion())
+      : 'v0.4.0';
     const versionEl = document.getElementById('status-app-version');
     if (versionEl) {
       versionEl.textContent = isMobile ? `RosiView Android ${this.currentVersion} — IFES` : `RosiView ${this.currentVersion} — IFES`;
@@ -519,6 +521,81 @@ class RosiViewApp {
     }
   }
 
+  duplicateFrontPanelWidget(origWidget) {
+    const kind = this.frontPanel.getWidgetKind(origWidget);
+    const id = `widget_${Date.now()}`;
+    const fpX = (origWidget.x || parseInt(origWidget.element.style.left, 10) || 50) + 30;
+    const fpY = (origWidget.y || parseInt(origWidget.element.style.top, 10) || 50) + 30;
+    const diagX = 80 + (this.graph.nodes.size % 5) * 160;
+    const diagY = 80 + Math.floor(this.graph.nodes.size / 5) * 120;
+
+    const origBinding = this.frontPanel.bindings.find(b => b.widgetId === origWidget.id);
+    const isInput = origBinding ? origBinding.isInputToDiagram : false;
+
+    let widget = null;
+    let node = null;
+
+    const config = {
+      id,
+      title: origWidget.title ? `${origWidget.title} (Cópia)` : 'Instrumento',
+      min: origWidget.min !== undefined ? origWidget.min : 0,
+      max: origWidget.max !== undefined ? origWidget.max : 100,
+      step: origWidget.step !== undefined ? origWidget.step : 1,
+      unit: origWidget.unit || '',
+      initialValue: origWidget.value !== undefined ? origWidget.value : (origWidget.state !== undefined ? origWidget.state : 0),
+      isIndicator: origWidget.isIndicator,
+      color: origWidget.color || 'green',
+      x: fpX,
+      y: fpY
+    };
+
+    switch (kind) {
+      case 'knob':
+        widget = new KnobWidget(config);
+        break;
+      case 'slider':
+        widget = new SliderWidget(config);
+        break;
+      case 'num_ctrl':
+        widget = new NumericControlWidget({ ...config, isIndicator: false });
+        break;
+      case 'switch':
+        widget = new ToggleSwitchWidget({ ...config, initialState: !!config.initialValue });
+        break;
+      case 'gauge':
+        widget = new GaugeWidget(config);
+        break;
+      case 'tank':
+        widget = new TankWidget(config);
+        break;
+      case 'thermometer':
+        widget = new ThermometerWidget(config);
+        break;
+      case 'chart':
+        widget = new ChartWidget(config);
+        break;
+      case 'led':
+        widget = new LEDWidget({ ...config, initialState: !!config.initialValue });
+        break;
+      case 'num_ind':
+        widget = new NumericControlWidget({ ...config, isIndicator: true });
+        break;
+      default:
+        widget = new KnobWidget(config);
+        break;
+    }
+
+    if (widget) {
+      widget.kind = kind;
+      this.frontPanel.addWidget(widget);
+      if (origBinding) {
+        this.frontPanel.bindWidgetToNode({ widgetId: id, nodeId: `node_${id}`, terminalName: origBinding.terminalName, isInputToDiagram: isInput });
+      }
+    }
+    this.frontPanel.selectWidget(id);
+    this.showToast(`Instrumento '${config.title}' duplicado!`);
+  }
+
   clearAll() {
     this.runtime.stop();
     this.graph.clear();
@@ -551,6 +628,19 @@ class RosiViewApp {
       frontPanel: this.frontPanel.toJSON()
     };
     const jsonStr = JSON.stringify(data, null, 2);
+
+    // 0. Suporte nativo para Android (SAF - Storage Access Framework)
+    if (window.AndroidBridge) {
+      const defaultName = (this.currentProjectName || 'meu_projeto.rosi').replace(/\.(rosi|json)$/i, '') + '.rosi';
+      if (typeof window.AndroidBridge.launchSaveProjectPicker === 'function') {
+        window.AndroidBridge.launchSaveProjectPicker(defaultName, jsonStr);
+        return;
+      }
+      if (typeof window.AndroidBridge.saveProjectFile === 'function') {
+        window.AndroidBridge.saveProjectFile(defaultName, jsonStr);
+        return;
+      }
+    }
 
     // 1. Tenta a API nativa do Windows showSaveFilePicker (Salvar Como)
     if (window.isSecureContext && typeof window.showSaveFilePicker === 'function') {
@@ -638,8 +728,10 @@ class RosiViewApp {
     document.body.appendChild(modal);
 
     const input = modal.querySelector('#save_filename_input');
-    input.focus();
-    input.select();
+    if (!this.isAndroid) {
+      input.focus();
+      input.select();
+    }
 
     const close = () => modal.remove();
     modal.querySelector('#save_close_btn').onclick = close;
@@ -654,11 +746,18 @@ class RosiViewApp {
       this.currentProjectName = rawName;
 
       // Suporte nativo para ambiente Android
-      if (window.AndroidBridge && typeof window.AndroidBridge.saveProjectFile === 'function') {
-        window.AndroidBridge.saveProjectFile(rawName, jsonStr);
-        this.showToast(`Projeto '${rawName}' salvo com sucesso!`);
-        close();
-        return;
+      if (window.AndroidBridge) {
+        if (typeof window.AndroidBridge.launchSaveProjectPicker === 'function') {
+          window.AndroidBridge.launchSaveProjectPicker(rawName, jsonStr);
+          close();
+          return;
+        }
+        if (typeof window.AndroidBridge.saveProjectFile === 'function') {
+          window.AndroidBridge.saveProjectFile(rawName, jsonStr);
+          this.showToast(`Projeto '${rawName}' salvo com sucesso!`);
+          close();
+          return;
+        }
       }
 
       // Download no navegador Desktop

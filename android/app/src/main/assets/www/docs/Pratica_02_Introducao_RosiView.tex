@@ -1,0 +1,484 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Pacotes Fundamentais de Idioma e Tipografia ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% --- Geometria da Página e Margens ---
+\usepackage[a4paper, top=1.7cm, bottom=1.7cm, left=1.8cm, right=1.8cm, headheight=26pt]{geometry}
+
+% --- Pacotes Matemáticos e Gráficos ---
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% --- Tabelas Avançadas e Formatação ---
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+% --- Listas e Espaçamentos Compactos ---
+\usepackage{enumitem}
+\setlist[itemize]{noitemsep, topsep=1.0pt, parsep=0.3pt, leftmargin=1.2em}
+\setlist[enumerate]{noitemsep, topsep=1.0pt, parsep=0.3pt, leftmargin=1.2em}
+
+% --- Cores Personalizadas e Tabelas Coloridas ---
+\usepackage[table]{xcolor}
+\definecolor{ifesGreen}{RGB}{29, 120, 115}      % Verde institucional
+\definecolor{ifesNavy}{RGB}{11, 60, 93}        % Azul escuro técnico
+\definecolor{accentOrange}{RGB}{192, 57, 43}    % Vermelho/Alerta
+\definecolor{lightGray}{RGB}{247, 249, 250}     % Fundo claro
+\definecolor{borderGray}{RGB}{210, 215, 222}    % Borda cinza suave
+\definecolor{headerBg}{RGB}{235, 241, 247}
+
+% --- Caixas de Destaque Didático (tcolorbox) ---
+\usepackage[most]{tcolorbox}
+
+\newtcolorbox{didatictip}[1]{
+    enhanced,
+    colback=lightGray,
+    colframe=ifesNavy,
+    coltitle=white,
+    fonttitle=\bfseries\sffamily\small,
+    title={Conceito-Chave: #1},
+    sharp corners,
+    boxrule=0.8pt,
+    left=6pt, right=6pt, top=3pt, bottom=3pt,
+    before skip=3pt, after skip=3pt
+}
+
+% --- Cabeçalho e Rodapé ---
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textbf{IFES -- Campus Serra} \\ \footnotesize Sistemas de Controle -- Técnico em Mecatrônica Integrado ao Ensino Médio}
+\fancyhead[R]{\small\textbf{Prática de Laboratório 02} \\ \footnotesize Introdução ao RosiView \& Instrumentação Virtual}
+\fancyfoot[L]{\footnotesize Prof.ª Rosiane Ribeiro Rocha (\texttt{rosiane.rocha@ifes.edu.br})}
+\fancyfoot[R]{\small\textbf{Página \thepage}}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% --- Hiperlinks ---
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=ifesNavy,
+    citecolor=ifesGreen,
+    urlcolor=ifesNavy,
+    pdftitle={Pratica 02 - Introducao ao RosiView e Instrumentacao Virtual},
+    pdfauthor={Prof.ª Rosiane Ribeiro Rocha - IFES}
+}
+
+% =========================================================================
+% INÍCIO DO DOCUMENTO
+% =========================================================================
+\begin{document}
+
+% =========================================================================
+% CABEÇALHO INSTITUCIONAL
+% =========================================================================
+\begin{center}
+    \vspace*{-0.5cm}
+    {\large \textbf{INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DO ESPÍRITO SANTO}}\\[0.04cm]
+    {\small \textbf{CAMPUS SERRA -- CURSO TÉCNICO EM MECATRÔNICA INTEGRADO AO ENSINO MÉDIO}}\\[0.06cm]
+    {\small \textbf{DISCIPLINA:} SISTEMAS DE CONTROLE \quad | \quad \textbf{DOCENTE:} PROF.ª ROSIANE RIBEIRO ROCHA}\\[0.12cm]
+    \rule{\textwidth}{1.2pt}\\[0.12cm]
+    {\Large \textbf{\textcolor{ifesNavy}{PRÁTICA DE LABORATÓRIO Nº 02}}}\\[0.06cm]
+    {\large \textbf{Introdução ao RosiView: Ambiente de Instrumentação Virtual e Fluxo de Dados (\textit{Dataflow})}}\\[0.12cm]
+    \rule{\textwidth}{0.6pt}
+\end{center}
+
+\vspace{-0.15cm}
+
+% =========================================================================
+% SEÇÃO 1: INTRODUÇÃO E FUNDAMENTAÇÃO TEÓRICA
+% =========================================================================
+\section{Introdução e Fundamentação Teórica}
+
+Na engenharia de controle e automação moderna, o conceito de \textbf{Instrumentação Virtual} revolucionou a forma como sinais industriais são medidos, processados, registrados e controlados. Em contraste com os instrumentos físicos tradicionais de bancada (como osciloscópios, geradores de função analógicos e termômetros dedicados de painel), um instrumento virtual combina hardware de aquisição com a flexibilidade de um software configurável, permitindo criar interfaces homem-máquina (IHM) personalizadas e rotinas de controle dinâmico com alta precisão e baixo custo.
+
+O \textbf{RosiView} é um ambiente educacional e profissional de instrumentação virtual desenvolvido para os estudantes de Mecatrônica do IFES Campus Serra. O software adota o consagrado paradigma da programação visual orientada a \textbf{Fluxo de Dados (\textit{Dataflow})}, amplamente utilizado em plataformas industriais como o \textit{National Instruments LabVIEW}\textsuperscript{TM}.
+
+\begin{didatictip}{O Paradigma de Execução por Fluxo de Dados (\textit{Dataflow})}
+Em uma linguagem textual sequencial convencional (como C ou Python), as instruções são processadas linha por linha na ordem em que foram escritas. No paradigma \textbf{Dataflow} do RosiView, um nó (bloco de cálculo, lógica ou instrumento) só executa no momento exato em que \textbf{todos os seus dados de entrada estão disponíveis} nos seus terminais (\textit{inputs}). Se não houver dependência direta de dados entre dois nós, eles podem operar simultaneamente (concorrência natural de sinais).
+\end{didatictip}
+
+\subsection{Dicotomia Fundamental: Painel Frontal vs. Diagrama de Blocos}
+Cada projeto desenvolvido no RosiView (\textit{Virtual Instrument} --- VI, salvo sob o formato portátil \texttt{.rosi}) é constituído por duas camadas indissociáveis e sincronizadas em tempo real:
+\begin{enumerate}
+    \item \textbf{Painel Frontal (\textit{Front Panel} / IHM):} É a interface de operação visível pelo usuário. Nela são dispostos os controles interativos (como \textit{knobs} giratórios, \textit{sliders} deslizantes, interruptores e entradas numéricas) e os indicadores de processo (como mostradores analógicos \textit{gauges}, registradores temporais contínuos \textit{waveform charts}, tanques graduados, termômetros virtuais e LEDs de alarme).
+    \item \textbf{Diagrama de Blocos (\textit{Block Diagram} / Código Visual):} É o circuito algorítmico subjacente. Cada elemento visual colocado no Painel Frontal possui um terminal correspondente no Diagrama de Blocos. As funções computacionais (soma, subtração, multiplicação, comparadores relacionais, filtros e portas lógicas) são interligadas por meio de \textbf{fios de conexão (\textit{wires})}, que conduzem as variáveis do processo da esquerda para a direita.
+\end{enumerate}
+
+\subsection{Modos de Execução e Ferramentas Pedagógicas da Interface}
+A barra superior (\textit{Toolbar}) do RosiView provê comandos intuitivos para simulação e validação de malhas:
+\begin{itemize}
+    \item $\blacktriangleright$ \textbf{Run (Execução Única):} Dispara exatamente uma iteração do diagrama de blocos. É útil para checar contas estáticas, conversões de grandezas e verificar a consistência das fórmulas passo a passo.
+    \item $\circlearrowright$ \textbf{Continuous (Execução Contínua):} Executa o algoritmo em laço contínuo (\textit{While Loop}) com período de amostragem $\Delta t$. Permite simular dinâmicas em tempo real, respostas a transientes e interagir com sliders e chaves enquanto os gráficos plotam a evolução temporal.
+    \item $\blacksquare$ \textbf{Stop (Parada):} Congela com segurança a execução contínua, mantendo o histórico de dados e mostradores.
+    \item \textbf{[Highlight] (Realce de Execução):} Modo pedagógico essencial que desacelera a execução e ilumina com borda colorida cada nó no momento preciso em que ele calcula seu resultado, evidenciando visualmente a propagação do fluxo de sinais.
+    \item \textbf{[Paleta] (Menu de Nós e Instrumentos):} Abre uma janela flutuante com catálogo completo de componentes categorizados em: Controles de Entrada, Indicadores de Saída, Matemática, Lógica e Comparação, Controle de Processos, Sinais e Aquisição de Dados.
+\end{itemize}
+
+\begin{center}
+\begin{minipage}{0.96\textwidth}
+\begin{tcolorbox}[colback=headerBg,colframe=ifesNavy,title={\textbf{Convenção de Fios e Tipos de Dados no RosiView}},boxrule=0.7pt]
+\small
+\begin{itemize}
+    \item \textbf{Linhas Numéricas (Ponto Flutuante / Escalares):} Conduzem valores contínuos reais (ex.: tensões de sensores, leituras térmicas, valores de pressão e porcentagens).
+    \item \textbf{Linhas Booleanas (Lógica Binária):} Conduzem estados de verdadeiro (\texttt{true}) ou falso (\texttt{false}), acionadas por comparadores relacionais ($>$, $<$, $=$) ou chaves seletoras para comandar LEDs e intertravamentos.
+    \item \textbf{Linhas de Cluster / Arranjo (\textit{Bundle}):} Agrupam múltiplos sinais independentes em um único cabo composto para plotagem simultânea em gráficos com múltiplos canais (\textit{Multi-plot Waveform Chart}).
+\end{itemize}
+\end{tcolorbox}
+\end{minipage}
+\end{center}
+
+\vspace{-0.2cm}
+
+% =========================================================================
+% SEÇÃO 2: OBJETIVOS DA PRÁTICA
+% =========================================================================
+\section{Objetivos da Prática}
+
+\subsection{Objetivo Geral}
+Capacitar os estudantes a compreender a arquitetura e a operação do software \textbf{RosiView}, desenvolvendo habilidades práticas na construção de instrumentos virtuais com controles de IHM, mostradores analógicos/digitais, operações aritméticas encadeadas, geradores periódicos com plotagem multi-traço e lógicas relacionais de alarme industrial.
+
+\subsection{Objetivos Específicos}
+Ao final desta atividade experimental, o estudante deverá ser capaz de:
+\begin{enumerate}
+    \item Localizar, ler e aplicar os procedimentos técnicos do \textit{Manual do Usuário do RosiView}.
+    \item Reproduzir com autonomia o tutorial guiado do manual (Tacômetro de Motor DC com Alarme de Sobrerrotação).
+    \item Utilizar as ferramentas de depuração do ambiente, compreendendo a função do modo \textit{Highlight Execution}.
+    \item Projetar e implementar um conversor termométrico completo da escala Rankine para Celsius, Kelvin e Fahrenheit.
+    \item Manipular e registrar múltiplos sinais temporais no mesmo gráfico cartesiano utilizando o nó de agrupamento \textbf{Bundle}.
+    \item Projetar uma malha de supervisão para nível de reservatório industrial integrando comparadores relacionais e portas lógicas (\texttt{AND}) para sinalização visual em LEDs de status.
+    \item Responder analiticamente ao questionário técnico, associando os conceitos de instrumentação virtual com a instrumentação de campo vista na Prática 01.
+\end{enumerate}
+
+\vspace{-0.15cm}
+
+% =========================================================================
+% SEÇÃO 3: MATERIAIS E RECURSOS UTILIZADOS
+% =========================================================================
+\section{Materiais e Recursos Utilizados}
+
+\begin{center}
+\captionof{table}{Relação de recursos e ferramentas para a execução da Prática 02.}
+\label{tab:materiais}
+\scriptsize
+\renewcommand{\arraystretch}{0.95}
+\begin{tabularx}{\textwidth}{c L{5.4cm} X}
+\toprule
+\textbf{Item} & \textbf{Descrição do Recurso} & \textbf{Finalidade Didática / Aplicação} \\
+\midrule
+01 & Computador do Laboratório de Mecatrônica & Execução do ambiente RosiView e desenvolvimento dos instrumentos virtuais. \\
+02 & Software RosiView (Desktop / Navegador) & Plataforma gráfica para montagem da IHM e Diagrama de Blocos (\textit{Dataflow}). \\
+03 & Manual do Usuário RosiView (\texttt{Manual\_RosiView\_Aluno.pdf}) & Guia de referência técnica contendo a anatomia da interface e o tutorial inicial. \\
+04 & Calculadora Científica & Cálculo teórico prévio dos pontos de calibração térmica e tolerâncias lógicas. \\
+05 & Editor de Documentos / Plataforma de Relatório & Registro das evidências experimentais, capturas de tela e respostas ao questionário. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\vspace{-0.25cm}
+
+% =========================================================================
+% SEÇÃO 4: PROCEDIMENTO EXPERIMENTAL PASSO A PASSO
+% =========================================================================
+\section{Procedimento Experimental Passo a Passo}
+
+% -------------------------------------------------------------------------
+% ETAPA 1: MANUAL E TUTORIAL GUIADO
+% -------------------------------------------------------------------------
+\subsection{Etapa 1: Leitura do Manual e Atividade Tutorial Guiada (Obrigatória)}
+Antes de iniciar as atividades inéditas deste roteiro, cada equipe deverá ambientar-se com o software e reproduzir o circuito de teste padronizado pelo fabricante:
+
+\begin{enumerate}
+    \item \textbf{Acesso ao Manual:} Abra o arquivo \texttt{Manual\_RosiView\_Aluno.pdf} disponível no computador ou clique no botão de interrogação \textbf{[?]} localizado na barra superior do RosiView.
+    \item \textbf{Leitura Técnica:} Faça uma leitura atenta das Seções 1, 3 e 4 do manual, identificando a barra superior, a alternância entre as abas (\textit{Painel Frontal}, \textit{Diagrama} e \textit{Visualização Dividida}) e as regras de ligação dos fios (\textit{wiring}).
+    \item \textbf{Reprodução do Tutorial do Tacômetro de Motor DC:}
+    \begin{itemize}
+        \item No Painel Frontal, insira um \textbf{Knob} (rotulado como \texttt{Tensão de Controle [V]}, escala $0$ a $10.0\text{ V}$).
+        \item Adicione um mostrador analógico \textbf{Gauge} (rotulado \texttt{Tacômetro [RPM]}, escala $0$ a $3000\text{ RPM}$), um registrador \textbf{Waveform Chart} (\texttt{Histórico de Velocidade}) e um \textbf{LED Indicador} (\texttt{Alarme de Sobrerrotação}).
+        \item No Diagrama de Blocos, insira um bloco de \textbf{Multiplicação ($\times$)} e uma \textbf{Constante Numérica} igual a \texttt{300}. Conecte a saída do Knob e a constante à multiplicação ($RPM = V_{in} \times 300$).
+        \item Ligue a rotação calculada ao \textit{Gauge} e ao \textit{Waveform Chart}.
+        \item Insira um comparador relacional \textbf{Maior que ($>$)} e uma constante \texttt{2400}. Ligue a rotação à entrada superior do comparador e a constante à entrada inferior. Ligue a saída booleana ao LED de Alarme.
+    \end{itemize}
+    \item \textbf{Validação e Teste do Modo Highlight:}
+    \begin{itemize}
+        \item Clique no botão $\circlearrowright$ \textbf{Continuous Run}. Gire o Knob para $5.0\text{ V}$ e confirme se o tacômetro indica $1500\text{ RPM}$.
+        \item Aumente a tensão acima de $8.0\text{ V}$ ($8{,}0 \times 300 = 2400\text{ RPM}$) e confirme o acendimento imediato do LED vermelho.
+        \item Com o laço em execução, acione o botão \textbf{Highlight}. Observe visualmente a desaceleração pedagógica e o transporte dos dados pelos nós iluminados.
+        \item Pare a simulação no botão \textbf{Stop} e salve este projeto inicial com o nome \texttt{tutorial\_motor.rosi}.
+    \end{itemize}
+\end{enumerate}
+
+\vspace{0.1cm}
+
+% -------------------------------------------------------------------------
+% ETAPA 2 (ATIVIDADE 1): CONVERSOR RANKINE
+% -------------------------------------------------------------------------
+\subsection{Atividade 1: Conversor Multifuncional de Escalas Termométricas (Entrada em Rankine)}
+
+Em instrumentação industrial e termodinâmica, a medição térmica pode ser expressa tanto em escalas relativas (Celsius e Fahrenheit) quanto em escalas absolutas (Kelvin e Rankine). A escala \textbf{Rankine} ($^\circ\text{R}$), amplamente utilizada na indústria aeroespacial e em sistemas termoelétricos anglo-saxões, define o zero absoluto em $0^\circ\text{R}$, possuindo graduação proporcional à da escala Fahrenheit.
+
+\begin{didatictip}{Relações de Conversão Termométrica a partir da Escala Rankine}
+Dada uma temperatura $T_{[^\circ\text{R}]}$ em graus Rankine, as temperaturas correspondentes nas outras três escalas são calculadas rigorosamente por:
+\begin{equation}
+    T_{[\text{K}]} = \frac{T_{[^\circ\text{R}]}}{1{,}8} = T_{[^\circ\text{R}]} \times \left(\frac{5}{9}\right)
+    \label{eq:rankine_kelvin}
+\end{equation}
+\begin{equation}
+    T_{[^\circ\text{F}]} = T_{[^\circ\text{R}]} - 459{,}67
+    \label{eq:rankine_fahrenheit}
+\end{equation}
+\begin{equation}
+    T_{[^\circ\text{C}]} = \frac{T_{[^\circ\text{R}]} - 491{,}67}{1{,}8} = T_{[\text{K}]} - 273{,}15
+    \label{eq:rankine_celsius}
+\end{equation}
+\end{didatictip}
+
+\subsubsection{Passo a Passo de Implementação}
+\begin{enumerate}
+    \item Clique no botão \textbf{Novo} ou \textbf{Limpar} no RosiView para preparar uma área de trabalho limpa.
+    \item \textbf{Construção do Painel Frontal (IHM):}
+    \begin{itemize}
+        \item Insira um \textbf{Slider} (ou Entrada Numérica) para representar a temperatura de entrada. Nomeie-o como: \texttt{Temperatura de Entrada [°R]}. Configure seu valor mínimo para $0$ e o valor máximo para $800^\circ\text{R}$.
+        \item Insira três \textbf{Displays Numéricos} independentes para as grandezas calculadas, rotulando-os:
+        \begin{itemize}
+            \item \texttt{Temperatura [°C]} (Escala Celsius);
+            \item \texttt{Temperatura [K]} (Escala Kelvin);
+            \item \texttt{Temperatura [°F]} (Escala Fahrenheit).
+        \end{itemize}
+        \item Adicione um widget analógico do tipo \textbf{Termômetro} (\textit{Thermometer}) ou \textbf{Gauge} para exibir visualmente a temperatura correspondente em Celsius (escala de $-100^\circ\text{C}$ a $150^\circ\text{C}$).
+        \item Alinhe e organize os elementos na tela de modo que a entrada fique à esquerda e as leituras convertidas fiquem dispostas à direita.
+    \end{itemize}
+    \item \textbf{Construção do Diagrama de Blocos (Matemática Dataflow):}
+    \begin{itemize}
+        \item Adicione nós de \textbf{Constante Numérica} para os fatores de conversão: \texttt{1.8}, \texttt{459.67} e \texttt{491.67} (ou \texttt{273.15}).
+        \item \textbf{Cálculo de Kelvin ($T_K$):} Conecte a saída do nó \texttt{Slider [°R]} ao terminal superior de um bloco de \textbf{Divisão ($\div$)}. Conecte a constante \texttt{1.8} ao terminal inferior da divisão. A saída resultante representa $T_K$; ligue-a diretamente ao mostrador \texttt{Temperatura [K]}.
+        \item \textbf{Cálculo de Fahrenheit ($T_F$):} Conecte a saída do nó \texttt{Slider [°R]} ao terminal superior de um bloco de \textbf{Subtração ($-$)}. Conecte a constante \texttt{459.67} ao terminal inferior ($A - B$). A saída representa $T_F$; ligue-a ao mostrador \texttt{Temperatura [°F]}.
+        \item \textbf{Cálculo de Celsius ($T_C$):} Conecte a saída do nó \texttt{Slider [°R]} a um bloco de subtração com a constante \texttt{491.67}. Conecte a saída dessa subtração ao terminal superior de um bloco de divisão, tendo a constante \texttt{1.8} no divisor. (Alternativamente: subtraia \texttt{273.15} do sinal já calculado de Kelvin). Ligue a saída de Celsius ao display \texttt{Temperatura [°C]} e ao instrumento \texttt{Termômetro}.
+    \end{itemize}
+    \item \textbf{Validação Experimental dos Pontos Notáveis:}
+    Execute a simulação no modo contínuo ($\circlearrowright$) e preencha a Tabela \ref{tab:validacao_temperatura} ajustando o controle nos quatro estados termodinâmicos clássicos.
+    \item Salve este instrumento virtual com o nome oficial \texttt{pratica2\_atividade1\_temperatura.rosi}.
+\end{enumerate}
+
+\begin{center}
+\captionof{table}{Tabela de Verificação Experimental do Conversor Termométrico Rankine.}
+\label{tab:validacao_temperatura}
+\scriptsize
+\renewcommand{\arraystretch}{0.95}
+\begin{tabularx}{\textwidth}{L{4.2cm} Y C{2.2cm} C{2.2cm} C{2.2cm} Y}
+\toprule
+\textbf{Ponto Termodinâmico de Referência} & \textbf{Entrada [$^\circ\text{R}$]} & \textbf{Leitura [$^\circ\text{C}$]} & \textbf{Leitura [$\text{K}$]} & \textbf{Leitura [$^\circ\text{F}$]} & \textbf{Status (OK / Não OK)} \\
+\midrule
+Zero Absoluto de Temperatura & $0{,}00$ & & & & \\
+Ponto de Fusão do Gelo ($1\text{ atm}$) & $491{,}67$ & & & & \\
+Temperatura Ambiente de Referência & $527{,}67$ & & & & \\
+Ponto de Ebulição da Água ($1\text{ atm}$) & $671{,}67$ & & & & \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\vspace{0.05cm}
+
+% -------------------------------------------------------------------------
+% ETAPA 3 (ATIVIDADE 2): GERAÇÃO DE SINAIS E GRÁFICOS
+% -------------------------------------------------------------------------
+\subsection{Atividade 2: Geração de Sinais Periódicos e Monitoramento Gráfico Multi-plot com Agrupamento (\textit{Bundle})}
+
+Em sistemas de controle e mecatrônica, o monitoramento temporal simultâneo da variável de processo (PV) em conjunto com o valor de referência (\textit{Setpoint} --- SP) ou sinais de perturbação é imprescindível para a análise de estabilidade e tempo de acomodação. O RosiView permite traçar múltiplos canais no mesmo osciloscópio (\textbf{Waveform Chart}) por meio do nó estrutural \textbf{Agrupar (\textit{Bundle})}.
+
+\subsubsection{Passo a Passo de Implementação}
+\begin{enumerate}
+    \item Limpe o workspace (\textbf{Novo Projeto}).
+    \item \textbf{Montagem do Painel Frontal:}
+    \begin{itemize}
+        \item Adicione um componente \textbf{Waveform Chart} (Gráfico Temporal contínuo). Redimensione o gráfico para ocupar uma área confortável e clique com o botão direito para renomear o título para: \texttt{Monitoramento Comparativo de Sinais}.
+        \item Insira um \textbf{Slider} para ajuste dinâmico de frequência, rotulado como: \texttt{Frequência do Sinal Senoidal [Hz]}, configurado com valor mínimo $0{,}1$, máximo $2{,}5$ e passo $0{,}1$.
+        \item Insira um segundo controle deslizante (\textbf{Slider}) rotulado como: \texttt{Patamar de Referência [Offset]}, configurado para a faixa de $-10{,}0$ a $+10{,}0$.
+    \end{itemize}
+    \item \textbf{Montagem do Diagrama de Blocos:}
+    \begin{itemize}
+        \item Na Paleta, sob a categoria \textbf{Sinais \& Arranjos}, selecione o nó \textbf{Onda Senoidal} (\textit{Sine Wave} --- `\texttt{sig\_sine}').
+        \item Conecte a saída do Slider de frequência ao terminal \texttt{Frequência (Hz)} do gerador senoidal.
+        \item Na categoria \textbf{Sinais \& Arranjos}, adicione o nó \textbf{Agrupar (\textit{Bundle})} (`\texttt{cluster\_bundle}'). Este nó possui múltiplos terminais de entrada individuais (\textit{Plot 0}, \textit{Plot 1}, etc.) e unifica os fluxos em um único cabo de cluster.
+        \item Conecte a saída da onda senoidal $\sin(x)$ ao terminal superior do nó \textit{Bundle} (\textbf{Canal 0}).
+        \item Conecte o sinal proveniente do Slider de Patamar de Referência ao segundo terminal do nó \textit{Bundle} (\textbf{Canal 1}).
+        \item Conecte a saída única do nó \textit{Bundle} diretamente ao terminal de dados do \textbf{Waveform Chart}.
+    \end{itemize}
+    \item \textbf{Procedimento de Ensaio e Análise Temporal:}
+    \begin{itemize}
+        \item Inicie a execução contínua ($\circlearrowright$ \textbf{Continuous}). Observe o gráfico traçar duas curvas simultâneas e sincronizadas com cores diferenciadas.
+        \item Altere lentamente o Slider de frequência entre $0{,}2\text{ Hz}$ e $2{,}0\text{ Hz}$. Descreva visualmente o comportamento da densidade de ciclos por divisão no visor.
+        \item Altere o Slider de patamar de referência para $+5{,}0$ e depois para $-3{,}0$. Observe o traço correspondente deslocar-se verticalmente enquanto a senoide continua oscilando em torno do zero.
+        \item Pause a execução no botão \textbf{Stop} e registre a tela com os gráficos capturados.
+        \item Salve o projeto com o nome \texttt{pratica2\_atividade2\_graficos.rosi}.
+    \end{itemize}
+\end{enumerate}
+
+\vspace{0.05cm}
+
+% -------------------------------------------------------------------------
+% ETAPA 4 (ATIVIDADE 3): SUPERVISÃO E LÓGICA DE ALARME EM NÍVEL
+% -------------------------------------------------------------------------
+\subsection{Atividade 3: Sistema de Supervisão e Alarme de Nível em Tanque com Lógica Booleana e Intertravamento}
+
+Nesta atividade, os estudantes implementarão uma malha de supervisão lógica para o reservatório de líquidos de uma planta de processos. O sistema deverá monitorar o nível contínuo do tanque e acionar sinalizações luminosas específicas conforme o nível atinja patamares críticos de segurança operacional, estabelecendo correlação direta com os dispositivos de alarme e chaves (LSH, LSL e LAH) estudados nos diagramas P\&ID da Prática 01.
+
+\begin{center}
+\begin{minipage}{0.96\textwidth}
+\begin{tcolorbox}[colback=lightGray,colframe=ifesNavy,title={\textbf{Definição das Faixas Operacionais de Nível do Tanque (0 a 100\%)}},boxrule=0.7pt]
+\small
+\begin{itemize}
+    \item \textbf{Faixa de Nível Baixo ($L < 20\%$):} Condição de risco de cavitação da bomba de recalque. Deve acender o \textbf{LED Amarelo} (\texttt{Alarme LSL --- Nível Baixo}).
+    \item \textbf{Faixa Normal de Operação ($20\% \le L \le 80\%$):} Condição de processo estável e seguro. Deve acender o \textbf{LED Verde} (\texttt{Status: Operação Normal}).
+    \item \textbf{Faixa de Nível Alto ($L > 80\%$):} Condição de risco de transbordamento do tanque. Deve acender o \textbf{LED Vermelho} (\texttt{Alarme LSH --- Nível Alto}).
+\end{itemize}
+\end{tcolorbox}
+\end{minipage}
+\end{center}
+
+\subsubsection{Passo a Passo de Implementação}
+\begin{enumerate}
+    \item Limpe a área de trabalho (\textbf{Novo Projeto}).
+    \item \textbf{Construção do Painel Frontal (IHM de Supervisão):}
+    \begin{itemize}
+        \item Insira um \textbf{Slider} vertical para simular a medição do transmissor de nível do reservatório. Nomeie-o como: \texttt{Nível do Tanque [\%]}, configurado de $0$ a $100\%$.
+        \item Na paleta de Indicadores, adicione um widget visual do tipo \textbf{Tanque de Nível} (\textit{Tank}), rotulado como \texttt{Reservatório Principal (TQ-01)}, com escala graduada de $0$ a $100\%$.
+        \item Adicione um \textbf{Display Numérico} para leitura quantitativa instantânea da porcentagem.
+        \item Insira três \textbf{LEDs Indicadores} e configure seus títulos e cores:
+        \begin{itemize}
+            \item LED 1: \texttt{Alarme LSL (Baixo)} --- configurado para cor Amarela;
+            \item LED 2: \texttt{Operação Normal} --- configurado para cor Verde;
+            \item LED 3: \texttt{Alarme LSH (Alto)} --- configurado para cor Vermelha.
+        \end{itemize}
+        \item Organize o Painel Frontal reproduzindo o layout típico de um sistema SCADA/IHM de sala de controle.
+    \end{itemize}
+    \item \textbf{Construção do Diagrama de Blocos (Lógica Relacional e Booleana):}
+    \begin{itemize}
+        \item Conecte a saída do nó \texttt{Slider} diretamente à entrada do nó \texttt{Tanque (TQ-01)} e ao \texttt{Display Numérico}.
+        \item Adicione nós de \textbf{Constante Numérica} com os valores limites: \texttt{20.0} e \texttt{80.0}.
+        \item \textbf{Detecção de Nível Baixo ($L < 20$):} Adicione um comparador relacional \textbf{Menor que ($<$)}. Ligue o sinal de nível ao terminal superior e a constante \texttt{20.0} ao terminal inferior. Conecte a saída booleana ao nó do \texttt{LED Alarme LSL}.
+        \item \textbf{Detecção de Nível Alto ($L > 80$):} Adicione um comparador relacional \textbf{Maior que ($>$)}. Ligue o nível ao terminal superior e a constante \texttt{80.0} ao terminal inferior. Conecte a saída booleana ao nó do \texttt{LED Alarme LSH}.
+        \item \textbf{Detecção de Faixa Normal ($20 \le L \le 80$):}
+        Para que a faixa seja válida, ambas as condições devem ser satisfeitas simultaneamente: (Nível $\ge 20$) \textbf{E} (Nível $\le 80$).
+        \begin{itemize}
+            \item Adicione um comparador relacional \textbf{Maior que ($>$)} com a constante \texttt{20.0} (ou operador $\ge$).
+            \item Adicione um comparador relacional \textbf{Menor que ($<$)} com a constante \texttt{80.0} (ou operador $\le$).
+            \item Adicione uma porta lógica \textbf{E (AND)} da categoria \textit{Lógica \& Comparação}.
+            \item Conecte as saídas dos dois comparadores às entradas da porta lógica \texttt{AND}.
+            \item Conecte a saída da porta \texttt{AND} diretamente ao nó do \texttt{LED Operação Normal}.
+        \end{itemize}
+    \end{itemize}
+    \item \textbf{Teste Dinâmico e Validação da Tabela Verdade:}
+    \begin{itemize}
+        \item Inicie a execução contínua ($\circlearrowright$). Desloque o slider de nível gradualmente de $0\%$ até $100\%$ e preencha a Tabela \ref{tab:validacao_logica}.
+        \item Certifique-se de que nunca haverá dois LEDs incompatíveis acesos simultaneamente (por exemplo, Alarme de Alto e Operação Normal).
+        \item Salve o projeto com o nome oficial \texttt{pratica2\_atividade3\_supervisao\_tanque.rosi}.
+    \end{itemize}
+\end{enumerate}
+
+\begin{center}
+\captionof{table}{Validação dos Estados Lógicos do Sistema de Supervisão de Nível.}
+\label{tab:validacao_logica}
+\scriptsize
+\renewcommand{\arraystretch}{0.95}
+\begin{tabularx}{\textwidth}{C{2.0cm} Y Y Y L{5.4cm}}
+\toprule
+\textbf{Nível Simulado} & \textbf{LED LSL (Amarelo)} & \textbf{LED Normal (Verde)} & \textbf{LED LSH (Vermelho)} & \textbf{Condição Operacional Observada} \\
+\midrule
+$10\%$ & & & & \\
+$20\%$ & & & & \\
+$50\%$ & & & & \\
+$80\%$ & & & & \\
+$95\%$ & & & & \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\vspace{-0.15cm}
+
+% =========================================================================
+% SEÇÃO 5: QUESTIONÁRIO DE FIXAÇÃO E AVALIAÇÃO CONCEITUAL
+% =========================================================================
+\section{Questionário de Fixação e Avaliação Conceitual}
+
+Cada equipe deverá responder de forma fundamentada e técnica às 6 questões a seguir, incorporando as respostas na seção específica do Relatório Técnico:
+
+\begin{enumerate}[label=\textbf{Questão \arabic*:}, leftmargin=*, itemsep=4pt, topsep=2pt]
+    \item \textbf{Arquitetura Dataflow e Execução Concorrente:}
+    Explique detalhadamente a diferença funcional entre o \textbf{Painel Frontal} (IHM) e o \textbf{Diagrama de Blocos} no RosiView. No paradigma de \textit{Fluxo de Dados}, o que determina a ordem cronológica em que cada nó processa suas informações? É possível que dois blocos efetuem cálculos exatamente no mesmo instante de tempo? Justifique com base na teoria de dataflow.
+
+    \item \textbf{Análise de Modos de Operação e Ferramentas de Depuração:}
+    Diferencie o modo de execução \textbf{Run} ($\blacktriangleright$) do modo \textbf{Continuous Run} ($\circlearrowright$). Em quais situações práticas da engenharia cada um desses modos é preferível? Descreva o funcionamento do mecanismo pedagógico \textbf{Highlight Execution} e explique como ele auxilia o técnico a diagnosticar erros de lógica ou retenção indevida de dados na fiação.
+
+    \item \textbf{Álgebra de Fios no Conversor Termométrico (Atividade 1):}
+    Na Atividade 1, para converter a temperatura de Rankine para Fahrenheit, utilizou-se a fórmula $T_{[^\circ\text{F}]} = T_{[^\circ\text{R}]} - 459{,}67$. Explique o que ocorreria visual e numericamente no mostrador do Painel Frontal se o estudante invertesse a ligação física dos fios nos terminais da operação de subtração (ligando a constante $459{,}67$ na entrada superior e a leitura de $T_{[^\circ\text{R}]}$ na entrada inferior). Demonstre numericamente o erro para o ponto de fusão do gelo ($491{,}67^\circ\text{R}$).
+
+    \item \textbf{Composição de Canais Gráficos com o Nó Bundle (Atividade 2):}
+    Qual é o papel fundamental do nó \textbf{Agrupar (\textit{Bundle})} na Atividade 2? Por que não é permitido ligar diretamente dois fios condutores de sinais analógicos distintos ao mesmo terminal escalar simples de entrada de um instrumento gráfico? Qual é a vantagem prática de visualizar sinais correlacionados (ex.: Setpoint e Variável de Processo) na mesma tela cartesiana?
+
+    \item \textbf{Lógica Booleana de Segurança e Faixa Normal (Atividade 3):}
+    Na Atividade 3, o LED verde de operação normal deve permanecer aceso estritamente na faixa $20\% \le L \le 80\%$. Explique o motivo pelo qual foi necessário utilizar uma porta lógica \textbf{E (AND)} associando as saídas de dois comparadores relacionais distintos. O que aconteceria no comportamento do LED se a porta \textbf{AND} fosse substituída inadvertidamente por uma porta lógica \textbf{OU (OR)}?
+
+    \item \textbf{Integração com Instrumentação Real e Correlação com a Prática 01:}
+    Relacionando os instrumentos virtuais implementados nesta prática com a planta didática de processos e a norma ANSI/ISA-5.1 estudadas na Prática 01:
+    \begin{enumerate}[label=\alph*), noitemsep, leftmargin=1.5em]
+        \item Como os blocos virtuais de controle e indicação do RosiView podem ser interligados a sensores reais (como o transmissor de nível \textbf{LIT-01} ou transmissor de vazão \textbf{FIT-01}) e a atuadores reais (como a válvula \textbf{FV-01} ou bomba \textbf{B-01}) utilizando módulos de aquisição de dados como a \textbf{NI USB-6009}?
+        \item Destaque duas vantagens econômicas e operacionais de validar previamente uma estratégia de controle ou lógica de alarme no ambiente de instrumentação virtual do RosiView antes de aplicá-la fisicamente na planta industrial real.
+    \end{enumerate}
+\end{enumerate}
+
+\vspace{0.1cm}
+
+% =========================================================================
+% SEÇÃO 6: INSTRUÇÕES PARA ELABORAÇÃO DO RELATÓRIO TÉCNICO
+% =========================================================================
+\section{Instruções para Elaboração do Relatório Técnico}
+
+O relatório da Prática 02 deverá ser elaborado pela equipe seguindo rigorosamente a estrutura formal de engenharia adotada pelo IFES:
+
+\begin{enumerate}[noitemsep, topsep=1.0pt, parsep=0.4pt]
+    \item \textbf{Capa Institucional Padronizada:} Cabeçalho oficial do IFES Campus Serra, Curso Técnico em Mecatrônica, Disciplina, Título da Prática, Identificação Completa dos Alunos e Data.
+    \item \textbf{Resumo e Objetivos:} Síntese concisa das competências desenvolvidas em instrumentação virtual e programação gráfica.
+    \item \textbf{Fundamentação Teórica Sintética:} Conceituação breve sobre fluxo de dados, IHM vs. Diagrama e blocos lógicos.
+    \item \textbf{Metodologia Experimental e Evidências:}
+    \begin{itemize}[noitemsep, topsep=0.8pt, parsep=0.3pt]
+        \item Capturas de tela (\textit{screenshots}) nítidas do \textbf{Painel Frontal} e do \textbf{Diagrama de Blocos} para cada uma das atividades: Atividade Tutorial do Manual, Atividade 1 (Rankine), Atividade 2 (Gráficos Multi-plot) e Atividade 3 (Supervisão de Nível).
+        \item Apresentação das Tabelas \ref{tab:validacao_temperatura} e \ref{tab:validacao_logica} integralmente preenchidas com as leituras experimentais.
+    \end{itemize}
+    \item \textbf{Resolução do Questionário de Fixação:} Respostas técnicas, analíticas e completas para as 6 questões propostas.
+    \item \textbf{Conclusão:} Avaliação crítica sobre a flexibilidade da instrumentação virtual no aprendizado de controle e automação.
+    \item \textbf{Referências Bibliográficas:} Normas e literaturas técnicas consultadas conforme a ABNT.
+\end{enumerate}
+
+\vspace{0.1cm}
+
+% =========================================================================
+% SEÇÃO 7: REFERÊNCIAS BIBLIOGRÁFICAS
+% =========================================================================
+\section{Referências Bibliográficas}
+
+{\footnotesize
+\begin{enumerate}[label={[\arabic*]}, noitemsep, topsep=0.8pt, parsep=0.3pt]
+    \item ROCHA, R. R. \textbf{Manual do Usuário --- RosiView: Ambiente Educacional de Instrumentação Virtual e Controle (v0.3)}. Serra: Instituto Federal do Espírito Santo (IFES), 2026.
+    \item ISA -- International Society of Automation. \textbf{ANSI/ISA-5.1-2009}: \textit{Instrumentation Symbols and Identification}. Research Triangle Park: ISA, 2009.
+    \item BEBBER, V. J. \textbf{Instrumentação Industrial e Controle de Processos}. São Paulo: Érica, 2018.
+    \item FIALHO, A. B. \textbf{Instrumentação Industrial: Conceitos, Aplicações e Circuitos Típicos}. 7. ed. São Paulo: Érica, 2014.
+    \item BISHOP, R. H. \textbf{LabVIEW Student Edition}. Upper Saddle River: Prentice Hall, 2015.
+    \item OGATA, K. \textbf{Engenharia de Controle Moderno}. 5. ed. São Paulo: Pearson Prentice Hall, 2010.
+    \item FRANCHI, C. M. \textbf{Controle de Processos Industriais: Fundamentos e Aplicações}. São Paulo: Érica, 2011.
+\end{enumerate}
+}
+
+\end{document}

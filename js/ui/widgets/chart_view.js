@@ -209,36 +209,5 @@ export class ChartWidget {
     });
   }
 
-  setupDrag() {
-    let isDragging = false;
-    let startX, startY, origX, origY;
-
-    this.element.addEventListener('mousedown', (e) => {
-      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'CANVAS') return;
-      isDragging = true;
-      startX = e.clientX;
-      startY = e.clientY;
-      origX = this.x;
-      origY = this.y;
-      this.element.style.zIndex = 100;
-
-      const onMouseMove = (ev) => {
-        if (!isDragging) return;
-        this.x = origX + (ev.clientX - startX);
-        this.y = origY + (ev.clientY - startY);
-        this.element.style.left = `${this.x}px`;
-        this.element.style.top = `${this.y}px`;
-      };
-
-      const onMouseUp = () => {
-        isDragging = false;
-        this.element.style.zIndex = 10;
-        window.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('mouseup', onMouseUp);
-      };
-
-      window.addEventListener('mousemove', onMouseMove);
-      window.addEventListener('mouseup', onMouseUp);
-    });
-  }
+  setupDrag() {}
 }

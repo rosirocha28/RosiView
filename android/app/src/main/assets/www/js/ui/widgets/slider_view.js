@@ -6,6 +6,7 @@
 export class SliderWidget {
   constructor({ id, title = 'Setpoint (SP)', min = 0, max = 300, step = 1, initialValue = 100, x = 60, y = 280, isVertical = false }) {
     this.id = id;
+    this.kind = 'slider';
     this.title = title;
     this.min = min;
     this.max = max;

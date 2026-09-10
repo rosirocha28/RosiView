@@ -12,8 +12,9 @@
     linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
   background-size: 16px 16px;
   position: relative;
-  overflow: auto;
-  padding: 20px;
+  overflow: hidden !important;
+  padding: 0 !important;
+  user-select: none;
 }
 
 /* Base Widget Container */
@@ -27,6 +28,7 @@
   min-width: 80px;
   cursor: move;
   user-select: none;
+  pointer-events: auto !important;
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
   z-index: 10;
 }
@@ -45,11 +47,13 @@
   font-size: 11px;
   font-weight: 700;
   color: #334155;
+  background: transparent !important;
   margin-bottom: 6px;
   text-align: center;
   border-bottom: 1px solid #cbd5e1;
   padding-bottom: 3px;
-  pointer-events: none;
+  pointer-events: auto !important;
+  cursor: move;
   letter-spacing: 0.2px;
 }
 
@@ -365,10 +369,28 @@
   box-shadow: 0 0 12px #22c55e, inset 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
+.led-indicator.on-blue {
+  background: radial-gradient(circle at 35% 35%, #93c5fd, #3b82f6, #1d4ed8);
+  border-color: #60a5fa;
+  box-shadow: 0 0 12px #3b82f6, inset 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.led-indicator.on-yellow {
+  background: radial-gradient(circle at 35% 35%, #fef08a, #eab308, #a16207);
+  border-color: #facc15;
+  box-shadow: 0 0 12px #eab308, inset 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
 .led-indicator.on-red {
   background: radial-gradient(circle at 35% 35%, #fca5a5, #ef4444, #b91c1c);
   border-color: #f87171;
   box-shadow: 0 0 12px #ef4444, inset 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.led-indicator.on-orange {
+  background: radial-gradient(circle at 35% 35%, #fed7aa, #f97316, #c2410c);
+  border-color: #fb923c;
+  box-shadow: 0 0 12px #f97316, inset 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 /* Digital Numeric Display / Control */
@@ -709,4 +731,70 @@
     padding: 10px;
     gap: 8px;
   }
+}
+
+/* Edição direta de título inline (Duplo clique) */
+.fp-widget-header[contenteditable="true"] {
+  outline: 2px dashed #0284c7 !important;
+  background: rgba(2, 132, 199, 0.08) !important;
+  color: #0369a1 !important;
+  border-radius: 4px;
+  padding: 1px 6px;
+  cursor: text;
+  box-shadow: 0 0 6px rgba(2, 132, 199, 0.2);
+}
+
+/* Submenu e paleta de cores para conexões e blocos */
+.fp-context-item.has-submenu {
+  position: relative;
+  justify-content: space-between;
+}
+
+.fp-submenu {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  background: #1e222d;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  padding: 6px;
+  min-width: 140px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 3100;
+}
+
+.fp-context-item.has-submenu:hover .fp-submenu,
+.fp-context-item.has-submenu:focus-within .fp-submenu {
+  display: flex;
+}
+
+.wire-color-swatches {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 4px;
+}
+
+.wire-color-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #475569;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.wire-color-circle:hover {
+  transform: scale(1.2);
+  border-color: #ffffff;
+}
+
+/* Desabilitação visual dos botões de Desfazer/Refazer */
+.tool-btn:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
 }

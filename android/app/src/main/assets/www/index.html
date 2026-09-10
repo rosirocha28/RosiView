@@ -13,10 +13,10 @@
   <link rel="manifest" href="manifest.json">
 
   <!-- Estilos CSS -->
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/front_panel.css">
-  <link rel="stylesheet" href="css/block_diagram.css">
-  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/main.css?v=0.4.1">
+  <link rel="stylesheet" href="css/front_panel.css?v=0.4.1">
+  <link rel="stylesheet" href="css/block_diagram.css?v=0.4.1">
+  <link rel="stylesheet" href="css/components.css?v=0.4.1">
 </head>
 <body>
 
@@ -35,65 +35,79 @@
 
       <!-- Seção Toolbar de Controle da Execução & Projeto -->
       <div class="toolbar-section" id="toolbar-actions">
-        <button class="tool-btn btn-run" id="btn-run" title="Executar uma iteração (Single Step)">
-          <span>▶</span>
-          <span class="btn-text">Run</span>
-        </button>
-
-        <button class="tool-btn" id="btn-cont-run" title="Execução contínua (While Loop)">
-          <span>🔁</span>
-          <span class="btn-text">Cont. Run</span>
-        </button>
-
-        <button class="tool-btn btn-stop" id="btn-stop" title="Parar Execução">
-          <span>⏹</span>
-          <span class="btn-text">Stop</span>
-        </button>
-
-        <button class="tool-btn btn-highlight" id="btn-highlight" title="Destacar fluxo de dados e execução passo-a-passo">
-          <span>💡</span>
-          <span class="btn-text">Highlight</span>
-        </button>
-
-        <div class="divider-vertical"></div>
-
-        <button class="tool-btn" id="btn-palette" title="Abrir paleta de nós e instrumentos">
-          <span>🧰</span>
-          <span class="btn-text">Paleta</span>
-        </button>
-
-        <div class="divider-vertical divider-project"></div>
-
-        <!-- Ferramentas de Projeto (Apenas ícones com tooltip) -->
+        <!-- 1. Novo -->
         <button class="tool-btn" id="btn-new" title="Iniciar Novo Projeto">
           <span>📄</span>
         </button>
 
-        <button class="tool-btn" id="btn-save" title="Salvar Projeto (.rosi)">
-          <span>💾</span>
-        </button>
-
+        <!-- 2. Abrir -->
         <button class="tool-btn" id="btn-load" title="Abrir Projeto (.rosi)">
           <span>📁</span>
         </button>
         <input type="file" id="file-input" accept=".rosi,.json" style="display: none;">
 
+        <!-- 3. Salvar -->
+        <button class="tool-btn" id="btn-save" title="Salvar Projeto (.rosi)">
+          <span>💾</span>
+        </button>
+
+        <!-- 4. Ajuda -->
+        <button class="tool-btn" id="btn-help" title="Ajuda e Manual do Aluno">
+          <span>?</span>
+        </button>
+
+        <!-- 5. Desfazer (Apenas símbolo) -->
+        <button class="tool-btn" id="btn-undo" title="Desfazer ação (Ctrl + Z)" disabled>
+          <span>↩️</span>
+        </button>
+
+        <!-- 6. Refazer (Apenas símbolo) -->
+        <button class="tool-btn" id="btn-redo" title="Refazer ação (Ctrl + Y)" disabled>
+          <span>↪️</span>
+        </button>
+
+        <!-- 7. Limpar Tudo -->
         <button class="tool-btn" id="btn-clear" title="Limpar tudo">
           <span>🗑</span>
         </button>
 
-        <button class="tool-btn" id="btn-help" title="Ajuda">
-          <span>?</span>
-        </button>
-      </div>
+        <!-- Divisão de sessão 1 -->
+        <div class="divider-vertical"></div>
 
-      <!-- Seção Botão de Hardware & Abas de Visualização -->
-      <div class="toolbar-section" id="toolbar-right-section">
-        <!-- Botão de Hardware com Menu Dropdown Flutuante -->
-        <div class="hardware-btn-wrapper" style="position: relative;">
-          <button class="tool-btn" id="btn-hardware" title="Configurar Modo de Hardware e Aquisição">
+        <!-- 8. Paleta -->
+        <button class="tool-btn" id="btn-palette" title="Abrir paleta de nós e instrumentos">
+          <span>🧰</span>
+          <span class="btn-text">Paleta</span>
+        </button>
+
+        <!-- 9. Run (Apenas símbolo) -->
+        <button class="tool-btn btn-run" id="btn-run" title="Executar uma iteração (Single Step)">
+          <span>▶</span>
+        </button>
+
+        <!-- 10. Continuous Run (Apenas símbolo) -->
+        <button class="tool-btn btn-cont-run" id="btn-cont-run" title="Execução contínua (While Loop)">
+          <span>🔁</span>
+        </button>
+
+        <!-- 11. Stop (Apenas símbolo) -->
+        <button class="tool-btn btn-stop" id="btn-stop" title="Parar Execução">
+          <span>⏹</span>
+        </button>
+
+        <!-- 12. Highlight (Apenas símbolo) -->
+        <button class="tool-btn btn-highlight" id="btn-highlight" title="Destacar fluxo de dados e execução passo-a-passo">
+          <span>💡</span>
+        </button>
+
+        <!-- Divisão de sessão 2 -->
+        <div class="divider-vertical"></div>
+
+        <!-- 13. Hardware (com menu dropdown flutuante) -->
+        <div class="hardware-btn-wrapper" id="dropdown-hardware" style="position: relative;">
+          <button class="tool-btn" id="btn-hardware" title="Selecionar Modo de Hardware">
             <span>🔌</span>
-            <span>Hardware</span>
+            <span class="btn-text">Hardware</span>
           </button>
 
           <div class="hardware-dropdown-menu" id="hardware-dropdown-menu" style="display: none;">
@@ -108,22 +122,22 @@
             <button class="hw-dropdown-item" data-value="websocket">
               <span class="hw-item-icon">⚡</span>
               <div class="hw-item-info">
-                <strong>NI USB-6009 (Bridge WebSocket)</strong>
-                <small>Conexão local via bridge Python</small>
-              </div>
-            </button>
-            <button class="hw-dropdown-item" data-value="webusb">
-              <span class="hw-item-icon">🔌</span>
-              <div class="hw-item-info">
-                <strong>NI USB-6009 (WebUSB Direto)</strong>
-                <small>Comunicação direta USB pelo navegador</small>
+                <strong>NI USB-6009 (Planta Real - Bridge NI-DAQmx)</strong>
+                <small>Recomendado no Windows • Conexão nativa sem conflitos</small>
               </div>
             </button>
           </div>
         </div>
 
-        <div class="divider-vertical"></div>
+        <!-- 14. Conectar (desabilitado se Planta Virtual estiver selecionada) -->
+        <button class="tool-btn btn-connect-hw" id="btn-connect-hw" title="O modo Planta Virtual está ativo. Selecione a placa NI USB-6009 no menu Hardware para conectar." disabled>
+          <span>⚡</span>
+          <span class="btn-text">Conectar</span>
+        </button>
+      </div>
 
+      <!-- Seção Abas de Visualização & Botão de Recolher -->
+      <div class="toolbar-section" id="toolbar-right-section">
         <!-- Abas de Visualização -->
         <div class="view-tabs">
           <div class="view-tab" data-view="front">Painel Frontal</div>
@@ -297,7 +311,7 @@
         </div>
         <div class="mobile-splash-title-row">
           <span class="mobile-splash-title">RosiView</span>
-          <span class="mobile-splash-badge">v0.4.0</span>
+          <span class="mobile-splash-badge">v0.4.1</span>
         </div>
         <div class="mobile-splash-subtitle">IFES • Sistemas de Controle Integrado</div>
         
@@ -315,7 +329,7 @@
   </div>
 
   <!-- Ponto de Entrada da Aplicação (Bundle Autônomo com suporte a file:///) -->
-  <script src="js/rosiview_bundle.js"></script>
+  <script src="js/rosiview_bundle.js?v=0.4.1"></script>
 
 </body>
 </html>

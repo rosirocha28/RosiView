@@ -12,16 +12,18 @@
     linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
   background-size: 16px 16px;
-  overflow: auto;
+  overflow: hidden !important;
   cursor: default;
+  user-select: none;
 }
 
 .diagram-wire-layer {
   position: absolute;
   top: 0;
   left: 0;
-  width: 3000px;
-  height: 3000px;
+  width: 1px;
+  height: 1px;
+  overflow: visible;
   pointer-events: none;
   z-index: 5;
 }
@@ -79,6 +81,7 @@
   min-width: 70px;
   cursor: move;
   user-select: none;
+  pointer-events: auto;
   z-index: 10;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }

@@ -7,6 +7,7 @@
 export class ToggleSwitchWidget {
   constructor({ id, title = 'Interruptor', labelOn = 'ON', labelOff = 'OFF', initialState = false, x = 50, y = 50 }) {
     this.id = id;
+    this.kind = 'switch';
     this.title = title;
     this.labelOn = labelOn;
     this.labelOff = labelOff;
@@ -67,12 +68,21 @@ export class ToggleSwitchWidget {
     return this.state;
   }
 
+  getValue() {
+    return this.state;
+  }
+
+  setValue(val) {
+    this.setState(val);
+  }
+
   setupDrag() {}
 }
 
 export class LEDWidget {
   constructor({ id, title = 'LED Indicador', color = 'green', initialState = false, x = 120, y = 50 }) {
     this.id = id;
+    this.kind = 'led';
     this.title = title;
     this.color = color;
     this.state = initialState;
@@ -105,12 +115,45 @@ export class LEDWidget {
     this.setupDrag();
   }
 
-  setState(newState) {
-    this.state = Boolean(newState);
+  _clearColorClasses() {
     if (this.ledEl) {
-      if (this.state) this.ledEl.classList.add(`on-${this.color}`);
-      else this.ledEl.classList.remove(`on-${this.color}`);
+      this.ledEl.classList.remove('on-green', 'on-blue', 'on-yellow', 'on-red', 'on-orange');
+      for (const cls of Array.from(this.ledEl.classList)) {
+        if (cls.startsWith('on-')) {
+          this.ledEl.classList.remove(cls);
+        }
+      }
     }
+  }
+
+  setColor(color) {
+    this.color = color || 'green';
+    this._clearColorClasses();
+    if (this.ledEl && this.state) {
+      this.ledEl.classList.add(`on-${this.color}`);
+    }
+  }
+
+  setState(newState) {
+    const isOn = (newState === true || newState === 1 || newState === 'true' || newState === '1' || (typeof newState === 'number' && newState > 0));
+    this.state = Boolean(isOn);
+    this._clearColorClasses();
+    if (this.ledEl && this.state) {
+      this.ledEl.classList.add(`on-${this.color || 'green'}`);
+    }
+  }
+
+  getValue() {
+    return this.state;
+  }
+
+  setValue(val) {
+    this.setState(val);
+  }
+
+  reset() {
+    this.state = false;
+    this._clearColorClasses();
   }
 
   setupDrag() {}

@@ -6,6 +6,7 @@
 export class ThermometerWidget {
   constructor({ id, title = 'Temperatura', min = 0, max = 200, unit = '°C', x = 50, y = 50 }) {
     this.id = id;
+    this.kind = 'thermometer';
     this.title = title;
     this.min = min;
     this.max = max;

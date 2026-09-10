@@ -6,6 +6,7 @@
 export class NumericControlWidget {
   constructor({ id, title = 'Controle Numérico', initialValue = 0, isIndicator = false, x = 50, y = 50 }) {
     this.id = id;
+    this.kind = isIndicator ? 'num_ind' : 'num_ctrl';
     this.title = title;
     this.value = initialValue;
     this.isIndicator = isIndicator;

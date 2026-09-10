@@ -1051,6 +1051,7 @@
   class ThermometerWidget {
     constructor({ id, title = 'Termômetro', min = 0, max = 200, unit = '°C', x = 50, y = 50 }) {
       this.id = id;
+      this.kind = 'thermometer';
       this.title = title;
       this.min = min;
       this.max = max;
@@ -1073,7 +1074,7 @@
       el.style.top = `${this.y}px`;
 
       el.innerHTML = `
-        <div class="fp-widget-header" contenteditable="true" title="Clique duas vezes para renomear">${this.title}</div>
+        <div class="fp-widget-header">${this.title}</div>
         <div class="fp-widget-content">
           <div class="thermometer-wrapper">
             <div class="thermometer-scale" id="scale_${this.id}"></div>
@@ -1137,6 +1138,7 @@
   class TankWidget {
     constructor({ id, title = 'Tanque de Nível', min = 0, max = 300, unit = 'mm', x = 60, y = 60 }) {
       this.id = id;
+      this.kind = 'tank';
       this.title = title;
       this.min = min;
       this.max = max;
@@ -1158,7 +1160,7 @@
       el.style.top = `${this.y}px`;
 
       el.innerHTML = `
-        <div class="fp-widget-header" contenteditable="true" title="Clique para renomear">${this.title}</div>
+        <div class="fp-widget-header">${this.title}</div>
         <div class="fp-widget-content">
           <div class="tank-container">
             <div class="tank-scale">
@@ -1201,6 +1203,7 @@
   class ChartWidget {
     constructor({ id, title = 'Waveform Chart', maxPoints = 200, x = 200, y = 50, plots = ['Plot 0'] }) {
       this.id = id;
+      this.kind = 'chart';
       this.title = title;
       this.maxPoints = maxPoints;
       this.x = x;
@@ -1224,7 +1227,7 @@
       el.style.padding = '4px';
 
       el.innerHTML = `
-        <div class="fp-widget-header" contenteditable="true" style="margin-bottom: 2px;">${this.title}</div>
+        <div class="fp-widget-header" style="margin-bottom: 2px;">${this.title}</div>
         <div class="chart-container">
           <div class="chart-header-bar">
             <div class="chart-legend" id="legend_${this.id}"></div>
@@ -1367,6 +1370,7 @@
   class KnobWidget {
     constructor({ id, title = 'Knob', min = 0, max = 10, step = 0.1, initialValue = 0, unit = 'V', x = 60, y = 60 }) {
       this.id = id;
+      this.kind = 'knob';
       this.title = title;
       this.min = Number(min);
       this.max = Number(max);
@@ -1394,7 +1398,7 @@
       el.style.top = `${this.y}px`;
 
       el.innerHTML = `
-        <div class="fp-widget-header" contenteditable="true" title="Clique para renomear, duplo clique para configurar limites">${this.title}</div>
+        <div class="fp-widget-header">${this.title}</div>
         <div class="fp-widget-content">
           <div class="knob-container">
             <div class="knob-dial-wrapper" id="knob_dial_${this.id}" title="Arraste para cima/baixo ou use a roda do mouse">
@@ -1554,6 +1558,7 @@
   class GaugeWidget {
     constructor({ id, title = 'Tacômetro', min = 0, max = 3000, initialValue = 0, unit = 'RPM', x = 60, y = 60 }) {
       this.id = id;
+      this.kind = 'gauge';
       this.title = title;
       this.min = Number(min);
       this.max = Number(max);
@@ -1580,7 +1585,7 @@
       const midVal = Math.round((this.min + this.max) / 2);
 
       el.innerHTML = `
-        <div class="fp-widget-header" contenteditable="true" title="Clique para renomear, duplo clique para configurar limites">${this.title}</div>
+        <div class="fp-widget-header">${this.title}</div>
         <div class="fp-widget-content">
           <div class="gauge-container">
             <svg class="gauge-svg" viewBox="0 0 180 128">
@@ -1721,6 +1726,7 @@
   class SliderWidget {
     constructor({ id, title = 'Slider (Setpoint)', min = 0, max = 300, step = 1, initialValue = 100, x = 60, y = 280, isVertical = false }) {
       this.id = id;
+      this.kind = 'slider';
       this.title = title;
       this.min = min;
       this.max = max;
@@ -1744,7 +1750,7 @@
       el.style.top = `${this.y}px`;
 
       el.innerHTML = `
-        <div class="fp-widget-header" contenteditable="true" title="Clique para renomear">${this.title}</div>
+        <div class="fp-widget-header">${this.title}</div>
         <div class="fp-widget-content">
           <div class="slider-container">
             <input type="range" class="${this.isVertical ? 'slider-input-v' : 'slider-input-h'}" 
@@ -1780,6 +1786,7 @@
   class ToggleSwitchWidget {
     constructor({ id, title = 'Interruptor', labelOn = 'ON', labelOff = 'OFF', initialState = false, x = 50, y = 50 }) {
       this.id = id;
+      this.kind = 'switch';
       this.title = title;
       this.labelOn = labelOn;
       this.labelOff = labelOff;
@@ -1800,7 +1807,7 @@
       el.style.top = `${this.y}px`;
 
       el.innerHTML = `
-        <div class="fp-widget-header" contenteditable="true" title="Clique para renomear">${this.title}</div>
+        <div class="fp-widget-header">${this.title}</div>
         <div class="fp-widget-content">
           <div class="toggle-switch-box">
             <div style="font-size: 10px; font-weight: 700; color: #475569;">${this.labelOn}</div>
@@ -1828,6 +1835,8 @@
     }
 
     getState() { return this.state; }
+    getValue() { return this.state; }
+    setValue(val) { this.setState(val); }
 
     setupDrag() {}
   }
@@ -1835,8 +1844,9 @@
   class LEDWidget {
     constructor({ id, title = 'LED Indicador', color = 'green', initialState = false, x = 120, y = 50 }) {
       this.id = id;
+      this.kind = 'led';
       this.title = title;
-      this.color = color;
+      this.color = color || 'green';
       this.state = initialState;
       this.x = x;
       this.y = y;
@@ -1853,9 +1863,9 @@
       el.style.top = `${this.y}px`;
 
       el.innerHTML = `
-        <div class="fp-widget-header" contenteditable="true" title="Clique para renomear">${this.title}</div>
+        <div class="fp-widget-header">${this.title}</div>
         <div class="fp-widget-content" style="padding: 10px;">
-          <div class="led-indicator ${this.state ? `on-${this.color}` : ''}" id="led_${this.id}"></div>
+          <div class="led-indicator ${this.state ? `on-${this.color || 'green'}` : ''}" id="led_${this.id}"></div>
         </div>
       `;
 
@@ -1864,12 +1874,40 @@
       this.setupDrag();
     }
 
-    setState(newState) {
-      this.state = Boolean(newState);
+    _clearColorClasses() {
       if (this.ledEl) {
-        if (this.state) this.ledEl.classList.add(`on-${this.color}`);
-        else this.ledEl.classList.remove(`on-${this.color}`);
+        this.ledEl.classList.remove('on-green', 'on-blue', 'on-yellow', 'on-red', 'on-orange');
+        for (const cls of Array.from(this.ledEl.classList)) {
+          if (cls.startsWith('on-')) {
+            this.ledEl.classList.remove(cls);
+          }
+        }
       }
+    }
+
+    setColor(color) {
+      this.color = color || 'green';
+      this._clearColorClasses();
+      if (this.ledEl && this.state) {
+        this.ledEl.classList.add(`on-${this.color}`);
+      }
+    }
+
+    setState(newState) {
+      const isOn = (newState === true || newState === 1 || newState === 'true' || newState === '1' || (typeof newState === 'number' && newState > 0));
+      this.state = Boolean(isOn);
+      this._clearColorClasses();
+      if (this.ledEl && this.state) {
+        this.ledEl.classList.add(`on-${this.color || 'green'}`);
+      }
+    }
+
+    getValue() { return this.state; }
+    setValue(val) { this.setState(val); }
+
+    reset() {
+      this.state = false;
+      this._clearColorClasses();
     }
 
     setupDrag() {}
@@ -1878,6 +1916,7 @@
   class NumericControlWidget {
     constructor({ id, title = 'Controle Numérico', initialValue = 0, isIndicator = false, x = 50, y = 50 }) {
       this.id = id;
+      this.kind = isIndicator ? 'num_ind' : 'num_ctrl';
       this.title = title;
       this.value = initialValue;
       this.isIndicator = isIndicator;
@@ -1897,7 +1936,7 @@
       el.style.top = `${this.y}px`;
 
       el.innerHTML = `
-        <div class="fp-widget-header" contenteditable="true" title="Clique para renomear">${this.title}</div>
+        <div class="fp-widget-header">${this.title}</div>
         <div class="fp-widget-content">
           <div class="numeric-box">
             ${this.isIndicator 
@@ -2036,28 +2075,39 @@
   // 8. MANAGERS (FRONT PANEL, BLOCK DIAGRAM, RUNTIME)
   // ==========================================================================
   class FrontPanelManager {
-    constructor(containerId, app) {
-      this.container = document.getElementById(containerId);
+    constructor(containerIdOrOpts, maybeApp = null) {
+      let containerId = containerIdOrOpts;
+      let app = maybeApp;
+      if (typeof containerIdOrOpts === 'object' && containerIdOrOpts !== null) {
+        containerId = containerIdOrOpts.containerId;
+        app = containerIdOrOpts.app || maybeApp;
+      }
+      this.container = typeof containerId === 'string' ? document.getElementById(containerId) : containerId;
       this.app = app;
       this.widgets = new Map();
       this.bindings = [];
       this.selectedWidgetId = null;
       this.contextMenuEl = null;
+
+      this.cameraLayer = null;
+      this.zoomWrapper = null;
+      this.pan = { x: 0, y: 0 };
+      this.zoom = 1.0;
+      this.isPanning = false;
+
       this.init();
     }
 
     init() {
       this.container.className = 'front-panel-canvas';
-      this.zoomWrapper = document.createElement('div');
-      this.zoomWrapper.id = 'front-panel-zoom-wrapper';
-      this.zoomWrapper.style.cssText = 'width: 3000px; height: 3000px; position: relative; transform-origin: 0 0;';
-      this.container.appendChild(this.zoomWrapper);
+      if (!this.cameraLayer) {
+        this.cameraLayer = document.createElement('div');
+        this.cameraLayer.id = 'front-panel-camera-layer';
+        this.cameraLayer.style.cssText = 'position: absolute; top: 0; left: 0; width: 0; height: 0; transform-origin: 0 0;';
+        this.container.appendChild(this.cameraLayer);
+        this.zoomWrapper = this.cameraLayer;
+      }
 
-      TouchGestureHandler.attachPinchZoom(this.container, this.zoomWrapper, {
-        minScale: 0.5,
-        maxScale: 2.5
-      });
-      
       // Clique no fundo vazio desseleciona elemento e fecha menu de contexto
       this.container.addEventListener('click', (e) => {
         if (!e.target.closest('.fp-widget') && !e.target.closest('.fp-context-menu') && !e.target.closest('.widget-config-modal')) {
@@ -2065,6 +2115,132 @@
           this.closeContextMenu();
         }
       });
+
+      // Pan com botão esquerdo na área vazia (navegação de câmera e movimentação da grade)
+      this.container.addEventListener('mousedown', (e) => {
+        if (e.button === 0) {
+          if (!e.target.closest('.fp-widget, .fp-context-menu, .widget-config-modal, input, button, select, textarea')) {
+            this.selectWidget(null);
+            this.closeContextMenu();
+
+            this.isPanning = true;
+            const startMouseX = e.clientX;
+            const startMouseY = e.clientY;
+            const startPanX = this.pan.x;
+            const startPanY = this.pan.y;
+            this.container.style.cursor = 'grabbing';
+
+            const onMouseMove = (ev) => {
+              if (!this.isPanning) return;
+              this.pan.x = startPanX + (ev.clientX - startMouseX);
+              this.pan.y = startPanY + (ev.clientY - startMouseY);
+              this.updateTransform();
+            };
+
+            const onMouseUp = () => {
+              this.isPanning = false;
+              this.container.style.cursor = 'default';
+              window.removeEventListener('mousemove', onMouseMove);
+              window.removeEventListener('mouseup', onMouseUp);
+            };
+
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+          }
+        }
+      });
+
+      // Zoom com roda do mouse centralizado no cursor
+      this.container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const rect = this.container.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const worldX = (mouseX - this.pan.x) / this.zoom;
+        const worldY = (mouseY - this.pan.y) / this.zoom;
+
+        const factor = e.deltaY < 0 ? 1.12 : (1 / 1.12);
+        const newZoom = Math.min(Math.max(this.zoom * factor, 0.25), 3.5);
+
+        this.pan.x = mouseX - worldX * newZoom;
+        this.pan.y = mouseY - worldY * newZoom;
+        this.zoom = newZoom;
+
+        this.updateTransform();
+      }, { passive: false });
+
+      // Touch pan (1 dedo) e pinch zoom (2 dedos) no Painel Frontal (Mobile/Android)
+      let touchInitialDist = 0;
+      let touchInitialScale = 1.0;
+      let touchStartCenter = { x: 0, y: 0 };
+      let touchStartPan = { x: 0, y: 0 };
+      let isTouchPanning = false;
+
+      this.container.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.fp-widget, .fp-context-menu, .widget-config-modal, input, button, select, textarea')) {
+          return;
+        }
+        this.selectWidget(null);
+        this.closeContextMenu();
+
+        if (e.touches.length === 1) {
+          isTouchPanning = true;
+          touchStartCenter = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          touchStartPan = { x: this.pan.x, y: this.pan.y };
+        } else if (e.touches.length === 2) {
+          isTouchPanning = false;
+          touchInitialDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+          touchInitialScale = this.zoom;
+          touchStartCenter = {
+            x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+            y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+          };
+          touchStartPan = { x: this.pan.x, y: this.pan.y };
+        }
+      }, { passive: true });
+
+      this.container.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1 && isTouchPanning) {
+          const dx = e.touches[0].clientX - touchStartCenter.x;
+          const dy = e.touches[0].clientY - touchStartCenter.y;
+          this.pan.x = touchStartPan.x + dx;
+          this.pan.y = touchStartPan.y + dy;
+          this.updateTransform();
+          e.preventDefault();
+        } else if (e.touches.length === 2 && touchInitialDist > 0) {
+          const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+          const factor = dist / touchInitialDist;
+          const newZoom = Math.min(Math.max(touchInitialScale * factor, 0.25), 3.5);
+
+          const rect = this.container.getBoundingClientRect();
+          const mouseX = touchStartCenter.x - rect.left;
+          const mouseY = touchStartCenter.y - rect.top;
+          const worldX = (mouseX - touchStartPan.x) / touchInitialScale;
+          const worldY = (mouseY - touchStartPan.y) / touchInitialScale;
+
+          this.pan.x = mouseX - worldX * newZoom;
+          this.pan.y = mouseY - worldY * newZoom;
+          this.zoom = newZoom;
+
+          this.updateTransform();
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      const onTouchEnd = (e) => {
+        if (e.touches.length === 0) {
+          isTouchPanning = false;
+          touchInitialDist = 0;
+        } else if (e.touches.length === 1) {
+          isTouchPanning = true;
+          touchStartCenter = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          touchStartPan = { x: this.pan.x, y: this.pan.y };
+          touchInitialDist = 0;
+        }
+      };
+      this.container.addEventListener('touchend', onTouchEnd, { passive: true });
+      this.container.addEventListener('touchcancel', onTouchEnd, { passive: true });
 
       // Right-click no fundo do canvas abre a paleta (se não for sobre um widget)
       this.container.addEventListener('contextmenu', (e) => {
@@ -2088,11 +2264,24 @@
       });
     }
 
+    updateTransform() {
+      if (this.cameraLayer) {
+        this.cameraLayer.style.transform = `translate(${this.pan.x}px, ${this.pan.y}px) scale(${this.zoom})`;
+      }
+      this.container.style.backgroundPosition = `${this.pan.x}px ${this.pan.y}px`;
+      this.container.style.backgroundSize = `${16 * this.zoom}px ${16 * this.zoom}px`;
+    }
+
+    screenToWorld(clientX, clientY) {
+      const rect = this.container.getBoundingClientRect();
+      return {
+        x: (clientX - rect.left - this.pan.x) / this.zoom,
+        y: (clientY - rect.top - this.pan.y) / this.zoom
+      };
+    }
+
     getCurrentScale() {
-      if (!this.zoomWrapper) return 1;
-      const rect = this.zoomWrapper.getBoundingClientRect();
-      const scale = rect.width / 3000;
-      return (scale > 0.05 && scale < 50) ? scale : 1;
+      return this.zoom || 1.0;
     }
 
     selectWidget(widgetId) {
@@ -2174,7 +2363,7 @@
       menu.querySelector('[data-action="config"]').addEventListener('click', (ev) => {
         ev.stopPropagation();
         this.closeContextMenu();
-        this.openWidgetConfig(widget);
+        this.handleWidgetConfigure(widget);
       });
 
       menu.querySelector('[data-action="delete"]').addEventListener('click', (ev) => {
@@ -2196,6 +2385,177 @@
         document.addEventListener('contextmenu', onDismiss);
         document.addEventListener('touchstart', onDismiss);
       }, 50);
+    }
+
+    handleWidgetConfigure(widget) {
+      const kind = this.getWidgetKind(widget);
+      if (kind === 'led') {
+        this.openLedConfig(widget);
+      } else if (kind === 'switch' || kind === 'num_ctrl' || kind === 'num_ind') {
+        this.openSimpleTitleConfig(widget);
+      } else {
+        this.openWidgetConfig(widget);
+      }
+    }
+
+    openLedConfig(widget) {
+      const existing = document.querySelector('.widget-config-modal');
+      if (existing) existing.remove();
+
+      const titleVal = widget.title || 'LED Indicador';
+      const currentColor = widget.color || 'green';
+
+      const modal = document.createElement('div');
+      modal.className = 'widget-config-modal';
+      modal.innerHTML = `
+        <div class="widget-config-box">
+          <div class="widget-config-header">
+            <div class="widget-config-title">
+              <span style="font-size: 15px;">⚙️</span>
+              <span>Configurar LED Indicador</span>
+            </div>
+            <button class="palette-close-btn" id="cfg_close" title="Fechar">✕</button>
+          </div>
+          <div class="widget-config-body">
+            <div class="config-field">
+              <label for="cfg_title">Rótulo / Título:</label>
+              <input type="text" id="cfg_title" value="${titleVal}" placeholder="Nome do LED">
+            </div>
+            <div class="config-field">
+              <label>Cor do LED Ativo:</label>
+              <div class="led-color-picker" style="display: flex; gap: 12px; margin-bottom: 10px; justify-content: center; padding: 6px 0;">
+                <div class="led-color-circle ${currentColor === 'green' ? 'active' : ''}" data-color="green" title="Verde" style="width: 32px; height: 32px; border-radius: 50%; background: #22c55e; cursor: pointer; border: 3px solid ${currentColor === 'green' ? '#ffffff' : 'transparent'}; box-shadow: 0 0 10px rgba(34,197,94,0.7); transition: transform 0.15s, border-color 0.15s; ${currentColor === 'green' ? 'transform: scale(1.15);' : ''}"></div>
+                <div class="led-color-circle ${currentColor === 'blue' ? 'active' : ''}" data-color="blue" title="Azul" style="width: 32px; height: 32px; border-radius: 50%; background: #38bdf8; cursor: pointer; border: 3px solid ${currentColor === 'blue' ? '#ffffff' : 'transparent'}; box-shadow: 0 0 10px rgba(56,189,248,0.7); transition: transform 0.15s, border-color 0.15s; ${currentColor === 'blue' ? 'transform: scale(1.15);' : ''}"></div>
+                <div class="led-color-circle ${currentColor === 'yellow' ? 'active' : ''}" data-color="yellow" title="Amarelo" style="width: 32px; height: 32px; border-radius: 50%; background: #eab308; cursor: pointer; border: 3px solid ${currentColor === 'yellow' ? '#ffffff' : 'transparent'}; box-shadow: 0 0 10px rgba(234,179,8,0.7); transition: transform 0.15s, border-color 0.15s; ${currentColor === 'yellow' ? 'transform: scale(1.15);' : ''}"></div>
+                <div class="led-color-circle ${currentColor === 'red' ? 'active' : ''}" data-color="red" title="Vermelho" style="width: 32px; height: 32px; border-radius: 50%; background: #ef4444; cursor: pointer; border: 3px solid ${currentColor === 'red' ? '#ffffff' : 'transparent'}; box-shadow: 0 0 10px rgba(239,68,68,0.7); transition: transform 0.15s, border-color 0.15s; ${currentColor === 'red' ? 'transform: scale(1.15);' : ''}"></div>
+                <div class="led-color-circle ${currentColor === 'orange' ? 'active' : ''}" data-color="orange" title="Laranja" style="width: 32px; height: 32px; border-radius: 50%; background: #f97316; cursor: pointer; border: 3px solid ${currentColor === 'orange' ? '#ffffff' : 'transparent'}; box-shadow: 0 0 10px rgba(249,115,22,0.7); transition: transform 0.15s, border-color 0.15s; ${currentColor === 'orange' ? 'transform: scale(1.15);' : ''}"></div>
+              </div>
+              <select id="cfg_led_color" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #f8fafc; padding: 7px 10px; border-radius: 6px; font-size: 13px; outline: none;">
+                <option value="green" ${currentColor === 'green' ? 'selected' : ''}>Verde (padrão)</option>
+                <option value="blue" ${currentColor === 'blue' ? 'selected' : ''}>Azul</option>
+                <option value="yellow" ${currentColor === 'yellow' ? 'selected' : ''}>Amarelo</option>
+                <option value="red" ${currentColor === 'red' ? 'selected' : ''}>Vermelho</option>
+                <option value="orange" ${currentColor === 'orange' ? 'selected' : ''}>Laranja</option>
+              </select>
+            </div>
+          </div>
+          <div class="widget-config-footer">
+            <button class="config-btn config-btn-cancel" id="cfg_cancel">Cancelar</button>
+            <button class="config-btn config-btn-save" id="cfg_save">Salvar</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      const colorSelect = modal.querySelector('#cfg_led_color');
+      const circles = modal.querySelectorAll('.led-color-circle');
+
+      const updateCircleSelection = (selectedColor) => {
+        circles.forEach(c => {
+          const cColor = c.getAttribute('data-color');
+          if (cColor === selectedColor) {
+            c.classList.add('active');
+            c.style.borderColor = '#ffffff';
+            c.style.transform = 'scale(1.15)';
+          } else {
+            c.classList.remove('active');
+            c.style.borderColor = 'transparent';
+            c.style.transform = 'scale(1.0)';
+          }
+        });
+      };
+
+      circles.forEach(c => {
+        c.addEventListener('click', () => {
+          const color = c.getAttribute('data-color');
+          colorSelect.value = color;
+          updateCircleSelection(color);
+        });
+      });
+
+      colorSelect.addEventListener('change', () => {
+        updateCircleSelection(colorSelect.value);
+      });
+
+      const close = () => modal.remove();
+      modal.querySelector('#cfg_close').onclick = close;
+      modal.querySelector('#cfg_cancel').onclick = close;
+
+      modal.querySelector('#cfg_save').onclick = () => {
+        const newTitle = modal.querySelector('#cfg_title').value.trim() || 'LED Indicador';
+        const newColor = modal.querySelector('#cfg_led_color').value;
+
+        widget.title = newTitle;
+        widget.color = newColor;
+        if (typeof widget.setColor === 'function') {
+          widget.setColor(newColor);
+        }
+
+        this.applyWidgetConfig(widget);
+        close();
+        if (this.app && this.app.undoManager) {
+          this.app.undoManager.pushState();
+        }
+        if (this.app && typeof this.app.showToast === 'function') {
+          this.app.showToast(`LED '${newTitle}' atualizado!`);
+        }
+      };
+    }
+
+    openSimpleTitleConfig(widget) {
+      const existing = document.querySelector('.widget-config-modal');
+      if (existing) existing.remove();
+
+      const titleVal = widget.title || 'Instrumento';
+      const kind = this.getWidgetKind(widget);
+      let titleHeader = 'Configurar Instrumento';
+      if (kind === 'switch') titleHeader = 'Configurar Chave Toggle';
+      else if (kind === 'num_ctrl') titleHeader = 'Configurar Controle Numérico';
+      else if (kind === 'num_ind') titleHeader = 'Configurar Display Numérico';
+
+      const modal = document.createElement('div');
+      modal.className = 'widget-config-modal';
+      modal.innerHTML = `
+        <div class="widget-config-box">
+          <div class="widget-config-header">
+            <div class="widget-config-title">
+              <span style="font-size: 15px;">⚙️</span>
+              <span>${titleHeader}</span>
+            </div>
+            <button class="palette-close-btn" id="cfg_close" title="Fechar">✕</button>
+          </div>
+          <div class="widget-config-body">
+            <div class="config-field">
+              <label for="cfg_title">Rótulo / Título:</label>
+              <input type="text" id="cfg_title" value="${titleVal}" placeholder="Nome do instrumento">
+            </div>
+          </div>
+          <div class="widget-config-footer">
+            <button class="config-btn config-btn-cancel" id="cfg_cancel">Cancelar</button>
+            <button class="config-btn config-btn-save" id="cfg_save">Salvar</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      const close = () => modal.remove();
+      modal.querySelector('#cfg_close').onclick = close;
+      modal.querySelector('#cfg_cancel').onclick = close;
+
+      modal.querySelector('#cfg_save').onclick = () => {
+        const newTitle = modal.querySelector('#cfg_title').value.trim() || titleVal;
+        widget.title = newTitle;
+        this.applyWidgetConfig(widget);
+        close();
+        if (this.app && this.app.undoManager) {
+          this.app.undoManager.pushState();
+        }
+        if (this.app && typeof this.app.showToast === 'function') {
+          this.app.showToast(`'${newTitle}' atualizado!`);
+        }
+      };
     }
 
     openWidgetConfig(widget) {
@@ -2285,6 +2645,10 @@
       const header = widget.element.querySelector('.fp-widget-header, .widget-title, .chart-title, .switch-title, .led-title, .num-title, h4');
       if (header) {
         header.textContent = widget.title;
+      }
+
+      if (widget.color && typeof widget.setColor === 'function') {
+        widget.setColor(widget.color);
       }
 
       if (typeof widget.applyConfig === 'function') {
@@ -2414,7 +2778,12 @@
     }
 
     getWidgetKind(widget) {
+      if (!widget) return 'knob';
       if (widget.kind) return widget.kind;
+      if (widget.ledEl || widget.element?.querySelector?.('.led-indicator')) return 'led';
+      if (widget.switchEl || widget.toggleEl || widget.element?.querySelector?.('.toggle-switch')) return 'switch';
+      if (widget.plotEl || widget.canvas || widget.element?.querySelector?.('.chart-canvas')) return 'chart';
+      if (widget.inputEl || widget.element?.querySelector?.('input[type="number"]')) return widget.isIndicator ? 'num_ind' : 'num_ctrl';
       const name = widget.constructor ? widget.constructor.name : '';
       if (name === 'KnobWidget') return 'knob';
       if (name === 'SliderWidget') return 'slider';
@@ -2444,14 +2813,15 @@
       // 1. Clique seleciona o elemento (desselecionando qualquer outro anterior)
       el.addEventListener('click', (e) => {
         if (e.target.closest('.fp-context-menu') || e.target.closest('.widget-config-modal')) return;
+        e.stopPropagation();
         this.selectWidget(widget.id);
       });
 
-      // 2. Duplo clique abre Configurações com os 5 campos universais
+      // 2. Duplo clique abre Configurações apropriadas para o tipo de instrumento
       el.addEventListener('dblclick', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        this.openWidgetConfig(widget);
+        this.handleWidgetConfigure(widget);
       });
 
       // 3. Botão direito (Desktop) abre Menu de Contexto
@@ -2464,11 +2834,13 @@
       // 4. Arraste com Mouse no Desktop (com compensação de escala de Zoom)
       el.addEventListener('mousedown', (e) => {
         if (e.button !== 0) return;
-        if (e.target.closest('.knob-dial-wrapper, input, button, select, textarea, [contenteditable="true"], .fp-context-menu, .widget-config-modal')) {
+        if (e.target.closest('.toggle-switch, .knob-dial-wrapper, input, button, select, textarea, [contenteditable="true"], .fp-context-menu, .widget-config-modal')) {
+          e.stopPropagation();
           this.selectWidget(widget.id);
           return;
         }
 
+        e.stopPropagation();
         this.selectWidget(widget.id);
         this.closeContextMenu();
 
@@ -2577,10 +2949,14 @@
 
     addWidget(widget) {
       this.widgets.set(widget.id, widget);
-      if (this.zoomWrapper && !this.container.contains(this.zoomWrapper)) {
-        this.container.appendChild(this.zoomWrapper);
+      const layer = this.cameraLayer || this.zoomWrapper || this.container;
+      if (this.cameraLayer && !this.container.contains(this.cameraLayer)) {
+        this.container.appendChild(this.cameraLayer);
       }
-      (this.zoomWrapper || this.container).appendChild(widget.element);
+      if (widget.element) {
+        widget.element.style.pointerEvents = 'auto';
+      }
+      layer.appendChild(widget.element);
       this.attachWidgetInteractions(widget);
       return widget;
     }
@@ -2596,6 +2972,21 @@
 
     bindWidgetToNode({ widgetId, nodeId, terminalName, isInputToDiagram }) {
       this.bindings.push({ widgetId, nodeId, terminalName, isInputToDiagram });
+      if (isInputToDiagram) {
+        const widget = this.widgets.get(widgetId);
+        if (widget) {
+          widget.onChangeCallback = (val) => {
+            const graph = this.app ? this.app.graph : (window.app && window.app.graph);
+            if (graph) {
+              const node = graph.getNode(nodeId);
+              if (node) {
+                if (typeof node.setValue === 'function') node.setValue(val);
+                if (node.outputs && node.outputs.has(terminalName)) node.outputs.get(terminalName).value = val;
+              }
+            }
+          };
+        }
+      }
     }
 
     syncControlsToDiagram(graph) {
@@ -2605,36 +2996,50 @@
           const widget = this.widgets.get(binding.widgetId);
           const node = graph.getNode(binding.nodeId);
           if (widget && node) {
-            const val = widget.getValue ? widget.getValue() : (widget.getState ? widget.getState() : widget.value);
-            if (node.setValue) {
+            const val = widget.getValue ? widget.getValue() : (widget.getState ? widget.getState() : (widget.state !== undefined ? widget.state : widget.value));
+            if (typeof node.setValue === 'function') {
               node.setValue(val);
             } else {
-              const inTerm = node.getInput(binding.terminalName);
+              const inTerm = node.getInput ? node.getInput(binding.terminalName) : null;
               if (inTerm) inTerm.value = val;
+            }
+            if (node.outputs && node.outputs.has(binding.terminalName)) {
+              node.outputs.get(binding.terminalName).value = val;
             }
           }
         }
       }
     }
 
+    resetAllIndicators() {
+      for (const [, widget] of this.widgets) {
+        if (typeof widget.reset === 'function') {
+          widget.reset();
+        } else if (typeof widget.setState === 'function') {
+          widget.setState(false);
+        }
+      }
+    }
+
     syncDiagramToIndicators(graph) {
-      if (!graph) return;
+      const g = graph || (this.app ? this.app.graph : null) || (window.app && window.app.graph);
+      if (!g) return;
       for (const binding of this.bindings) {
         if (!binding.isInputToDiagram) {
           const widget = this.widgets.get(binding.widgetId);
-          const node = graph.getNode(binding.nodeId);
+          const node = g.getNode(binding.nodeId);
           if (widget && node) {
             let val = undefined;
             if (node.type === 'fp_indicator') {
-              for (const [, inTerm] of node.inputs) {
+              const inTerm = node.inputs ? (node.inputs.get(binding.terminalName) || (node.inputs.size > 0 ? Array.from(node.inputs.values())[0] : null)) : null;
+              if (inTerm) {
                 val = inTerm.value;
-                break;
               }
             } else {
-              const outTerm = node.getOutput(binding.terminalName);
+              const outTerm = node.getOutput ? node.getOutput(binding.terminalName) : null;
               if (outTerm && outTerm.value !== undefined) {
                 val = outTerm.value;
-              } else {
+              } else if (node.outputs) {
                 for (const [, outT] of node.outputs) {
                   val = outT.value;
                   break;
@@ -2642,13 +3047,17 @@
               }
             }
 
-            if (val !== undefined) {
-              if (widget instanceof ChartWidget) {
+            if (val !== undefined && val !== null) {
+              if (widget instanceof ChartWidget || (widget.constructor && widget.constructor.name === 'ChartWidget')) {
                 widget.pushData(val);
-              } else if (widget instanceof LEDWidget) {
+              } else if (widget instanceof LEDWidget || (widget.constructor && widget.constructor.name === 'LEDWidget') || (typeof widget.setState === 'function' && widget.kind === 'led')) {
                 widget.setState(val);
               } else if (widget.setValue) {
                 widget.setValue(val);
+              }
+            } else {
+              if (widget instanceof LEDWidget || (widget.constructor && widget.constructor.name === 'LEDWidget') || (typeof widget.setState === 'function' && widget.kind === 'led')) {
+                widget.setState(false);
               }
             }
           }
@@ -2657,13 +3066,20 @@
     }
 
     clear() {
-      if (this.zoomWrapper) {
+      if (this.cameraLayer) {
+        this.cameraLayer.innerHTML = '';
+      } else if (this.zoomWrapper) {
         this.zoomWrapper.innerHTML = '';
       } else {
         this.container.innerHTML = '';
       }
       this.widgets.clear();
       this.bindings = [];
+      this.selectedWidgetId = null;
+      this.closeContextMenu();
+      this.pan = { x: 0, y: 0 };
+      this.zoom = 1.0;
+      this.updateTransform();
     }
 
     toJSON() {
@@ -2709,91 +3125,265 @@
   }
 
   class BlockDiagramEditor {
-    constructor({ containerId, graph, app }) {
+    constructor({ containerId, graph, onNodeSelect, onWireCreated, app = null }) {
       this.container = document.getElementById(containerId);
       this.graph = graph;
       this.app = app;
+      this.onNodeSelect = onNodeSelect;
+      this.onWireCreated = onWireCreated;
       this.nodesContainer = null;
       this.svgLayer = null;
       this.pendingWire = null;
       this.previewPathEl = null;
       this.selectedNodeId = null;
       this.selectedWireId = null;
+      this.contextMenuEl = null;
+
+      this.pan = { x: 0, y: 0 };
+      this.zoom = 1.0;
+      this.isPanning = false;
+      this.cameraLayer = null;
+
       this.init();
     }
 
     init() {
       this.container.innerHTML = `
         <div class="diagram-canvas-container" id="diagram-canvas">
-          <div id="diagram-zoom-wrapper" style="width: 3000px; height: 3000px; position: relative; transform-origin: 0 0;">
+          <div id="diagram-camera-layer" style="position: absolute; top: 0; left: 0; width: 0; height: 0; transform-origin: 0 0; pointer-events: none;">
             <svg class="diagram-wire-layer" id="diagram-wires"></svg>
-            <div id="diagram-nodes-layer"></div>
+            <div id="diagram-nodes-layer" style="position: absolute; top: 0; left: 0; width: 0; height: 0; pointer-events: none;"></div>
           </div>
         </div>
       `;
-      this.zoomWrapper = this.container.querySelector('#diagram-zoom-wrapper');
+      this.canvas = this.container.querySelector('#diagram-canvas');
+      this.cameraLayer = this.container.querySelector('#diagram-camera-layer');
       this.nodesContainer = this.container.querySelector('#diagram-nodes-layer');
       this.svgLayer = this.container.querySelector('#diagram-wires');
+      this.zoomWrapper = this.cameraLayer;
+
       this.setupEventListeners();
-      
-      const canvas = this.container.querySelector('#diagram-canvas');
-      if (canvas && this.zoomWrapper) {
-        TouchGestureHandler.attachPinchZoom(canvas, this.zoomWrapper, {
-          minScale: 0.4,
-          maxScale: 2.5
-        });
+    }
+
+    updateTransform() {
+      if (this.cameraLayer) {
+        this.cameraLayer.style.transform = `translate(${this.pan.x}px, ${this.pan.y}px) scale(${this.zoom})`;
       }
+      const canvas = this.canvas || this.container.querySelector('#diagram-canvas') || this.container;
+      canvas.style.backgroundPosition = `${this.pan.x}px ${this.pan.y}px`;
+      canvas.style.backgroundSize = `${16 * this.zoom}px ${16 * this.zoom}px`;
+    }
+
+    screenToWorld(clientX, clientY) {
+      const canvas = this.canvas || this.container.querySelector('#diagram-canvas') || this.container;
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (clientX - rect.left - this.pan.x) / this.zoom,
+        y: (clientY - rect.top - this.pan.y) / this.zoom
+      };
+    }
+
+    getCurrentScale() {
+      return this.zoom || 1.0;
+    }
+
+    closeContextMenu() {
+      if (this.contextMenuEl && this.contextMenuEl.parentNode) {
+        this.contextMenuEl.parentNode.removeChild(this.contextMenuEl);
+      }
+      this.contextMenuEl = null;
+    }
+
+    deleteNode(nodeId) {
+      if (!nodeId) return;
+      if (this.app && this.app.frontPanel) {
+        const binding = this.app.frontPanel.bindings.find(b => b.nodeId === nodeId);
+        if (binding) {
+          this.app.frontPanel.deleteWidget(binding.widgetId);
+          return;
+        }
+      }
+      this.graph.removeNode(nodeId);
+      if (this.selectedNodeId === nodeId) this.selectedNodeId = null;
+      this.render();
+      if (this.app && this.app.undoManager) this.app.undoManager.pushState();
     }
 
     setupEventListeners() {
-      const canvas = this.container.querySelector('#diagram-canvas');
-      
+      const canvas = this.canvas || this.container.querySelector('#diagram-canvas');
+
+      // Movimento do mouse para fiação temporária
       canvas.addEventListener('mousemove', (e) => {
         if (this.pendingWire && this.previewPathEl) {
-          const zoomRect = (this.zoomWrapper || canvas).getBoundingClientRect();
-          const scale = this.getCurrentScale();
-          const endX = (e.clientX - zoomRect.left) / scale;
-          const endY = (e.clientY - zoomRect.top) / scale;
-          const pathD = WireRouter.getCubicBezierPath(this.pendingWire.startX, this.pendingWire.startY, endX, endY);
+          const endPos = this.screenToWorld(e.clientX, e.clientY);
+          const pathD = WireRouter.getCubicBezierPath(this.pendingWire.startX, this.pendingWire.startY, endPos.x, endPos.y);
           this.previewPathEl.setAttribute('d', pathD);
         }
       });
 
-      canvas.addEventListener('click', (e) => {
-        if (e.target === canvas || e.target === this.svgLayer) {
-          this.cancelPendingWire();
-          this.selectNode(null);
-          this.selectWire(null);
+      // Pan com botão esquerdo na área vazia e desseleção imediata (movimentação da grade)
+      canvas.addEventListener('mousedown', (e) => {
+        if (e.button === 0) {
+          if (!e.target.closest('.diagram-node, .wire-path, .terminal-dot, .terminal-connector, .fp-context-menu, input, textarea, button')) {
+            this.cancelPendingWire();
+            this.selectNode(null);
+            this.selectWire(null);
+            this.closeContextMenu();
+
+            this.isPanning = true;
+            const startMouseX = e.clientX;
+            const startMouseY = e.clientY;
+            const startPanX = this.pan.x;
+            const startPanY = this.pan.y;
+            canvas.style.cursor = 'grabbing';
+
+            const onMouseMove = (ev) => {
+              if (!this.isPanning) return;
+              this.pan.x = startPanX + (ev.clientX - startMouseX);
+              this.pan.y = startPanY + (ev.clientY - startMouseY);
+              this.updateTransform();
+            };
+
+            const onMouseUp = () => {
+              this.isPanning = false;
+              canvas.style.cursor = 'default';
+              window.removeEventListener('mousemove', onMouseMove);
+              window.removeEventListener('mouseup', onMouseUp);
+            };
+
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+          }
         }
       });
 
-      // Right-click no diagrama abre a paleta de funções
-      canvas.addEventListener('contextmenu', (e) => {
+      // Zoom com roda do mouse centralizado no cursor
+      canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const worldX = (mouseX - this.pan.x) / this.zoom;
+        const worldY = (mouseY - this.pan.y) / this.zoom;
+
+        const factor = e.deltaY < 0 ? 1.12 : (1 / 1.12);
+        const newZoom = Math.min(Math.max(this.zoom * factor, 0.25), 3.5);
+
+        this.pan.x = mouseX - worldX * newZoom;
+        this.pan.y = mouseY - worldY * newZoom;
+        this.zoom = newZoom;
+
+        this.updateTransform();
+      }, { passive: false });
+
+      // Touch pan (1 dedo) e pinch zoom (2 dedos) no Diagrama de Blocos (Mobile/Android)
+      let touchInitialDist = 0;
+      let touchInitialScale = 1.0;
+      let touchStartCenter = { x: 0, y: 0 };
+      let touchStartPan = { x: 0, y: 0 };
+      let isTouchPanning = false;
+
+      canvas.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.diagram-node, .wire-path, .terminal-dot, .terminal-connector, .fp-context-menu, input, textarea, button')) {
+          return;
+        }
+        this.cancelPendingWire();
+        this.selectNode(null);
+        this.selectWire(null);
+        this.closeContextMenu();
+
+        if (e.touches.length === 1) {
+          isTouchPanning = true;
+          touchStartCenter = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          touchStartPan = { x: this.pan.x, y: this.pan.y };
+        } else if (e.touches.length === 2) {
+          isTouchPanning = false;
+          touchInitialDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+          touchInitialScale = this.zoom;
+          touchStartCenter = {
+            x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+            y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+          };
+          touchStartPan = { x: this.pan.x, y: this.pan.y };
+        }
+      }, { passive: true });
+
+      canvas.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1 && isTouchPanning) {
+          const dx = e.touches[0].clientX - touchStartCenter.x;
+          const dy = e.touches[0].clientY - touchStartCenter.y;
+          this.pan.x = touchStartPan.x + dx;
+          this.pan.y = touchStartPan.y + dy;
+          this.updateTransform();
+          e.preventDefault();
+        } else if (e.touches.length === 2 && touchInitialDist > 0) {
+          const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+          const factor = dist / touchInitialDist;
+          const newZoom = Math.min(Math.max(touchInitialScale * factor, 0.25), 3.5);
+
+          const rect = canvas.getBoundingClientRect();
+          const mouseX = touchStartCenter.x - rect.left;
+          const mouseY = touchStartCenter.y - rect.top;
+          const worldX = (mouseX - touchStartPan.x) / touchInitialScale;
+          const worldY = (mouseY - touchStartPan.y) / touchInitialScale;
+
+          this.pan.x = mouseX - worldX * newZoom;
+          this.pan.y = mouseY - worldY * newZoom;
+          this.zoom = newZoom;
+
+          this.updateTransform();
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      const onTouchEnd = (e) => {
+        if (e.touches.length === 0) {
+          isTouchPanning = false;
+          touchInitialDist = 0;
+        } else if (e.touches.length === 1) {
+          isTouchPanning = true;
+          touchStartCenter = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          touchStartPan = { x: this.pan.x, y: this.pan.y };
+          touchInitialDist = 0;
+        }
+      };
+      canvas.addEventListener('touchend', onTouchEnd, { passive: true });
+      canvas.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
+      // Clique na área vazia garante cancelamento de seleção e fiação
+      canvas.addEventListener('click', (e) => {
+        if (!e.target.closest('.diagram-node, .wire-path, .terminal-dot, .terminal-connector, .fp-context-menu')) {
+          this.cancelPendingWire();
+          this.selectNode(null);
+          this.selectWire(null);
+          this.closeContextMenu();
+        }
+      });
+
+      // Right-click no canvas vazio abre a paleta de funções
+      canvas.addEventListener('contextmenu', (e) => {
+        if (e.target.closest('.diagram-node, .wire-path, .terminal-dot, .terminal-connector')) return;
+        e.preventDefault();
+        this.closeContextMenu();
         if (this.app && this.app.palette) {
           this.app.palette.openAt(e.clientX, e.clientY);
         }
       });
 
       window.addEventListener('keydown', (e) => {
-        // Ignora se estiver editando qualquer campo de texto ou elemento editável
         if (e.target.isContentEditable || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.closest('[contenteditable="true"]')) {
           return;
         }
 
-        if (e.key === 'Delete') {
+        if (e.key === 'Delete' || e.key === 'Backspace') {
           if (this.selectedWireId) {
             this.graph.removeConnection(this.selectedWireId);
             this.selectedWireId = null;
             this.renderWires();
+            if (this.app && this.app.undoManager) this.app.undoManager.pushState();
           } else if (this.selectedNodeId) {
-            const node = this.graph.getNode(this.selectedNodeId);
-            if (node && node.linkedWidgetId) {
-              this.app.frontPanel.removeWidget(node.linkedWidgetId);
-            }
-            this.graph.removeNode(this.selectedNodeId);
-            this.selectedNodeId = null;
-            this.render();
+            this.deleteNode(this.selectedNodeId);
           }
         }
       });
@@ -3015,7 +3605,12 @@
         });
       });
 
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+
       el.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
         if (e.target.closest('.terminal-dot') || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
         this.selectNode(node.id);
         const startX = e.clientX, startY = e.clientY, origX = node.x, origY = node.y;
@@ -3039,6 +3634,7 @@
       el.addEventListener('touchstart', (e) => {
         if (e.touches.length !== 1) return;
         if (e.target.closest('.terminal-dot') || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+        e.stopPropagation();
 
         const touch = e.touches[0];
         const startTouchX = touch.clientX;
@@ -3077,21 +3673,11 @@
       }, { passive: true });
     }
 
-    getCurrentScale() {
-      if (!this.zoomWrapper) return 1;
-      const rect = this.zoomWrapper.getBoundingClientRect();
-      const scale = rect.width / 3000;
-      return (scale > 0.05 && scale < 50) ? scale : 1;
-    }
-
     startPendingWire(fromNodeId, fromTerminalId, dotEl) {
-      const canvas = this.container.querySelector('#diagram-canvas');
-      const zoomRect = (this.zoomWrapper || canvas).getBoundingClientRect();
-      const scale = this.getCurrentScale();
       const dotRect = dotEl.getBoundingClientRect();
-
-      const startX = (dotRect.left - zoomRect.left + dotRect.width / 2) / scale;
-      const startY = (dotRect.top - zoomRect.top + dotRect.height / 2) / scale;
+      const pos = this.screenToWorld(dotRect.left + dotRect.width / 2, dotRect.top + dotRect.height / 2);
+      const startX = pos.x;
+      const startY = pos.y;
 
       const fromNode = this.graph.getNode(fromNodeId);
       const term = fromNode ? fromNode.outputs.get(fromTerminalId) : null;
@@ -3128,10 +3714,8 @@
 
     renderWires() {
       this.svgLayer.innerHTML = '';
-      const canvas = this.container.querySelector('#diagram-canvas');
+      const canvas = this.canvas || this.container.querySelector('#diagram-canvas');
       if (!canvas) return;
-      const zoomRect = (this.zoomWrapper || canvas).getBoundingClientRect();
-      const scale = this.getCurrentScale();
 
       for (const [, conn] of this.graph.connections) {
         const fromNodeEl = this.container.querySelector(`#node_${conn.fromNodeId}`);
@@ -3145,12 +3729,10 @@
             const fromRect = fromDot.getBoundingClientRect();
             const toRect = toDot.getBoundingClientRect();
 
-            const x1 = (fromRect.left - zoomRect.left + fromRect.width / 2) / scale;
-            const y1 = (fromRect.top - zoomRect.top + fromRect.height / 2) / scale;
-            const x2 = (toRect.left - zoomRect.left + toRect.width / 2) / scale;
-            const y2 = (toRect.top - zoomRect.top + toRect.height / 2) / scale;
+            const p1 = this.screenToWorld(fromRect.left + fromRect.width / 2, fromRect.top + fromRect.height / 2);
+            const p2 = this.screenToWorld(toRect.left + toRect.width / 2, toRect.top + toRect.height / 2);
 
-            const pathD = WireRouter.getCubicBezierPath(x1, y1, x2, y2);
+            const pathD = WireRouter.getCubicBezierPath(p1.x, p1.y, p2.x, p2.y);
             const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             pathEl.setAttribute('d', pathD);
             pathEl.setAttribute('class', `wire-path wire-${conn.type} ${this.selectedWireId === conn.id ? 'selected' : ''}`);
@@ -3219,6 +3801,19 @@
       };
 
       if (this.frontPanel) this.frontPanel.syncControlsToDiagram(this.graph);
+
+      // Garante que terminais de indicadores sem conexões ativas fiquem desligados (0 / false)
+      const connectedTargets = new Set();
+      for (const [, conn] of this.graph.connections) {
+        connectedTargets.add(conn.toNodeId);
+      }
+      for (const [, node] of this.graph.nodes) {
+        if (node.type === 'fp_indicator' && !connectedTargets.has(node.id)) {
+          for (const [, inTerm] of node.inputs) {
+            inTerm.value = 0;
+          }
+        }
+      }
 
       for (const [, conn] of this.graph.connections) {
         const fromNode = this.graph.getNode(conn.fromNodeId);
@@ -3304,6 +3899,9 @@
       if (this.timerId) {
         clearInterval(this.timerId);
         this.timerId = null;
+      }
+      if (this.frontPanel) {
+        this.frontPanel.resetAllIndicators();
       }
       if (this.onStateChange) this.onStateChange(false);
     }
@@ -3674,9 +4272,15 @@
 
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.AndroidBridge !== undefined;
       
+      if (!isMobile) {
+        splash.style.display = 'none';
+        splash.style.pointerEvents = 'none';
+        return;
+      }
+
       const myVer = (window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function') 
         ? ('v' + window.AndroidBridge.getVersion()) 
-        : 'v0.4.0';
+        : 'v0.4.1';
       this.currentVersion = myVer;
 
       const badge = splash.querySelector('.mobile-splash-badge');
@@ -3684,9 +4288,10 @@
         badge.textContent = myVer;
       }
 
-      // Exibe splash overlay se for mobile ou se o parâmetro mobile existir
+      // Exibe splash overlay no mobile
       splash.style.display = 'flex';
       splash.style.opacity = '1';
+      splash.style.pointerEvents = 'auto';
 
       const setStatus = (msg, color = '#38bdf8') => {
         if (text) text.textContent = msg;
@@ -3718,7 +4323,7 @@
           }
         })
         .catch(() => {
-          const myVer = 'v0.4.0';
+          const myVer = 'v0.4.1';
           setStatus(`Modo offline (${myVer}) • Abrindo...`, '#38bdf8');
         });
 
@@ -3726,6 +4331,7 @@
       setTimeout(async () => {
         try { await checkPromise; } catch (e) {}
         setTimeout(() => {
+          splash.style.pointerEvents = 'none';
           splash.style.opacity = '0';
           setTimeout(() => {
             splash.style.display = 'none';
@@ -3739,7 +4345,7 @@
       this.isAndroid = isMobile;
       this.currentVersion = (isMobile && window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function')
         ? ('v' + window.AndroidBridge.getVersion())
-        : 'v0.4.0';
+        : 'v0.4.1';
       const versionEl = document.getElementById('status-app-version');
       if (versionEl) {
         versionEl.textContent = isMobile ? `RosiView Android ${this.currentVersion} — IFES` : `RosiView ${this.currentVersion} — IFES`;
@@ -4200,7 +4806,10 @@
           break;
       }
 
-      if (widget) this.frontPanel.addWidget(widget);
+      if (widget) {
+        widget.kind = kind;
+        this.frontPanel.addWidget(widget);
+      }
       if (node) {
         this.graph.addNode(node);
         this.editor.render();

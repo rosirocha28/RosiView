@@ -11,7 +11,7 @@ Add-Type -AssemblyName WindowsBase
 
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $localVerPath = Join-Path $projectRoot "version.json"
-$localVer = "v0.4.0"
+$localVer = "v0.4.1"
 
 if (Test-Path $localVerPath) {
     try {
@@ -211,6 +211,8 @@ $timer.add_Tick({
         $timer.Stop()
         $window.Close()
         
+
+
         # Abre o aplicativo no modo Desktop / Janela de Aplicativo
         $indexHtml = Join-Path $projectRoot "index.html"
         $fileUri = [System.Uri]::new($indexHtml).AbsoluteUri

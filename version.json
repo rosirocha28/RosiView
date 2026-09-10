@@ -1,26 +1,25 @@
 {
-  "version": "v0.4.0",
-  "name": "RosiView v0.4.0",
-  "releaseDate": "2026-09-08",
-  "notes": "Lançamento v0.4.0: Configuração universal de instrumentos (Duplo clique), menu de contexto no Painel Frontal (Duplicar, Resetar, Deletar, Configurações), suporte a gestos touch e salvamento aprimorado no Android.",
+  "version": "v0.4.1",
+  "name": "RosiView v0.4.1",
+  "releaseDate": "2026-09-10",
+  "notes": "Lançamento v0.4.1: Restauração da movimentação fluida da grade (pan da câmera), desseleção imediata de instrumentos, nós e fios ao clicar fora, paleta visual de 5 cores para LED com brilho dinâmico e sincronização completa com Android.",
   "desktop": {
-    "version": "v0.4.0",
-    "tag": "v0.4.0",
-    "name": "RosiView Desktop v0.4.0",
-    "releaseDate": "2026-09-08",
-    "notes": "Versão Desktop v0.4.0: Menu de contexto no Painel Frontal, exclusão via tecla Delete/Backspace, configuração universal e estabilidade aprimorada.",
-    "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.4.0.zip",
-    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/v0.4.0"
+    "version": "v0.4.1",
+    "tag": "v0.4.1",
+    "name": "RosiView Desktop v0.4.1",
+    "releaseDate": "2026-09-10",
+    "notes": "Versão Desktop v0.4.1: Movimentação fluida da grade, desseleção de elementos ao clicar em área vazia, paleta com 5 cores para LED e estabilidade aprimorada.",
+    "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.4.1.zip",
+    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/v0.4.1"
   },
   "android": {
-    "version": "v0.4.0",
-    "versionCode": 5,
-    "tag": "android-v0.4.0",
-    "name": "RosiView Android v0.4.0",
-    "releaseDate": "2026-09-08",
-    "notes": "Atualização Android v0.4.0: Menu de contexto ao pressionar e segurar, suporte a arrasto touch em instrumentos e blocos, correção de conexões com zoom e salvamento de projetos via seletor nativo do sistema.",
-    "apkUrl": "https://github.com/rosirocha28/RosiView/releases/download/android-v0.4.0/RosiView.apk",
-    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/android-v0.4.0"
+    "version": "v0.4.1",
+    "versionCode": 6,
+    "tag": "android-v0.4.1",
+    "name": "RosiView Android v0.4.1",
+    "releaseDate": "2026-09-10",
+    "notes": "Atualização Android v0.4.1: Gestos de navegação na grade (pan e pinch zoom), desseleção por toque no canvas, modal de configuração de LED com 5 cores e melhoria de performance.",
+    "apkUrl": "https://github.com/rosirocha28/RosiView/releases/download/android-v0.4.1/RosiView.apk",
+    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/android-v0.4.1"
   }
 }
-

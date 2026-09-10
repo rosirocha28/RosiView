@@ -46,10 +46,23 @@ export class RosiViewRuntime {
 
     // 1. Atualiza os nós de controle a partir dos valores da IHM do Painel Frontal
     if (this.frontPanel) {
-      this.frontPanel.syncControlsToDiagram();
+      this.frontPanel.syncControlsToDiagram(this.graph);
     }
 
-    // 2. Propaga dados através das conexões (Wires)
+    // 2. Garante que terminais de indicadores sem conexões ativas fiquem desligados (0 / false)
+    const connectedTargets = new Set();
+    for (const [, conn] of this.graph.connections) {
+      connectedTargets.add(conn.toNodeId);
+    }
+    for (const [, node] of this.graph.nodes) {
+      if (node.type === 'fp_indicator' && !connectedTargets.has(node.id)) {
+        for (const [, inTerm] of node.inputs) {
+          inTerm.value = 0;
+        }
+      }
+    }
+
+    // 3. Propaga dados através das conexões (Wires)
     for (const [, conn] of this.graph.connections) {
       const fromNode = this.graph.getNode(conn.fromNodeId);
       const toNode = this.graph.getNode(conn.toNodeId);
@@ -64,7 +77,7 @@ export class RosiViewRuntime {
       }
     }
 
-    // 3. Executa cada nó na ordem topológica
+    // 4. Executa cada nó na ordem topológica
     for (const node of executionOrder) {
       if (this.isHighlight) {
         const nodeEl = document.getElementById(`node_${node.id}`);
@@ -74,15 +87,33 @@ export class RosiViewRuntime {
 
       node.execute(context);
 
+      // Propaga imediatamente os novos valores calculados pelos fios de saída deste bloco
+      for (const [, conn] of this.graph.connections) {
+        if (conn.fromNodeId === node.id) {
+          const toNode = this.graph.getNode(conn.toNodeId);
+          if (toNode) {
+            let outTerm = node.outputs.get(conn.fromTerminalId);
+            if (!outTerm && node.outputs.size === 1) {
+              outTerm = Array.from(node.outputs.values())[0];
+            }
+            let inTerm = toNode.inputs.get(conn.toTerminalId);
+            if (!inTerm && toNode.inputs.size === 1) {
+              inTerm = Array.from(toNode.inputs.values())[0];
+            }
+            if (outTerm && inTerm) inTerm.value = outTerm.value;
+          }
+        }
+      }
+
       if (this.isHighlight) {
         const nodeEl = document.getElementById(`node_${node.id}`);
         if (nodeEl) nodeEl.classList.remove('executing');
       }
     }
 
-    // 4. Atualiza os instrumentos do Painel Frontal com os novos valores
+    // 5. Atualiza os instrumentos do Painel Frontal com os novos valores
     if (this.frontPanel) {
-      this.frontPanel.syncDiagramToIndicators();
+      this.frontPanel.syncDiagramToIndicators(this.graph);
     }
 
     this.simTime += this.dt;
@@ -137,6 +168,9 @@ export class RosiViewRuntime {
     if (this.timerId) {
       clearInterval(this.timerId);
       this.timerId = null;
+    }
+    if (this.frontPanel && typeof this.frontPanel.resetAllIndicators === 'function') {
+      this.frontPanel.resetAllIndicators();
     }
     if (this.onStateChange) this.onStateChange(false);
   }

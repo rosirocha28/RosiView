@@ -7,6 +7,7 @@
 export class ChartWidget {
   constructor({ id, title = 'Waveform Chart', maxPoints = 200, x = 200, y = 50, plots = ['Plot 0'] }) {
     this.id = id;
+    this.kind = 'chart';
     this.title = title;
     this.maxPoints = maxPoints;
     this.x = x;

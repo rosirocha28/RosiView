@@ -6,6 +6,7 @@
 export class KnobWidget {
   constructor({ id, title = 'Knob', min = 0, max = 10, step = 0.1, initialValue = 0, unit = 'V', x = 60, y = 60 }) {
     this.id = id;
+    this.kind = 'knob';
     this.title = title;
     this.min = Number(min);
     this.max = Number(max);

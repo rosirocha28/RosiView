@@ -8,6 +8,7 @@ import { RosiViewRuntime } from './core/runtime.js';
 import { FrontPanelManager } from './ui/front_panel.js';
 import { BlockDiagramEditor } from './ui/block_diagram.js';
 import { PaletteManager } from './ui/palette.js';
+import { UndoManager } from './core/undo_manager.js';
 
 // Drivers de Hardware
 import { VirtualDAQDriver } from './hardware/virtual_daq.js';
@@ -53,13 +54,17 @@ class RosiViewApp {
 
   init() {
     // 1. Inicializa Painel Frontal e Diagrama de Blocos
-    this.frontPanel = new FrontPanelManager('front-panel-container');
+    this.frontPanel = new FrontPanelManager('front-panel-container', this);
     this.editor = new BlockDiagramEditor({
       containerId: 'diagram-container',
       graph: this.graph,
+      app: this,
       onNodeSelect: (nodeId) => {},
-      onWireCreated: () => {}
+      onWireCreated: () => {
+        if (this.undoManager) this.undoManager.pushState();
+      }
     });
+    this.undoManager = new UndoManager(this);
 
     // 2. Inicializa Motor de Execução
     this.runtime = new RosiViewRuntime({
@@ -91,7 +96,7 @@ class RosiViewApp {
     this.isAndroid = isMobile;
     this.currentVersion = (isMobile && window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function')
       ? ('v' + window.AndroidBridge.getVersion())
-      : 'v0.4.0';
+      : 'v0.4.1';
     const versionEl = document.getElementById('status-app-version');
     if (versionEl) {
       versionEl.textContent = isMobile ? `RosiView Android ${this.currentVersion} — IFES` : `RosiView ${this.currentVersion} — IFES`;
@@ -262,6 +267,23 @@ class RosiViewApp {
     }
     if (btnStop) btnStop.addEventListener('click', () => this.runtime.stop());
 
+    this.runtime.onStateChange = (running) => {
+      if (btnContRun) {
+        if (running && this.runtime.isContinuous) {
+          btnContRun.classList.add('running');
+        } else {
+          btnContRun.classList.remove('running');
+        }
+      }
+      if (btnRun) {
+        if (running && !this.runtime.isContinuous) {
+          btnRun.classList.add('running');
+        } else {
+          btnRun.classList.remove('running');
+        }
+      }
+    };
+
     if (btnHighlight) {
       btnHighlight.addEventListener('click', () => {
         const active = !this.runtime.isHighlight;
@@ -272,6 +294,12 @@ class RosiViewApp {
     }
 
     if (btnPalette) btnPalette.addEventListener('click', () => this.palette.toggle());
+
+    const btnUndo = document.getElementById('btn-undo');
+    const btnRedo = document.getElementById('btn-redo');
+    if (btnUndo) btnUndo.addEventListener('click', () => { if (this.undoManager) this.undoManager.undo(); });
+    if (btnRedo) btnRedo.addEventListener('click', () => { if (this.undoManager) this.undoManager.redo(); });
+
     if (btnNew) btnNew.addEventListener('click', () => this.promptNewProject());
     if (btnClear) btnClear.addEventListener('click', () => this.promptNewProject());
     if (btnHelp) btnHelp.addEventListener('click', () => this.openManualHelp());
@@ -378,6 +406,7 @@ class RosiViewApp {
     const hwItems = document.querySelectorAll('.hw-dropdown-item');
     const hwDot = document.getElementById('status-hw-dot');
     const hwText = document.getElementById('status-hw-text');
+    const btnConnectHw = document.getElementById('btn-connect-hw');
 
     // No ambiente Android / mobile, remove o seletor de Hardware para liberar espaço às abas
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.AndroidBridge !== undefined;
@@ -385,6 +414,7 @@ class RosiViewApp {
       document.body.classList.add('is-android');
       const hwDropdown = document.getElementById('dropdown-hardware');
       if (hwDropdown) hwDropdown.style.display = 'none';
+      if (btnConnectHw) btnConnectHw.style.display = 'none';
       const hwStatusItem = document.getElementById('status-hw-item');
       if (hwStatusItem) hwStatusItem.style.display = 'none';
     }
@@ -399,45 +429,77 @@ class RosiViewApp {
       });
     };
 
+    const updateConnectBtn = (mode, isConnected = false) => {
+      if (!btnConnectHw) return;
+      if (mode === 'virtual') {
+        btnConnectHw.disabled = true;
+        btnConnectHw.classList.add('disabled');
+        btnConnectHw.classList.remove('connected');
+        btnConnectHw.title = "O modo Planta Virtual está ativo. Selecione a placa NI USB-6009 no menu Hardware para conectar.";
+      } else {
+        btnConnectHw.disabled = false;
+        btnConnectHw.classList.remove('disabled');
+        if (isConnected) {
+          btnConnectHw.classList.add('connected');
+          btnConnectHw.title = "Bancada física conectada! Clique para verificar ou reconectar.";
+        } else {
+          btnConnectHw.classList.remove('connected');
+          btnConnectHw.title = "Clique para conectar à bancada física NI USB-6009";
+        }
+      }
+    };
+
+    this.currentHardwareMode = 'virtual';
+
     const applyMode = async (mode) => {
       updateActiveItem(mode);
+      this.currentHardwareMode = mode;
       if (mode === 'virtual') {
+        updateConnectBtn('virtual', false);
+        try { await this.wsBridge.disconnect(); } catch (_) {}
         this.currentDAQ = this.virtualDAQ;
         this.runtime.setDAQDevice(this.virtualDAQ);
         if (hwDot) hwDot.className = 'status-dot connected';
         if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
       } else if (mode === 'websocket') {
+        updateConnectBtn('websocket', false);
         try {
           if (hwText) hwText.textContent = 'Hardware: Conectando Bridge...';
           await this.wsBridge.connect();
           this.currentDAQ = this.wsBridge;
           this.runtime.setDAQDevice(this.wsBridge);
           if (hwDot) hwDot.className = 'status-dot connected';
-          if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Bridge)';
+          const devTitle = this.wsBridge.deviceName ? `NI USB-6009 [${this.wsBridge.deviceName}] (Bridge NI-DAQmx)` : 'NI USB-6009 (Bridge NI-DAQmx)';
+          if (hwText) hwText.textContent = `Hardware: ${devTitle}`;
+          updateConnectBtn('websocket', true);
         } catch (err) {
-          alert('Não foi possível conectar ao Bridge WebSocket (ws://127.0.0.1:8765).\nCertifique-se de executar o arquivo "INICIAR_ROSIVIEW_BRIDGE.bat".');
-          updateActiveItem('virtual');
-          this.currentDAQ = this.virtualDAQ;
-          this.runtime.setDAQDevice(this.virtualDAQ);
-          if (hwDot) hwDot.className = 'status-dot connected';
-          if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
+          updateConnectBtn('websocket', false);
+          if (hwDot) hwDot.className = 'status-dot disconnected';
+          if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Aguardando conexão - Clique em Conectar)';
+          alert(
+            (err && err.message) ? err.message :
+            'Não foi possível conectar ao Bridge da NI USB-6009 (127.0.0.1:8765).\n\n' +
+            'Para operar a placa física no Windows:\n' +
+            '1. Certifique-se de que o cabo USB está plugado no computador.\n' +
+            '2. Se o Bridge não estiver ativo, execute o arquivo "INICIAR_ROSIVIEW_BRIDGE.bat" na pasta do RosiView.\n' +
+            '3. Clique no botão "Conectar" ao lado de Hardware.'
+          );
         }
-      } else if (mode === 'webusb') {
-        try {
-          if (hwText) hwText.textContent = 'Hardware: Conectando WebUSB...';
-          await this.webUSB.connect();
-          this.currentDAQ = this.webUSB;
-          this.runtime.setDAQDevice(this.webUSB);
-          if (hwDot) hwDot.className = 'status-dot connected';
-          if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (WebUSB)';
-        } catch (err) {
-          alert('Erro ao conectar via WebUSB: ' + err.message);
-          updateActiveItem('virtual');
-          this.currentDAQ = this.virtualDAQ;
-          this.runtime.setDAQDevice(this.virtualDAQ);
-          if (hwDot) hwDot.className = 'status-dot connected';
-          if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
-        }
+      }
+    };
+
+    // Monitoramento em tempo real do status físico de conexão/desconexão
+    this.wsBridge.onStatusChange = (isConnected, devName) => {
+      if (this.currentHardwareMode !== 'websocket') return;
+      if (isConnected) {
+        if (hwDot) hwDot.className = 'status-dot connected';
+        const devTitle = devName ? `NI USB-6009 [${devName}] (Bridge NI-DAQmx)` : 'NI USB-6009 (Bridge NI-DAQmx)';
+        if (hwText) hwText.textContent = `Hardware: ${devTitle}`;
+        updateConnectBtn('websocket', true);
+      } else {
+        if (hwDot) hwDot.className = 'status-dot disconnected';
+        if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Planta Desconectada)';
+        updateConnectBtn('websocket', false);
       }
     };
 
@@ -463,8 +525,49 @@ class RosiViewApp {
       });
     }
 
+    if (btnConnectHw) {
+      btnConnectHw.addEventListener('click', async () => {
+        if (btnConnectHw.disabled) return;
+        btnConnectHw.disabled = true;
+        btnConnectHw.innerHTML = '<span>⏳</span> <span class="btn-text">Conectando...</span>';
+
+        try {
+          await this.wsBridge.connect();
+          this.currentDAQ = this.wsBridge;
+          this.runtime.setDAQDevice(this.wsBridge);
+          if (hwDot) hwDot.className = 'status-dot connected';
+          const devTitle = this.wsBridge.deviceName ? `NI USB-6009 [${this.wsBridge.deviceName}] (Bridge NI-DAQmx)` : 'NI USB-6009 (Bridge NI-DAQmx)';
+          if (hwText) hwText.textContent = `Hardware: ${devTitle}`;
+          updateActiveItem('websocket');
+          updateConnectBtn('websocket', true);
+          btnConnectHw.innerHTML = '<span>⚡</span> <span class="btn-text">Conectado</span>';
+          setTimeout(() => {
+            btnConnectHw.innerHTML = '<span>⚡</span> <span class="btn-text">Conectar</span>';
+            btnConnectHw.disabled = false;
+          }, 1800);
+        } catch (err) {
+          updateConnectBtn('websocket', false);
+          btnConnectHw.innerHTML = '<span>⚡</span> <span class="btn-text">Conectar</span>';
+          btnConnectHw.disabled = false;
+          if (hwDot) hwDot.className = 'status-dot disconnected';
+          if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Desconectado)';
+          alert(
+            (err && err.message) ? err.message :
+            'Não foi possível conectar à bancada física NI USB-6009 (127.0.0.1:8765).\n\n' +
+            'Passo a passo para conectar:\n' +
+            '1. Verifique se o cabo USB da placa NI está conectado ao computador.\n' +
+            '2. Se o Bridge não estiver rodando, abra o arquivo "INICIAR_ROSIVIEW_BRIDGE.bat" na pasta do RosiView.\n' +
+            '3. Clique em "Conectar" novamente.'
+          );
+        }
+      });
+    }
+
+    // Padrão obrigatório ao iniciar: Planta Virtual (Simulador)
+    updateActiveItem('virtual');
     if (hwDot) hwDot.className = 'status-dot connected';
     if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
+    updateConnectBtn('virtual', false);
   }
 
   setupStatusBar() {
@@ -476,8 +579,19 @@ class RosiViewApp {
 
   addNodeFromPalette(kind) {
     let node = null;
-    const x = 120 + Math.random() * 80;
-    const y = 80 + Math.random() * 80;
+    let x = 120 + Math.random() * 80;
+    let y = 80 + Math.random() * 80;
+    if (this.editor) {
+      const bdCanvas = this.editor.canvas || document.getElementById('diagram-canvas');
+      const w = bdCanvas ? bdCanvas.clientWidth : 800;
+      const h = bdCanvas ? bdCanvas.clientHeight : 600;
+      const center = this.editor.screenToWorld(
+        (bdCanvas ? bdCanvas.getBoundingClientRect().left : 0) + w / 2,
+        (bdCanvas ? bdCanvas.getBoundingClientRect().top : 0) + h / 2
+      );
+      x = Math.round(center.x - 50 + (Math.random() * 40 - 20));
+      y = Math.round(center.y - 30 + (Math.random() * 40 - 20));
+    }
 
     switch (kind) {
       case 'ctrl_onoff': node = new OnOffControllerNode({ x, y }); break;
@@ -504,14 +618,26 @@ class RosiViewApp {
       this.graph.addNode(node);
       this.editor.render();
       this.palette.toggle(false);
+      if (this.undoManager) this.undoManager.pushState();
     }
   }
 
   addWidgetFromPalette(kind) {
     let widget = null;
     const id = `widget_${Date.now()}`;
-    const x = 50 + Math.random() * 50;
-    const y = 50 + Math.random() * 50;
+    let x = 50 + Math.random() * 50;
+    let y = 50 + Math.random() * 50;
+    if (this.frontPanel) {
+      const fpCanvas = this.frontPanel.container;
+      const w = fpCanvas ? fpCanvas.clientWidth : 800;
+      const h = fpCanvas ? fpCanvas.clientHeight : 600;
+      const center = this.frontPanel.screenToWorld(
+        (fpCanvas ? fpCanvas.getBoundingClientRect().left : 0) + w / 2,
+        (fpCanvas ? fpCanvas.getBoundingClientRect().top : 0) + h / 2
+      );
+      x = Math.round(center.x - 60 + (Math.random() * 40 - 20));
+      y = Math.round(center.y - 60 + (Math.random() * 40 - 20));
+    }
 
     switch (kind) {
       case 'knob': widget = new KnobWidget({ id, x, y }); break;
@@ -527,8 +653,10 @@ class RosiViewApp {
     }
 
     if (widget) {
+      widget.kind = kind;
       this.frontPanel.addWidget(widget);
       this.palette.toggle(false);
+      if (this.undoManager) this.undoManager.pushState();
     }
   }
 
@@ -537,18 +665,20 @@ class RosiViewApp {
     const id = `widget_${Date.now()}`;
     const fpX = (origWidget.x || parseInt(origWidget.element.style.left, 10) || 50) + 30;
     const fpY = (origWidget.y || parseInt(origWidget.element.style.top, 10) || 50) + 30;
-    const diagX = 80 + (this.graph.nodes.size % 5) * 160;
-    const diagY = 80 + Math.floor(this.graph.nodes.size / 5) * 120;
 
     const origBinding = this.frontPanel.bindings.find(b => b.widgetId === origWidget.id);
     const isInput = origBinding ? origBinding.isInputToDiagram : false;
 
+    let dupTitle = origWidget.title ? `${origWidget.title} (Cópia)` : 'Instrumento';
+    if (kind === 'num_ind' || kind === 'num_ctrl' || kind === 'switch') {
+      dupTitle = origWidget.title || 'Instrumento';
+    }
+
     let widget = null;
-    let node = null;
 
     const config = {
       id,
-      title: origWidget.title ? `${origWidget.title} (Cópia)` : 'Instrumento',
+      title: dupTitle,
       min: origWidget.min !== undefined ? origWidget.min : 0,
       max: origWidget.max !== undefined ? origWidget.max : 100,
       step: origWidget.step !== undefined ? origWidget.step : 1,
@@ -604,6 +734,7 @@ class RosiViewApp {
       }
     }
     this.frontPanel.selectWidget(id);
+    if (this.undoManager) this.undoManager.pushState();
     this.showToast(`Instrumento '${config.title}' duplicado!`);
   }
 
@@ -612,6 +743,7 @@ class RosiViewApp {
     this.graph.clear();
     this.frontPanel.clear();
     this.editor.render();
+    if (this.undoManager) this.undoManager.reset();
   }
 
   showToast(msg, duration = 3200) {
@@ -845,18 +977,26 @@ class RosiViewApp {
     e.target.value = '';
   }
 
-  loadProjectJson(jsonOrStr, fileName) {
+  loadProjectJson(jsonOrStr, fileName = null, isUndo = false) {
     try {
       const json = typeof jsonOrStr === 'string' ? JSON.parse(jsonOrStr) : jsonOrStr;
-      this.currentProjectName = fileName || 'meu_projeto.rosi';
-      this.clearAll();
+      if (!isUndo) {
+        this.currentProjectName = fileName || 'meu_projeto.rosi';
+      }
+
+      this.runtime.stop();
+      this.graph.clear();
+      this.frontPanel.clear();
+      if (!isUndo && this.undoManager) {
+        this.undoManager.reset();
+      }
 
       if (json.frontPanel && Array.isArray(json.frontPanel.widgets)) {
         for (const w of json.frontPanel.widgets) {
           let widget = null;
           switch (w.kind) {
             case 'slider':
-              widget = new SliderWidget({ id: w.id, title: w.title, min: w.min, max: w.max, step: w.step, initialValue: w.initialValue, x: w.x, y: w.y });
+              widget = new SliderWidget({ id: w.id, title: w.title, min: w.min, max: w.max, step: w.step, initialValue: w.initialValue, unit: w.unit, x: w.x, y: w.y });
               break;
             case 'tank':
               widget = new TankWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, x: w.x, y: w.y });
@@ -896,19 +1036,19 @@ class RosiViewApp {
         for (const n of json.graph.nodes) {
           let node = null;
           switch (n.type) {
-            case 'math_add': node = new AddNode({ id: n.id, x: n.x, y: n.y }); break;
-            case 'math_sub': node = new SubtractNode({ id: n.id, x: n.x, y: n.y }); break;
-            case 'math_mul': node = new MultiplyNode({ id: n.id, x: n.x, y: n.y }); break;
-            case 'math_div': node = new DivideNode({ id: n.id, x: n.x, y: n.y }); break;
-            case 'math_gain': node = new GainNode({ id: n.id, gain: n.gain || 1, x: n.x, y: n.y }); break;
-            case 'math_sat': node = new SaturationNode({ id: n.id, x: n.x, y: n.y }); break;
-            case 'logic_gt': node = new GreaterNode({ id: n.id, x: n.x, y: n.y }); break;
-            case 'logic_lt': node = new LessNode({ id: n.id, x: n.x, y: n.y }); break;
-            case 'logic_eq': node = new EqualNode({ id: n.id, x: n.x, y: n.y }); break;
-            case 'logic_and': node = new AndNode({ id: n.id, x: n.x, y: n.y }); break;
-            case 'logic_or': node = new OrNode({ id: n.id, x: n.x, y: n.y }); break;
-            case 'logic_not': node = new NotNode({ id: n.id, x: n.x, y: n.y }); break;
-            case 'logic_select': node = new SelectNode({ id: n.id, x: n.x, y: n.y }); break;
+            case 'math_add': node = new AddNode({ id: n.id, title: n.title, inputCount: n.inputCount, x: n.x, y: n.y }); break;
+            case 'math_sub': node = new SubtractNode({ id: n.id, title: n.title, x: n.x, y: n.y }); break;
+            case 'math_mul': node = new MultiplyNode({ id: n.id, title: n.title, inputCount: n.inputCount, x: n.x, y: n.y }); break;
+            case 'math_div': node = new DivideNode({ id: n.id, title: n.title, x: n.x, y: n.y }); break;
+            case 'math_gain': node = new GainNode({ id: n.id, title: n.title, gain: n.gain || 1, x: n.x, y: n.y }); break;
+            case 'math_sat': node = new SaturationNode({ id: n.id, title: n.title, min: n.min, max: n.max, x: n.x, y: n.y }); break;
+            case 'logic_gt': node = new GreaterNode({ id: n.id, title: n.title, x: n.x, y: n.y }); break;
+            case 'logic_lt': node = new LessNode({ id: n.id, title: n.title, x: n.x, y: n.y }); break;
+            case 'logic_eq': node = new EqualNode({ id: n.id, title: n.title, x: n.x, y: n.y }); break;
+            case 'logic_and': node = new AndNode({ id: n.id, title: n.title, inputCount: n.inputCount, x: n.x, y: n.y }); break;
+            case 'logic_or': node = new OrNode({ id: n.id, title: n.title, inputCount: n.inputCount, x: n.x, y: n.y }); break;
+            case 'logic_not': node = new NotNode({ id: n.id, title: n.title, x: n.x, y: n.y }); break;
+            case 'logic_select': node = new SelectNode({ id: n.id, title: n.title, x: n.x, y: n.y }); break;
             case 'sig_const':
               node = new ConstantNode({ id: n.id, constantValue: n.constantValue !== undefined ? n.constantValue : 0, x: n.x, y: n.y });
               break;
@@ -956,7 +1096,8 @@ class RosiViewApp {
             fromTerminalId: c.fromTerminalId,
             toNodeId: c.toNodeId,
             toTerminalId: c.toTerminalId,
-            type: c.type
+            type: c.type,
+            color: c.color
           });
         }
       }
@@ -968,7 +1109,9 @@ class RosiViewApp {
       }
 
       this.editor.render();
-      this.showToast(`Projeto '${this.currentProjectName}' carregado com sucesso!`);
+      if (!isUndo) {
+        this.showToast(`Projeto '${this.currentProjectName}' carregado com sucesso!`);
+      }
     } catch (err) {
       console.error('Erro ao carregar o arquivo .rosi:', err);
       alert('Erro ao carregar o arquivo .rosi: ' + err.message);

@@ -6,6 +6,7 @@
 export class GaugeWidget {
   constructor({ id, title = 'Tacômetro', min = 0, max = 3000, initialValue = 0, unit = 'RPM', x = 60, y = 60 }) {
     this.id = id;
+    this.kind = 'gauge';
     this.title = title;
     this.min = Number(min);
     this.max = Number(max);

@@ -103,6 +103,9 @@ body, html {
   gap: 10px;
   flex-shrink: 0;
   margin-top: 2px;
+  margin-right: 22px;
+  padding-right: 14px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .brand-logo {
@@ -200,6 +203,23 @@ body, html {
   background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
 }
 
+.tool-btn.btn-cont-run {
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+  border-color: #0284c7;
+  color: #ffffff;
+}
+.tool-btn.btn-cont-run:hover {
+  background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.45);
+}
+.tool-btn.btn-cont-run.running,
+.tool-btn.btn-cont-run.active {
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: #60a5fa;
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.7);
+}
+
 .tool-btn.btn-stop {
   background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
   border-color: #b91c1c;
@@ -207,6 +227,17 @@ body, html {
 }
 .tool-btn.btn-stop:hover {
   background: linear-gradient(180deg, #f87171 0%, #ef4444 100%);
+}
+
+/* Destaque visual unificado e nítido para símbolos de execução */
+.tool-btn.btn-run span,
+.tool-btn.btn-cont-run span,
+.tool-btn.btn-stop span {
+  font-size: 14.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
 }
 
 .tool-btn.btn-highlight.active {
@@ -239,6 +270,33 @@ body, html {
   color: #ffffff;
 }
 
+/* Botão Conectar Hardware */
+.tool-btn.btn-connect-hw {
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+  border-color: #38bdf8;
+  color: #ffffff;
+  padding: 0 10px;
+}
+
+.tool-btn.btn-connect-hw:hover:not(:disabled) {
+  background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.45);
+}
+
+.tool-btn.btn-connect-hw.connected {
+  background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+  border-color: #4ade80;
+  color: #ffffff;
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.35);
+}
+
+.tool-btn:disabled,
+.tool-btn.disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  filter: grayscale(0.6) !important;
+}
 
 .divider-vertical {
   width: 1px;

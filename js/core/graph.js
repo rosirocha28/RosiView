@@ -25,13 +25,14 @@ export class Terminal {
 }
 
 export class Connection {
-  constructor({ id, fromNodeId, fromTerminalId, toNodeId, toTerminalId, type = DataTypes.DOUBLE }) {
+  constructor({ id, fromNodeId, fromTerminalId, toNodeId, toTerminalId, type = DataTypes.DOUBLE, color = null }) {
     this.id = id;
     this.fromNodeId = fromNodeId;
     this.fromTerminalId = fromTerminalId;
     this.toNodeId = toNodeId;
     this.toTerminalId = toTerminalId;
     this.type = type;
+    this.color = color || null;
   }
 }
 
@@ -62,7 +63,7 @@ export class DiagramGraph {
     return this.nodes.get(nodeId);
   }
 
-  addConnection({ fromNodeId, fromTerminalId, toNodeId, toTerminalId, type }) {
+  addConnection({ fromNodeId, fromTerminalId, toNodeId, toTerminalId, type, color }) {
     // Check if input terminal already has a connection (LabVIEW inputs accept only 1 driver)
     for (const [id, conn] of this.connections) {
       if (conn.toNodeId === toNodeId && conn.toTerminalId === toTerminalId) {
@@ -71,7 +72,7 @@ export class DiagramGraph {
     }
 
     const id = `conn_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-    const conn = new Connection({ id, fromNodeId, fromTerminalId, toNodeId, toTerminalId, type });
+    const conn = new Connection({ id, fromNodeId, fromTerminalId, toNodeId, toTerminalId, type, color });
     this.connections.set(id, conn);
     return conn;
   }
@@ -138,7 +139,19 @@ export class DiagramGraph {
       nodesData.push(node.toJSON ? node.toJSON() : { id: node.id, type: node.type, x: node.x, y: node.y });
     }
 
-    const connsData = Array.from(this.connections.values());
+    const connsData = [];
+    for (const [, conn] of this.connections) {
+      connsData.push({
+        id: conn.id,
+        fromNodeId: conn.fromNodeId,
+        fromTerminalId: conn.fromTerminalId,
+        toNodeId: conn.toNodeId,
+        toTerminalId: conn.toTerminalId,
+        type: conn.type,
+        color: conn.color || null
+      });
+    }
+
     return {
       nodes: nodesData,
       connections: connsData

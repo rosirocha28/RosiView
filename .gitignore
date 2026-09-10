@@ -43,3 +43,6 @@ dist_ava/
 *.out
 *.synctex.gz
 
+# Scripts temporários de teste
+scratch/
+

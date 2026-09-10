@@ -1,25 +1,25 @@
 {
-  "version": "v0.4.1",
-  "name": "RosiView v0.4.1",
+  "version": "v0.4.2",
+  "name": "RosiView v0.4.2",
   "releaseDate": "2026-09-10",
-  "notes": "Lançamento v0.4.1: Restauração da movimentação fluida da grade (pan da câmera), desseleção imediata de instrumentos, nós e fios ao clicar fora, paleta visual de 5 cores para LED com brilho dinâmico e sincronização completa com Android.",
+  "notes": "Lançamento v0.4.2: Proteção do instalador e atualizador desktop impedindo download indevido da pasta android na máquina dos alunos, otimização dos scripts de inicialização e sincronização de versão.",
   "desktop": {
-    "version": "v0.4.1",
-    "tag": "v0.4.1",
-    "name": "RosiView Desktop v0.4.1",
+    "version": "v0.4.2",
+    "tag": "v0.4.2",
+    "name": "RosiView Desktop v0.4.2",
     "releaseDate": "2026-09-10",
-    "notes": "Versão Desktop v0.4.1: Movimentação fluida da grade, desseleção de elementos ao clicar em área vazia, paleta com 5 cores para LED e estabilidade aprimorada.",
-    "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.4.1.zip",
-    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/v0.4.1"
+    "notes": "Versão Desktop v0.4.2: Exclusão de pastas de desenvolvimento e Android na atualização automática do aluno, remoção preventiva de resíduos e atualização do pacote AVA.",
+    "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.4.2.zip",
+    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/v0.4.2"
   },
   "android": {
-    "version": "v0.4.1",
-    "versionCode": 6,
-    "tag": "android-v0.4.1",
-    "name": "RosiView Android v0.4.1",
+    "version": "v0.4.2",
+    "versionCode": 7,
+    "tag": "android-v0.4.2",
+    "name": "RosiView Android v0.4.2",
     "releaseDate": "2026-09-10",
-    "notes": "Atualização Android v0.4.1: Gestos de navegação na grade (pan e pinch zoom), desseleção por toque no canvas, modal de configuração de LED com 5 cores e melhoria de performance.",
-    "apkUrl": "https://github.com/rosirocha28/RosiView/releases/download/android-v0.4.1/RosiView.apk",
-    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/android-v0.4.1"
+    "notes": "Versão Android v0.4.2: Sincronização com o núcleo v0.4.2 e melhorias contínuas de estabilidade.",
+    "apkUrl": "https://github.com/rosirocha28/RosiView/releases/download/android-v0.4.2/RosiView.apk",
+    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/android-v0.4.2"
   }
 }

@@ -96,7 +96,7 @@ class RosiViewApp {
     this.isAndroid = isMobile;
     this.currentVersion = (isMobile && window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function')
       ? ('v' + window.AndroidBridge.getVersion())
-      : 'v0.4.1';
+      : 'v0.4.2';
     const versionEl = document.getElementById('status-app-version');
     if (versionEl) {
       versionEl.textContent = isMobile ? `RosiView Android ${this.currentVersion} — IFES` : `RosiView ${this.currentVersion} — IFES`;

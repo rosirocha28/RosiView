@@ -19,11 +19,11 @@ if (Test-Path $localVerPath) {
     } catch {}
 }
 
-# Se for instalacao de aluno/desktop (sem repositorio .git), remove pastas indevidas como 'android'
+# Se for instalacao de aluno/desktop (sem repositorio .git), remove pastas e arquivos indevidos de dev/android
 $gitDir = Join-Path $projectRoot ".git"
 if (-not (Test-Path $gitDir)) {
-    $cleanupFolders = @("android", "gabaritos_professor", "dist_ava")
-    foreach ($fld in $cleanupFolders) {
+    $cleanupItems = @("android", "gabaritos_professor", "dist_ava", "GEMINI.md", ".gitignore", "GERAR_PACOTE_ALUNO_AVA.bat", "INICIAR_ROSIVIEW_BRIDGE.bat", "README.md", "bridge")
+    foreach ($fld in $cleanupItems) {
         $targetFld = Join-Path $projectRoot $fld
         if (Test-Path $targetFld) {
             Remove-Item -Path $targetFld -Recurse -Force -ErrorAction SilentlyContinue
@@ -200,14 +200,19 @@ $timer.add_Tick({
                 }
                 
                 # Atualiza apenas os arquivos essenciais do Desktop, excluindo Android, gabaritos e pastas de dev
-                $excludeItems = @("android", "gabaritos_professor", "dist_ava", ".git", ".github", ".agents", ".gemini", ".vscode")
+                $excludeItems = @("android", "gabaritos_professor", "dist_ava", ".git", ".github", ".agents", ".gemini", ".vscode", "GEMINI.md", ".gitignore", "GERAR_PACOTE_ALUNO_AVA.bat", "INICIAR_ROSIVIEW_BRIDGE.bat", "README.md", "bridge")
                 Get-ChildItem -Path $src | Where-Object { $excludeItems -notcontains $_.Name -and $_.Name -notmatch '^\.' } | ForEach-Object {
                     Copy-Item -Path $_.FullName -Destination $projectRoot -Recurse -Force
                 }
 
-                # Garante que a pasta android nao permaneca em instalacoes de aluno (sem .git)
-                if (-not (Test-Path (Join-Path $projectRoot ".git")) -and (Test-Path (Join-Path $projectRoot "android"))) {
-                    Remove-Item -Path (Join-Path $projectRoot "android") -Recurse -Force -ErrorAction SilentlyContinue
+                # Garante que a pasta android e arquivos de dev nao permanecam em instalacoes de aluno (sem .git)
+                if (-not (Test-Path (Join-Path $projectRoot ".git"))) {
+                    foreach ($unw in $excludeItems) {
+                        $targetUnw = Join-Path $projectRoot $unw
+                        if (Test-Path $targetUnw) {
+                            Remove-Item -Path $targetUnw -Recurse -Force -ErrorAction SilentlyContinue
+                        }
+                    }
                 }
                 
                 Remove-Item -Path $tempZip -Force -ErrorAction SilentlyContinue

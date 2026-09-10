@@ -19,6 +19,18 @@ if (Test-Path $localVerPath) {
     } catch {}
 }
 
+# Se for instalacao de aluno/desktop (sem repositorio .git), remove pastas indevidas como 'android'
+$gitDir = Join-Path $projectRoot ".git"
+if (-not (Test-Path $gitDir)) {
+    $cleanupFolders = @("android", "gabaritos_professor", "dist_ava")
+    foreach ($fld in $cleanupFolders) {
+        $targetFld = Join-Path $projectRoot $fld
+        if (Test-Path $targetFld) {
+            Remove-Item -Path $targetFld -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
 # Definicao XAML da Splash Screen com Design Moderno e Caixa de Logs Formatada
 $xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -187,9 +199,15 @@ $timer.add_Tick({
                     $src = (Get-ChildItem $tempDir | Select-Object -First 1).FullName
                 }
                 
-                # Atualiza os arquivos ignorando gabaritos_professor se existir
-                Get-ChildItem -Path $src -Exclude "gabaritos_professor" | ForEach-Object {
+                # Atualiza apenas os arquivos essenciais do Desktop, excluindo Android, gabaritos e pastas de dev
+                $excludeItems = @("android", "gabaritos_professor", "dist_ava", ".git", ".github", ".agents", ".gemini", ".vscode")
+                Get-ChildItem -Path $src | Where-Object { $excludeItems -notcontains $_.Name -and $_.Name -notmatch '^\.' } | ForEach-Object {
                     Copy-Item -Path $_.FullName -Destination $projectRoot -Recurse -Force
+                }
+
+                # Garante que a pasta android nao permaneca em instalacoes de aluno (sem .git)
+                if (-not (Test-Path (Join-Path $projectRoot ".git")) -and (Test-Path (Join-Path $projectRoot "android"))) {
+                    Remove-Item -Path (Join-Path $projectRoot "android") -Recurse -Force -ErrorAction SilentlyContinue
                 }
                 
                 Remove-Item -Path $tempZip -Force -ErrorAction SilentlyContinue

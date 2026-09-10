@@ -52,6 +52,15 @@ foreach ($item in $itemsToCopy) {
     }
 }
 
+# Garante que pastas nao destinadas ao aluno (como android) nao permaneçam no perfil do aluno
+$unwantedFolders = @("android", "gabaritos_professor", "dist_ava")
+foreach ($unw in $unwantedFolders) {
+    $unwPath = Join-Path $installRoot $unw
+    if (Test-Path $unwPath) {
+        Remove-Item -Path $unwPath -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
 Write-Host " [OK] Arquivos instalados em: $installRoot" -ForegroundColor Green
 
 $targetExe = Join-Path $installRoot "RosiView.exe"

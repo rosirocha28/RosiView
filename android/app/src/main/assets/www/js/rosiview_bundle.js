@@ -305,78 +305,262 @@
   }
 
   class WSBridgeClient extends IDAQDevice {
-    constructor(serverUrl = 'http://127.0.0.1:8765') {
-      super('NI USB-6009 Bridge');
-      this.serverUrl = serverUrl;
+    constructor(baseUrl = 'http://127.0.0.1:8765') {
+      super('NI USB-6009 Universal Bridge');
+      this.httpUrl = baseUrl.replace(/^ws:\/\//i, 'http://').replace(/^wss:\/\//i, 'https://');
+      this.wsUrl = baseUrl.replace(/^http:\/\//i, 'ws://').replace(/^https:\/\//i, 'wss://');
+      
+      this.mode = null;
       this.ws = null;
+      this.pollInterval = null;
+      this.connected = false;
+      
       this.analogInputs = new Array(8).fill(0.0);
       this.analogOutputs = new Array(2).fill(0.0);
-      this.pollInterval = null;
+      this.digitalInputs = new Array(8).fill(false);
+      this.digitalOutputs = new Array(8).fill(false);
+
+      this.onStatusChange = null;
+      this.failCount = 0;
+      this.isPolling = false;
+      this.deviceName = 'NI USB-6009';
+    }
+
+    triggerProtocolLaunch() {
+      try {
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = 'rosiview-bridge://start';
+        document.body.appendChild(iframe);
+        setTimeout(() => {
+          try { iframe.remove(); } catch (_) {}
+        }, 2000);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    async tryConnectOnce() {
+      // 1. Tenta primeiro comunicação HTTP rápida com RosiViewBridge.exe
+      try {
+        fetch(`${this.httpUrl}/show`, { cache: 'no-store' }).catch(() => {});
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1200);
+        const resp = await fetch(`${this.httpUrl}/`, {
+          method: 'GET',
+          signal: controller.signal,
+          cache: 'no-store'
+        });
+        clearTimeout(timeoutId);
+
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data && data.connected === true) {
+            this.mode = 'http';
+            this.connected = true;
+            this.failCount = 0;
+            if (data.device) this.deviceName = data.device;
+            if (Array.isArray(data.ai)) this.analogInputs = data.ai;
+            if (Array.isArray(data.ao)) this.analogOutputs = data.ao;
+            this.startHttpPolling();
+            if (this.onStatusChange) this.onStatusChange(true, this.deviceName);
+            return true;
+          } else {
+            this.connected = false;
+            if (this.onStatusChange) this.onStatusChange(false);
+            throw new Error('PLACA_NAO_DETECTADA');
+          }
+        }
+      } catch (e) {
+        if (e.message === 'PLACA_NAO_DETECTADA') {
+          throw new Error(
+            'O Bridge do RosiView está ativo, mas nenhuma placa NI USB-6009 foi detectada no computador.\n\n' +
+            '1. Conecte o cabo USB da placa à porta USB do computador.\n' +
+            '2. Aguarde 2 segundos e clique em "Conectar" novamente.'
+          );
+        }
+      }
+
+      // 2. Se HTTP não respondeu, tenta WebSocket (compatível com rosiview_bridge.py)
+      try {
+        await new Promise((resolve, reject) => {
+          let settled = false;
+          const ws = new WebSocket(this.wsUrl);
+          const timer = setTimeout(() => {
+            if (!settled) {
+              settled = true;
+              try { ws.close(); } catch (_) {}
+              reject(new Error('Timeout de conexão WebSocket com Bridge local'));
+            }
+          }, 1200);
+
+          ws.onopen = () => {
+            if (!settled) {
+              settled = true;
+              clearTimeout(timer);
+              this.ws = ws;
+              this.mode = 'websocket';
+              this.connected = true;
+              this.setupWebSocketListeners();
+              if (this.onStatusChange) this.onStatusChange(true, this.deviceName);
+              resolve(true);
+            }
+          };
+
+          ws.onerror = (err) => {
+            if (!settled) {
+              settled = true;
+              clearTimeout(timer);
+              reject(err);
+            }
+          };
+        });
+        return true;
+      } catch (e) {
+        this.connected = false;
+        if (this.onStatusChange) this.onStatusChange(false);
+        throw e;
+      }
     }
 
     async connect() {
-      // Tenta conexão HTTP direta com o RosiViewBridge nativo
-      try {
-        const res = await fetch('http://127.0.0.1:8765/data', { cache: 'no-store' });
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.ai) this.analogInputs = data.ai;
-          this.connected = true;
-          this.startHttpPolling();
-          return true;
-        }
-      } catch (e) {}
+      this.connected = false;
+      this.mode = null;
 
-      // Fallback para WebSocket ws://127.0.0.1:8765
-      return new Promise((resolve, reject) => {
+      try {
+        return await this.tryConnectOnce();
+      } catch (err) {
+        if (err && err.message && err.message.includes('PLACA_NAO_DETECTADA')) {
+          throw err;
+        }
+
+        // Se o bridge não estava ativo, dispara o executável via protocolo do Windows
+        this.triggerProtocolLaunch();
+
+        // Aguarda 1.3s para subir o processo e tenta novamente
+        await new Promise(r => setTimeout(r, 1300));
+
         try {
-          this.ws = new WebSocket('ws://127.0.0.1:8765');
-          this.ws.onopen = () => { this.connected = true; resolve(true); };
-          this.ws.onmessage = (event) => {
-            try {
-              const data = JSON.parse(event.data);
-              if (data.type === 'ai_data' && Array.isArray(data.values)) {
-                this.analogInputs = data.values;
-              } else if (data.ai) {
-                this.analogInputs = data.ai;
-              }
-            } catch (e) {}
-          };
-          this.ws.onclose = () => { this.connected = false; };
-          this.ws.onerror = (err) => { 
-            if (!this.connected) reject(new Error('Bridge não encontrado na porta 8765. Execute INICIAR_ROSIVIEW_BRIDGE.bat.')); 
-          };
-        } catch (e) { reject(e); }
-      });
+          return await this.tryConnectOnce();
+        } catch (err2) {
+          if (err2 && err2.message && err2.message.includes('PLACA_NAO_DETECTADA')) {
+            throw err2;
+          }
+          throw new Error(
+            'Não foi possível conectar à bancada física NI USB-6009 em 127.0.0.1:8765.\n\n' +
+            'Dica: Conecte o cabo USB da placa e inicie o RosiView pelo atalho oficial da Área de Trabalho.'
+          );
+        }
+      }
     }
 
     startHttpPolling() {
-      if (this.pollInterval) clearInterval(this.pollInterval);
+      this.stopHttpPolling();
       this.pollInterval = setInterval(async () => {
-        if (!this.connected) return;
+        if (this.isPolling) return;
+        this.isPolling = true;
         try {
-          const res = await fetch('http://127.0.0.1:8765/data', { cache: 'no-store' });
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.ai) this.analogInputs = data.ai;
+          const resp = await fetch(`${this.httpUrl}/`, { cache: 'no-store' });
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data && data.connected === true) {
+              const wasDisconnected = !this.connected;
+              this.connected = true;
+              this.failCount = 0;
+              if (data.device) this.deviceName = data.device;
+              if (Array.isArray(data.ai)) this.analogInputs = data.ai;
+              if (Array.isArray(data.ao)) this.analogOutputs = data.ao;
+              if (wasDisconnected && this.onStatusChange) {
+                this.onStatusChange(true, this.deviceName);
+              }
+            } else {
+              this.handlePhysicalDisconnect();
+            }
+          } else {
+            this.handleHttpFail();
           }
-        } catch (e) {}
-      }, 30); // ~33 Hz
+        } catch (err) {
+          this.handleHttpFail();
+        } finally {
+          this.isPolling = false;
+        }
+      }, 40); // 25 Hz
     }
 
-    readAnalog(channel = 0) { 
-      return this.analogInputs[channel] || 0.0; 
+    handlePhysicalDisconnect() {
+      if (this.connected) {
+        this.connected = false;
+        this.analogInputs.fill(0.0);
+        if (this.onStatusChange) this.onStatusChange(false);
+      }
+    }
+
+    handleHttpFail() {
+      this.failCount++;
+      if (this.failCount > 4) {
+        if (this.connected) {
+          this.connected = false;
+          this.analogInputs.fill(0.0);
+          if (this.onStatusChange) this.onStatusChange(false);
+        }
+      }
+    }
+
+    stopHttpPolling() {
+      if (this.pollInterval) {
+        clearInterval(this.pollInterval);
+        this.pollInterval = null;
+      }
+    }
+
+    setupWebSocketListeners() {
+      if (!this.ws) return;
+      this.ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'ai_data' && Array.isArray(data.values)) {
+            this.analogInputs = data.values;
+          } else if (Array.isArray(data.ai)) {
+            this.analogInputs = data.ai;
+          }
+          if (Array.isArray(data.ao)) {
+            this.analogOutputs = data.ao;
+          }
+        } catch (_) {}
+      };
+
+      this.ws.onclose = () => {
+        this.connected = false;
+        if (this.onStatusChange) this.onStatusChange(false);
+      };
+    }
+
+    readAnalog(channel = 0) {
+      return this.analogInputs[channel] || 0.0;
     }
 
     writeAnalog(channel = 0, voltage = 0.0) {
       const v = Math.max(0, Math.min(5.0, Number(voltage) || 0));
       this.analogOutputs[channel] = v;
-      
-      // Envia comando HTTP e/ou WebSocket
-      fetch(`http://127.0.0.1:8765/write_ao?channel=${channel}&value=${v}`).catch(() => {});
-      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+
+      if (this.mode === 'http') {
+        fetch(`${this.httpUrl}/write_ao?channel=${channel}&value=${v.toFixed(3)}`, { cache: 'no-store' }).catch(() => {});
+      } else if (this.mode === 'websocket' && this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.ws.send(JSON.stringify({ cmd: 'write_ao', channel, value: v }));
       }
+    }
+
+    async disconnect() {
+      this.connected = false;
+      this.stopHttpPolling();
+      if (this.ws) {
+        try { this.ws.close(); } catch (_) {}
+        this.ws = null;
+      }
+      this.mode = null;
+      if (this.onStatusChange) this.onStatusChange(false);
     }
   }
 
@@ -4626,6 +4810,7 @@
       const hwItems = document.querySelectorAll('.hw-dropdown-item');
       const hwDot = document.getElementById('status-hw-dot');
       const hwText = document.getElementById('status-hw-text');
+      const btnConnectHw = document.getElementById('btn-connect-hw');
 
       // No ambiente Android / mobile, remove o seletor de Hardware para liberar espaço às abas
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.AndroidBridge !== undefined;
@@ -4633,6 +4818,7 @@
         document.body.classList.add('is-android');
         const hwDropdown = document.getElementById('dropdown-hardware');
         if (hwDropdown) hwDropdown.style.display = 'none';
+        if (btnConnectHw) btnConnectHw.style.display = 'none';
         const hwStatusItem = document.getElementById('status-hw-item');
         if (hwStatusItem) hwStatusItem.style.display = 'none';
       }
@@ -4647,45 +4833,77 @@
         });
       };
 
+      const updateConnectBtn = (mode, isConnected = false) => {
+        if (!btnConnectHw) return;
+        if (mode === 'virtual') {
+          btnConnectHw.disabled = true;
+          btnConnectHw.classList.add('disabled');
+          btnConnectHw.classList.remove('connected');
+          btnConnectHw.title = "O modo Planta Virtual está ativo. Selecione a placa NI USB-6009 no menu Hardware para conectar.";
+        } else {
+          btnConnectHw.disabled = false;
+          btnConnectHw.classList.remove('disabled');
+          if (isConnected) {
+            btnConnectHw.classList.add('connected');
+            btnConnectHw.title = "Bancada física conectada! Clique para verificar ou reconectar.";
+          } else {
+            btnConnectHw.classList.remove('connected');
+            btnConnectHw.title = "Clique para conectar à bancada física NI USB-6009";
+          }
+        }
+      };
+
+      this.currentHardwareMode = 'virtual';
+
       const applyMode = async (mode) => {
         updateActiveItem(mode);
+        this.currentHardwareMode = mode;
         if (mode === 'virtual') {
+          updateConnectBtn('virtual', false);
+          try { await this.wsBridge.disconnect(); } catch (_) {}
           this.currentDAQ = this.virtualDAQ;
           this.runtime.setDAQDevice(this.virtualDAQ);
           if (hwDot) hwDot.className = 'status-dot connected';
           if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
         } else if (mode === 'websocket') {
+          updateConnectBtn('websocket', false);
           try {
             if (hwText) hwText.textContent = 'Hardware: Conectando Bridge...';
             await this.wsBridge.connect();
             this.currentDAQ = this.wsBridge;
             this.runtime.setDAQDevice(this.wsBridge);
             if (hwDot) hwDot.className = 'status-dot connected';
-            if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Bridge)';
+            const devTitle = this.wsBridge.deviceName ? `NI USB-6009 [${this.wsBridge.deviceName}] (Bridge NI-DAQmx)` : 'NI USB-6009 (Bridge NI-DAQmx)';
+            if (hwText) hwText.textContent = `Hardware: ${devTitle}`;
+            updateConnectBtn('websocket', true);
           } catch (err) {
-            alert('Não foi possível conectar ao Bridge WebSocket (ws://127.0.0.1:8765).\nCertifique-se de executar o arquivo "INICIAR_ROSIVIEW_BRIDGE.bat".');
-            updateActiveItem('virtual');
-            this.currentDAQ = this.virtualDAQ;
-            this.runtime.setDAQDevice(this.virtualDAQ);
-            if (hwDot) hwDot.className = 'status-dot connected';
-            if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
+            updateConnectBtn('websocket', false);
+            if (hwDot) hwDot.className = 'status-dot disconnected';
+            if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Aguardando conexão - Clique em Conectar)';
+            alert(
+              (err && err.message) ? err.message :
+              'Não foi possível conectar à bancada física NI USB-6009.\n\n' +
+              'Passo a passo:\n' +
+              '1. Certifique-se de que o cabo USB da placa NI USB-6009 está conectado ao computador.\n' +
+              '2. Aguarde 2 segundos e clique em "Conectar" novamente.\n\n' +
+              '(Dica: O RosiView aciona o serviço da placa automaticamente em segundo plano).'
+            );
           }
-        } else if (mode === 'webusb') {
-          try {
-            if (hwText) hwText.textContent = 'Hardware: Conectando WebUSB...';
-            await this.webUSB.connect();
-            this.currentDAQ = this.webUSB;
-            this.runtime.setDAQDevice(this.webUSB);
-            if (hwDot) hwDot.className = 'status-dot connected';
-            if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (WebUSB)';
-          } catch (err) {
-            alert('Erro ao conectar via WebUSB: ' + err.message);
-            updateActiveItem('virtual');
-            this.currentDAQ = this.virtualDAQ;
-            this.runtime.setDAQDevice(this.virtualDAQ);
-            if (hwDot) hwDot.className = 'status-dot connected';
-            if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
-          }
+        }
+      };
+
+      // Monitoramento em tempo real do status físico de conexão/desconexão
+      this.wsBridge.onStatusChange = (isConnected, devName) => {
+        if (this.currentHardwareMode !== 'websocket') return;
+        if (isConnected) {
+          if (hwDot) hwDot.className = 'status-dot connected';
+          const devTitle = devName ? `NI USB-6009 [${devName}] (Bridge NI-DAQmx)` : 'NI USB-6009 (Bridge NI-DAQmx)';
+          if (hwText) hwText.textContent = `Hardware: ${devTitle}`;
+          updateConnectBtn('websocket', true);
+        } else {
+          if (hwDot) hwDot.className = 'status-dot disconnected';
+          if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Planta Desconectada)';
+          updateConnectBtn('websocket', false);
         }
       };
 
@@ -4711,19 +4929,49 @@
         });
       }
 
-      // Auto-detecção inicial: se o Bridge estiver aberto, conecta automaticamente!
-      setTimeout(async () => {
-        try {
-          const res = await fetch('http://127.0.0.1:8765/data', { cache: 'no-store' });
-          if (res.ok) {
-            updateActiveItem('websocket');
-            await applyMode('websocket');
-          }
-        } catch (e) {}
-      }, 300);
+      if (btnConnectHw) {
+        btnConnectHw.addEventListener('click', async () => {
+          if (btnConnectHw.disabled) return;
+          btnConnectHw.disabled = true;
+          btnConnectHw.innerHTML = '<span>⏳</span> <span class="btn-text">Conectando...</span>';
 
+          try {
+            await this.wsBridge.connect();
+            this.currentDAQ = this.wsBridge;
+            this.runtime.setDAQDevice(this.wsBridge);
+            if (hwDot) hwDot.className = 'status-dot connected';
+            const devTitle = this.wsBridge.deviceName ? `NI USB-6009 [${this.wsBridge.deviceName}] (Bridge NI-DAQmx)` : 'NI USB-6009 (Bridge NI-DAQmx)';
+            if (hwText) hwText.textContent = `Hardware: ${devTitle}`;
+            updateActiveItem('websocket');
+            updateConnectBtn('websocket', true);
+            btnConnectHw.innerHTML = '<span>⚡</span> <span class="btn-text">Conectado</span>';
+            setTimeout(() => {
+              btnConnectHw.innerHTML = '<span>⚡</span> <span class="btn-text">Conectar</span>';
+              btnConnectHw.disabled = false;
+            }, 1800);
+          } catch (err) {
+            updateConnectBtn('websocket', false);
+            btnConnectHw.innerHTML = '<span>⚡</span> <span class="btn-text">Conectar</span>';
+            btnConnectHw.disabled = false;
+            if (hwDot) hwDot.className = 'status-dot disconnected';
+            if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Desconectado)';
+            alert(
+              (err && err.message) ? err.message :
+              'Não foi possível conectar à bancada física NI USB-6009.\n\n' +
+              'Passo a passo:\n' +
+              '1. Certifique-se de que o cabo USB da placa NI USB-6009 está conectado ao computador.\n' +
+              '2. Aguarde 2 segundos e clique em "Conectar" novamente.\n\n' +
+              '(Dica: O RosiView aciona o serviço da placa automaticamente em segundo plano).'
+            );
+          }
+        });
+      }
+
+      // Padrão obrigatório ao iniciar: Planta Virtual (Simulador)
+      updateActiveItem('virtual');
       if (hwDot) hwDot.className = 'status-dot connected';
       if (hwText) hwText.textContent = 'Hardware: Planta Virtual (Simulador)';
+      updateConnectBtn('virtual', false);
     }
 
     setupStatusBar() {

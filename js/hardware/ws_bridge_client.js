@@ -29,17 +29,28 @@ export class WSBridgeClient extends IDAQDevice {
     this.deviceName = 'NI USB-6009';
   }
 
-  async connect() {
-    this.connected = false;
-    this.mode = null;
+  triggerProtocolLaunch() {
+    try {
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = 'rosiview-bridge://start';
+      document.body.appendChild(iframe);
+      setTimeout(() => {
+        try { iframe.remove(); } catch (_) {}
+      }, 2000);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 
+  async tryConnectOnce() {
     // 1. Tenta primeiro comunicação HTTP rápida com RosiViewBridge.exe
     try {
-      // Solicita exibição da janela do console em segundo plano
       fetch(`${this.httpUrl}/show`, { cache: 'no-store' }).catch(() => {});
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 1500);
+      const timeoutId = setTimeout(() => controller.abort(), 1200);
       const resp = await fetch(`${this.httpUrl}/`, {
         method: 'GET',
         signal: controller.signal,
@@ -73,7 +84,6 @@ export class WSBridgeClient extends IDAQDevice {
           '2. Aguarde 2 segundos e clique em "Conectar" novamente.'
         );
       }
-      // HTTP falhou ou não respondeu, tenta WebSocket
     }
 
     // 2. Se HTTP não respondeu, tenta WebSocket (compatível com rosiview_bridge.py)
@@ -87,7 +97,7 @@ export class WSBridgeClient extends IDAQDevice {
             try { ws.close(); } catch (_) {}
             reject(new Error('Timeout de conexão WebSocket com Bridge local'));
           }
-        }, 1500);
+        }, 1200);
 
         ws.onopen = () => {
           if (!settled) {
@@ -114,10 +124,39 @@ export class WSBridgeClient extends IDAQDevice {
     } catch (e) {
       this.connected = false;
       if (this.onStatusChange) this.onStatusChange(false);
-      throw new Error(
-        'Não foi possível conectar ao Bridge da NI USB-6009 em 127.0.0.1:8765.\n\n' +
-        'Certifique-se de executar o arquivo "INICIAR_ROSIVIEW_BRIDGE.bat" na pasta do RosiView.'
-      );
+      throw e;
+    }
+  }
+
+  async connect() {
+    this.connected = false;
+    this.mode = null;
+
+    try {
+      return await this.tryConnectOnce();
+    } catch (err) {
+      // Se a placa física não foi detectada, mas o bridge está rodando, repassa o erro
+      if (err && err.message && err.message.includes('PLACA_NAO_DETECTADA')) {
+        throw err;
+      }
+
+      // Se o bridge não estava rodando, tenta iniciá-lo via protocolo do Windows rosiview-bridge://
+      this.triggerProtocolLaunch();
+
+      // Aguarda 1.3 segundos para o Bridge iniciar e tenta conectar novamente
+      await new Promise(r => setTimeout(r, 1300));
+
+      try {
+        return await this.tryConnectOnce();
+      } catch (err2) {
+        if (err2 && err2.message && err2.message.includes('PLACA_NAO_DETECTADA')) {
+          throw err2;
+        }
+        throw new Error(
+          'Não foi possível conectar ao Bridge da NI USB-6009 em 127.0.0.1:8765.\n\n' +
+          'Dica: Conecte o cabo USB da placa e abra o RosiView pelo atalho oficial da Área de Trabalho.'
+        );
+      }
     }
   }
 

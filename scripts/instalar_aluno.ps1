@@ -43,7 +43,7 @@ if (-not (Test-Path $installRoot)) {
 }
 
 # Itens essenciais do aplicativo
-$itemsToCopy = @("assets", "css", "js", "scripts", "docs", "launcher", "RosiView.exe", "index.html", "version.json", "manifest.json", "RosiView.vbs", "INICIAR_ROSIVIEW.bat")
+$itemsToCopy = @("assets", "css", "js", "scripts", "docs", "launcher", "RosiView.exe", "index.html", "version.json", "manifest.json", "RosiView.vbs", "INICIAR_ROSIVIEW.bat", "bridge", "INICIAR_ROSIVIEW_BRIDGE.bat")
 
 foreach ($item in $itemsToCopy) {
     $srcItem = Join-Path $sourceDir $item
@@ -51,6 +51,20 @@ foreach ($item in $itemsToCopy) {
         Copy-Item -Path $srcItem -Destination $installRoot -Recurse -Force
     }
 }
+
+# Registra o protocolo de sistema rosiview-bridge:// para inicialização automática de 1 clique pelo navegador
+try {
+    $bridgeExe = Join-Path $installRoot "bridge\RosiViewBridge.exe"
+    if (Test-Path $bridgeExe) {
+        $regKey = "HKCU:\Software\Classes\rosiview-bridge"
+        if (-not (Test-Path $regKey)) { New-Item -Path $regKey -Force | Out-Null }
+        Set-ItemProperty -Path $regKey -Name "(Default)" -Value "URL:RosiView Bridge Protocol" -Force
+        Set-ItemProperty -Path $regKey -Name "URL Protocol" -Value "" -Force
+        $cmdKey = "$regKey\shell\open\command"
+        if (-not (Test-Path $cmdKey)) { New-Item -Path $cmdKey -Force | Out-Null }
+        Set-ItemProperty -Path $cmdKey -Name "(Default)" -Value "`"$bridgeExe`" --background" -Force
+    }
+} catch {}
 
 # Garante que pastas nao destinadas ao aluno (como android) nao permaneçam no perfil do aluno
 $unwantedFolders = @("android", "gabaritos_professor", "dist_ava")

@@ -12,7 +12,7 @@ if (Test-Path $localVerPath) {
 # Se for instalacao de aluno/desktop (sem repositorio .git), remove pastas e arquivos indevidos de dev/android
 $gitDir = Join-Path $projectRoot ".git"
 if (-not (Test-Path $gitDir)) {
-    $cleanupItems = @("android", "gabaritos_professor", "dist_ava", "GEMINI.md", ".gitignore", "GERAR_PACOTE_ALUNO_AVA.bat", "INICIAR_ROSIVIEW_BRIDGE.bat", "README.md", "bridge")
+    $cleanupItems = @("android", "gabaritos_professor", "dist_ava", "GEMINI.md", ".gitignore", "GERAR_PACOTE_ALUNO_AVA.bat", "README.md")
     foreach ($fld in $cleanupItems) {
         $targetFld = Join-Path $projectRoot $fld
         if (Test-Path $targetFld) {
@@ -70,7 +70,7 @@ if ($needsUpdate -and $remoteVer) {
             $src = (Get-ChildItem $tempDir | Select-Object -First 1).FullName
         }
         # Atualiza apenas os arquivos essenciais do Desktop, excluindo Android, gabaritos e pastas de dev
-        $excludeItems = @("android", "gabaritos_professor", "dist_ava", ".git", ".github", ".agents", ".gemini", ".vscode", "GEMINI.md", ".gitignore", "GERAR_PACOTE_ALUNO_AVA.bat", "INICIAR_ROSIVIEW_BRIDGE.bat", "README.md", "bridge")
+        $excludeItems = @("android", "gabaritos_professor", "dist_ava", ".git", ".github", ".agents", ".gemini", ".vscode", "GEMINI.md", ".gitignore", "GERAR_PACOTE_ALUNO_AVA.bat", "README.md")
         Get-ChildItem -Path $src | Where-Object { $excludeItems -notcontains $_.Name -and $_.Name -notmatch '^\.' } | ForEach-Object {
             Copy-Item -Path $_.FullName -Destination $projectRoot -Recurse -Force
         }
@@ -97,6 +97,26 @@ if ($needsUpdate -and $remoteVer) {
     Write-Host "RosiView $localVer verificado. Abrindo aplicativo..." -ForegroundColor Gray
 }
 
-# Abre o aplicativo no navegador padrao
+# 1. Inicia o Bridge da NI USB-6009 em segundo plano silencioso se disponível
+$bridgeExe = Join-Path $projectRoot "bridge\RosiViewBridge.exe"
+if (Test-Path $bridgeExe) {
+    $runningBridge = Get-Process -Name "RosiViewBridge" -ErrorAction SilentlyContinue
+    if (-not $runningBridge) {
+        Start-Process -FilePath $bridgeExe -ArgumentList "--background" -WindowStyle Hidden
+    }
+
+    # 2. Garante o registro do protocolo de sistema rosiview-bridge:// para acionamento 1-clique pelo navegador
+    try {
+        $regKey = "HKCU:\Software\Classes\rosiview-bridge"
+        if (-not (Test-Path $regKey)) { New-Item -Path $regKey -Force | Out-Null }
+        Set-ItemProperty -Path $regKey -Name "(Default)" -Value "URL:RosiView Bridge Protocol" -Force
+        Set-ItemProperty -Path $regKey -Name "URL Protocol" -Value "" -Force
+        $cmdKey = "$regKey\shell\open\command"
+        if (-not (Test-Path $cmdKey)) { New-Item -Path $cmdKey -Force | Out-Null }
+        Set-ItemProperty -Path $cmdKey -Name "(Default)" -Value "`"$bridgeExe`" --background" -Force
+    } catch {}
+}
+
+# 3. Abre o aplicativo no navegador padrao
 $indexHtml = Join-Path $projectRoot "index.html"
 Start-Process $indexHtml

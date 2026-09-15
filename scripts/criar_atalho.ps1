@@ -51,6 +51,20 @@ try {
         $StartShortcut.Save()
     }
 
+    # Registra o protocolo de sistema rosiview-bridge:// para inicialização automática de 1 clique pelo navegador
+    try {
+        $bridgeExe = Join-Path $projectRoot "bridge\RosiViewBridge.exe"
+        if (Test-Path $bridgeExe) {
+            $regKey = "HKCU:\Software\Classes\rosiview-bridge"
+            if (-not (Test-Path $regKey)) { New-Item -Path $regKey -Force | Out-Null }
+            Set-ItemProperty -Path $regKey -Name "(Default)" -Value "URL:RosiView Bridge Protocol" -Force
+            Set-ItemProperty -Path $regKey -Name "URL Protocol" -Value "" -Force
+            $cmdKey = "$regKey\shell\open\command"
+            if (-not (Test-Path $cmdKey)) { New-Item -Path $cmdKey -Force | Out-Null }
+            Set-ItemProperty -Path $cmdKey -Name "(Default)" -Value "`"$bridgeExe`" --background" -Force
+        }
+    } catch {}
+
     Write-Host ""
     Write-Host "============================================================" -ForegroundColor Cyan
     Write-Host " [OK] Atalho criado com sucesso na Area de Trabalho!" -ForegroundColor Green

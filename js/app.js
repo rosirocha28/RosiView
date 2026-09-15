@@ -553,11 +553,11 @@ class RosiViewApp {
           if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Desconectado)';
           alert(
             (err && err.message) ? err.message :
-            'Não foi possível conectar à bancada física NI USB-6009 (127.0.0.1:8765).\n\n' +
-            'Passo a passo para conectar:\n' +
-            '1. Verifique se o cabo USB da placa NI está conectado ao computador.\n' +
-            '2. Se o Bridge não estiver rodando, abra o arquivo "INICIAR_ROSIVIEW_BRIDGE.bat" na pasta do RosiView.\n' +
-            '3. Clique em "Conectar" novamente.'
+            'Não foi possível conectar à bancada física NI USB-6009.\n\n' +
+            'Passo a passo:\n' +
+            '1. Certifique-se de que o cabo USB da placa NI USB-6009 está conectado ao computador.\n' +
+            '2. Aguarde 2 segundos e clique em "Conectar" novamente.\n\n' +
+            '(Dica: O RosiView aciona o serviço da placa automaticamente em segundo plano).'
           );
         }
       });

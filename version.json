@@ -1,25 +1,25 @@
 {
-  "version": "v0.4.2",
-  "name": "RosiView v0.4.2",
-  "releaseDate": "2026-09-10",
-  "notes": "Lançamento v0.4.2: Proteção do instalador e atualizador desktop impedindo download indevido da pasta android na máquina dos alunos, otimização dos scripts de inicialização e sincronização de versão.",
+  "version": "v0.4.3",
+  "name": "RosiView v0.4.3",
+  "releaseDate": "2026-09-15",
+  "notes": "Lançamento v0.4.3: Restauração do sistema de Desfazer e Refazer (Undo/Redo), correção e atualização dinâmica de escalas do Tanque e Termômetro, e automação do Bridge de hardware.",
   "desktop": {
-    "version": "v0.4.2",
-    "tag": "v0.4.2",
-    "name": "RosiView Desktop v0.4.2",
-    "releaseDate": "2026-09-10",
-    "notes": "Versão Desktop v0.4.2: Exclusão de pastas de desenvolvimento e Android na atualização automática do aluno, remoção preventiva de resíduos e atualização do pacote AVA.",
-    "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.4.2.zip",
-    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/v0.4.2"
+    "version": "v0.4.3",
+    "tag": "v0.4.3",
+    "name": "RosiView Desktop v0.4.3",
+    "releaseDate": "2026-09-15",
+    "notes": "Versão Desktop v0.4.3: Suporte a Desfazer/Refazer (Ctrl+Z/Ctrl+Y), escalas proporcionais para Tanque e Termômetro, e automação transparente do Bridge USB-6009.",
+    "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.4.3.zip",
+    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/v0.4.3"
   },
   "android": {
-    "version": "v0.4.2",
-    "versionCode": 7,
-    "tag": "android-v0.4.2",
-    "name": "RosiView Android v0.4.2",
-    "releaseDate": "2026-09-10",
-    "notes": "Versão Android v0.4.2: Sincronização com o núcleo v0.4.2 e melhorias contínuas de estabilidade.",
-    "apkUrl": "https://github.com/rosirocha28/RosiView/releases/download/android-v0.4.2/RosiView.apk",
-    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/android-v0.4.2"
+    "version": "v0.4.3",
+    "versionCode": 8,
+    "tag": "android-v0.4.3",
+    "name": "RosiView Android v0.4.3",
+    "releaseDate": "2026-09-15",
+    "notes": "Versão Android v0.4.3: Botões de Desfazer/Refazer ativos na barra de ferramentas, escalas numéricas dinâmicas para Tanque e Termômetro, e sincronização geral.",
+    "apkUrl": "https://github.com/rosirocha28/RosiView/releases/download/android-v0.4.3/RosiView.apk",
+    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/android-v0.4.3"
   }
 }

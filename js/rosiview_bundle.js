@@ -1233,20 +1233,22 @@
   // 7. WIDGETS DO PAINEL FRONTAL
   // ==========================================================================
   class ThermometerWidget {
-    constructor({ id, title = 'Termômetro', min = 0, max = 200, unit = '°C', x = 50, y = 50 }) {
+    constructor({ id, title = 'Termômetro', min = 0, max = 200, unit = '°C', step = 1, x = 50, y = 50 }) {
       this.id = id;
       this.kind = 'thermometer';
       this.title = title;
-      this.min = min;
-      this.max = max;
-      this.unit = unit;
+      this.min = (min !== undefined && min !== null) ? Number(min) : 0;
+      this.max = (max !== undefined && max !== null) ? Number(max) : 200;
+      this.unit = unit !== undefined ? unit : '°C';
+      this.step = (step !== undefined && step !== null) ? Number(step) : 1;
       this.x = x;
       this.y = y;
-      this.value = min;
+      this.value = this.min;
       this.element = null;
       this.liquidEl = null;
       this.displayValEl = null;
       this.scaleEl = null;
+      this.unitEl = null;
       this.render();
     }
 
@@ -1271,7 +1273,7 @@
           </div>
           <div class="numeric-box" style="margin-top: 6px;">
             <div class="numeric-indicator-val" id="val_${this.id}">0.00</div>
-            <span style="padding: 0 4px; font-weight: bold; font-size: 11px; color: #64748b;">${this.unit}</span>
+            <span id="unit_${this.id}" style="padding: 0 4px; font-weight: bold; font-size: 11px; color: #64748b;">${this.unit}</span>
           </div>
         </div>
       `;
@@ -1280,6 +1282,7 @@
       this.liquidEl = el.querySelector(`#liquid_${this.id}`);
       this.displayValEl = el.querySelector(`#val_${this.id}`);
       this.scaleEl = el.querySelector(`#scale_${this.id}`);
+      this.unitEl = el.querySelector(`#unit_${this.id}`) || el.querySelector('.numeric-box span');
 
       this.updateScale();
       this.setValue(this.value);
@@ -1287,31 +1290,68 @@
     }
 
     updateScale() {
-      this.scaleEl.innerHTML = '';
-      const steps = 4;
-      for (let i = steps; i >= 0; i--) {
-        const val = this.min + (this.max - this.min) * (i / steps);
-        const mark = document.createElement('div');
-        mark.className = 'scale-mark';
-        mark.innerHTML = `<span>${Math.round(val)}</span>`;
-        this.scaleEl.appendChild(mark);
+      if (!this.scaleEl && this.element) {
+        this.scaleEl = this.element.querySelector(`#scale_${this.id}`) || this.element.querySelector('.thermometer-scale');
       }
+      if (!this.unitEl && this.element) {
+        this.unitEl = this.element.querySelector(`#unit_${this.id}`) || this.element.querySelector('.numeric-box span');
+      }
+      const titleEl = this.element ? this.element.querySelector('.fp-widget-header') : null;
+      if (titleEl && this.title !== undefined) {
+        titleEl.textContent = this.title;
+      }
+
+      if (this.scaleEl) {
+        this.scaleEl.innerHTML = '';
+        const min = Number(this.min) || 0;
+        const max = (this.max !== undefined && this.max !== null) ? Number(this.max) : 100;
+        const range = max - min;
+        const steps = 4;
+        for (let i = steps; i >= 0; i--) {
+          const val = min + range * (i / steps);
+          const mark = document.createElement('div');
+          mark.className = 'scale-mark';
+          const formatted = (Math.abs(val) >= 100 || Number.isInteger(val)) ? Math.round(val) : val.toFixed(1);
+          mark.innerHTML = `<span>${formatted}</span>`;
+          this.scaleEl.appendChild(mark);
+        }
+      }
+
+      if (this.unitEl) {
+        this.unitEl.textContent = this.unit || '';
+      }
+    }
+
+    updateTicks() {
+      this.updateScale();
+    }
+
+    applyConfig(cfg = {}) {
+      if (cfg.title !== undefined) this.title = cfg.title;
+      if (cfg.min !== undefined) this.min = Number(cfg.min);
+      if (cfg.max !== undefined) this.max = Number(cfg.max);
+      if (cfg.unit !== undefined) this.unit = cfg.unit;
+      if (cfg.step !== undefined) this.step = Number(cfg.step);
+
+      this.updateScale();
+      this.setValue(this.value);
     }
 
     setValue(val) {
       this.value = Number(val) || 0;
-      const clamped = Math.max(this.min, Math.min(this.max, this.value));
-      const pct = ((clamped - this.min) / (this.max - this.min)) * 100;
+      const min = Number(this.min) || 0;
+      const max = (this.max !== undefined && this.max !== null) ? Number(this.max) : 100;
+      const clamped = Math.max(min, Math.min(max, this.value));
+      const range = (max - min) || 1;
+      const pct = Math.max(0, Math.min(100, ((clamped - min) / range) * 100));
       if (this.liquidEl) this.liquidEl.style.height = `${pct}%`;
       if (this.displayValEl) this.displayValEl.textContent = this.value.toFixed(2);
     }
 
     setUnit(unit, min, max) {
       this.unit = unit;
-      if (min !== undefined) this.min = min;
-      if (max !== undefined) this.max = max;
-      const span = this.element.querySelector('.numeric-box span');
-      if (span) span.textContent = unit;
+      if (min !== undefined) this.min = Number(min);
+      if (max !== undefined) this.max = Number(max);
       this.updateScale();
       this.setValue(this.value);
     }
@@ -1320,19 +1360,22 @@
   }
 
   class TankWidget {
-    constructor({ id, title = 'Tanque de Nível', min = 0, max = 300, unit = 'mm', x = 60, y = 60 }) {
+    constructor({ id, title = 'Tanque de Nível', min = 0, max = 300, unit = 'mm', step = 1, x = 60, y = 60 }) {
       this.id = id;
       this.kind = 'tank';
       this.title = title;
-      this.min = min;
-      this.max = max;
-      this.unit = unit;
+      this.min = (min !== undefined && min !== null) ? Number(min) : 0;
+      this.max = (max !== undefined && max !== null) ? Number(max) : 300;
+      this.unit = unit !== undefined ? unit : 'mm';
+      this.step = (step !== undefined && step !== null) ? Number(step) : 1;
       this.x = x;
       this.y = y;
-      this.value = 30;
+      this.value = this.min;
       this.element = null;
       this.waterEl = null;
       this.displayValEl = null;
+      this.scaleEl = null;
+      this.unitEl = null;
       this.render();
     }
 
@@ -1347,12 +1390,7 @@
         <div class="fp-widget-header">${this.title}</div>
         <div class="fp-widget-content">
           <div class="tank-container">
-            <div class="tank-scale">
-              <div>300 mm</div>
-              <div>200 mm</div>
-              <div>100 mm</div>
-              <div>0 mm</div>
-            </div>
+            <div class="tank-scale" id="scale_${this.id}"></div>
             <div class="tank-vessel">
               <div class="tank-water" id="water_${this.id}">
                 <div class="tank-wave"></div>
@@ -1360,8 +1398,8 @@
             </div>
           </div>
           <div class="numeric-box" style="margin-top: 6px;">
-            <div class="numeric-indicator-val" id="val_${this.id}">30.00</div>
-            <span style="padding: 0 4px; font-weight: bold; font-size: 11px; color: #64748b;">${this.unit}</span>
+            <div class="numeric-indicator-val" id="val_${this.id}">0.00</div>
+            <span id="unit_${this.id}" style="padding: 0 4px; font-weight: bold; font-size: 11px; color: #64748b;">${this.unit}</span>
           </div>
         </div>
       `;
@@ -1369,14 +1407,75 @@
       this.element = el;
       this.waterEl = el.querySelector(`#water_${this.id}`);
       this.displayValEl = el.querySelector(`#val_${this.id}`);
+      this.scaleEl = el.querySelector(`#scale_${this.id}`);
+      this.unitEl = el.querySelector(`#unit_${this.id}`) || el.querySelector('.numeric-box span');
+
+      this.updateScale();
       this.setValue(this.value);
       this.setupDrag();
     }
 
+    updateScale() {
+      if (!this.scaleEl && this.element) {
+        this.scaleEl = this.element.querySelector(`#scale_${this.id}`) || this.element.querySelector('.tank-scale');
+      }
+      if (!this.unitEl && this.element) {
+        this.unitEl = this.element.querySelector(`#unit_${this.id}`) || this.element.querySelector('.numeric-box span');
+      }
+      const titleEl = this.element ? this.element.querySelector('.fp-widget-header') : null;
+      if (titleEl && this.title !== undefined) {
+        titleEl.textContent = this.title;
+      }
+
+      if (this.scaleEl) {
+        this.scaleEl.innerHTML = '';
+        const min = Number(this.min) || 0;
+        const max = (this.max !== undefined && this.max !== null) ? Number(this.max) : 300;
+        const range = max - min;
+        const steps = 3;
+
+        const formatVal = (v) => {
+          if (Math.abs(v) >= 100 || Number.isInteger(v)) return Math.round(v);
+          return v.toFixed(1);
+        };
+
+        const unitStr = this.unit ? ` ${this.unit}` : '';
+        for (let i = steps; i >= 0; i--) {
+          const val = min + range * (i / steps);
+          const div = document.createElement('div');
+          div.textContent = `${formatVal(val)}${unitStr}`;
+          this.scaleEl.appendChild(div);
+        }
+      }
+
+      if (this.unitEl) {
+        this.unitEl.textContent = this.unit || '';
+      }
+
+      this.setValue(this.value);
+    }
+
+    updateTicks() {
+      this.updateScale();
+    }
+
+    applyConfig(cfg = {}) {
+      if (cfg.title !== undefined) this.title = cfg.title;
+      if (cfg.min !== undefined) this.min = Number(cfg.min);
+      if (cfg.max !== undefined) this.max = Number(cfg.max);
+      if (cfg.unit !== undefined) this.unit = cfg.unit;
+      if (cfg.step !== undefined) this.step = Number(cfg.step);
+
+      this.updateScale();
+    }
+
     setValue(val) {
       this.value = Number(val) || 0;
-      const clamped = Math.max(this.min, Math.min(this.max, this.value));
-      const pct = ((clamped - this.min) / (this.max - this.min)) * 100;
+      const min = Number(this.min) || 0;
+      const max = (this.max !== undefined && this.max !== null) ? Number(this.max) : 300;
+      const clamped = Math.max(min, Math.min(max, this.value));
+      const range = (max - min) || 1;
+      const pct = Math.max(0, Math.min(100, ((clamped - min) / range) * 100));
       if (this.waterEl) this.waterEl.style.height = `${pct}%`;
       if (this.displayValEl) this.displayValEl.textContent = this.value.toFixed(2);
     }
@@ -2817,6 +2916,9 @@
 
         this.applyWidgetConfig(widget);
         close();
+        if (this.app && this.app.undoManager) {
+          this.app.undoManager.pushState();
+        }
         if (this.app && typeof this.app.showToast === 'function') {
           this.app.showToast(`Instrumento '${newTitle}' atualizado!`);
         }
@@ -2866,13 +2968,21 @@
         if (widget.step !== undefined) numInput.step = widget.step;
       }
 
+      if (typeof widget.updateScale === 'function') {
+        widget.updateScale();
+      }
+
+      if (typeof widget.updateTicks === 'function') {
+        widget.updateTicks();
+      }
+
       const tankScale = widget.element.querySelector('.tank-scale');
-      if (tankScale) {
-        const spans = tankScale.querySelectorAll('span');
-        if (spans.length >= 3) {
-          spans[0].textContent = widget.max;
-          spans[1].textContent = ((widget.min + widget.max) / 2).toFixed(0);
-          spans[2].textContent = widget.min;
+      if (tankScale && typeof widget.updateScale !== 'function') {
+        const divs = tankScale.querySelectorAll('div, span');
+        if (divs.length >= 3) {
+          divs[0].textContent = `${widget.max} ${widget.unit || ''}`.trim();
+          divs[1].textContent = `${((widget.min + widget.max) / 2).toFixed(0)} ${widget.unit || ''}`.trim();
+          divs[divs.length - 1].textContent = `${widget.min} ${widget.unit || ''}`.trim();
         }
         if (typeof widget.setValue === 'function' && widget.value !== undefined) {
           widget.setValue(widget.value);
@@ -2880,12 +2990,12 @@
       }
 
       const thermoScale = widget.element.querySelector('.thermometer-scale');
-      if (thermoScale) {
-        const spans = thermoScale.querySelectorAll('span');
+      if (thermoScale && typeof widget.updateScale !== 'function') {
+        const spans = thermoScale.querySelectorAll('.scale-mark span, span');
         if (spans.length >= 3) {
-          spans[0].textContent = `${widget.max}°`;
-          spans[1].textContent = `${((widget.min + widget.max) / 2).toFixed(0)}°`;
-          spans[2].textContent = `${widget.min}°`;
+          spans[0].textContent = `${widget.max}`;
+          spans[1].textContent = `${((widget.min + widget.max) / 2).toFixed(0)}`;
+          spans[spans.length - 1].textContent = `${widget.min}`;
         }
         if (typeof widget.setValue === 'function' && widget.value !== undefined) {
           widget.setValue(widget.value);
@@ -2896,10 +3006,6 @@
         widget.drawGauge();
       } else if (typeof widget.setValue === 'function' && widget.value !== undefined) {
         widget.setValue(widget.value);
-      }
-
-      if (typeof widget.updateTicks === 'function') {
-        widget.updateTicks();
       }
 
       if (this.app && this.app.graph) {
@@ -2934,6 +3040,9 @@
       if (this.selectedWidgetId === widgetId) {
         this.selectWidget(null);
       }
+      if (this.app && this.app.undoManager) {
+        this.app.undoManager.pushState();
+      }
       if (this.app && typeof this.app.showToast === 'function') {
         this.app.showToast(`Instrumento '${title}' excluído.`);
       }
@@ -2956,6 +3065,9 @@
       }
 
       this.syncControlsToDiagram(this.app ? this.app.graph : null);
+      if (this.app && this.app.undoManager) {
+        this.app.undoManager.pushState();
+      }
       if (this.app && typeof this.app.showToast === 'function') {
         this.app.showToast(`Instrumento '${widget.title || ''}' resetado para valores padrão.`);
       }
@@ -3053,6 +3165,9 @@
         const onMouseUp = () => {
           if (isDragging) {
             el.style.zIndex = '10';
+            if (this.app && this.app.undoManager) {
+              this.app.undoManager.pushState();
+            }
           }
           window.removeEventListener('mousemove', onMouseMove);
           window.removeEventListener('mouseup', onMouseUp);
@@ -3119,6 +3234,9 @@
           clearTimeout(longPressTimer);
           if (isDragging) {
             el.style.zIndex = '10';
+            if (this.app && this.app.undoManager) {
+              this.app.undoManager.pushState();
+            }
           } else if (!longPressFired) {
             this.selectWidget(widget.id);
           }
@@ -3809,6 +3927,9 @@
         const onMouseUp = () => {
           window.removeEventListener('mousemove', onMouseMove);
           window.removeEventListener('mouseup', onMouseUp);
+          if (node.x !== origX || node.y !== origY) {
+            if (this.app && this.app.undoManager) this.app.undoManager.pushState();
+          }
         };
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mouseup', onMouseUp);
@@ -3850,6 +3971,9 @@
         const onTouchEnd = () => {
           window.removeEventListener('touchmove', onTouchMove);
           window.removeEventListener('touchend', onTouchEnd);
+          if (isDragging && (node.x !== origX || node.y !== origY)) {
+            if (this.app && this.app.undoManager) this.app.undoManager.pushState();
+          }
         };
 
         window.addEventListener('touchmove', onTouchMove, { passive: false });
@@ -3886,6 +4010,8 @@
       });
       this.cancelPendingWire();
       this.renderWires();
+      if (this.onWireCreated) this.onWireCreated();
+      if (this.app && this.app.undoManager) this.app.undoManager.pushState();
     }
 
     cancelPendingWire() {
@@ -4375,6 +4501,127 @@
   }
 
   // ==========================================================================
+  // 9.5. GERENCIADOR DE DESFAZER E REFAZER (UNDO / REDO)
+  // ==========================================================================
+  class UndoManager {
+    constructor(app) {
+      this.app = app;
+      this.undoStack = [];
+      this.redoStack = [];
+      this.lastState = null;
+      this.isApplying = false;
+      this.initKeyboardShortcuts();
+      setTimeout(() => {
+        this.lastState = this.getCurrentSnapshot();
+        this.updateButtons();
+      }, 100);
+    }
+
+    getCurrentSnapshot() {
+      try {
+        return JSON.stringify({
+          graph: this.app && this.app.graph ? this.app.graph.toJSON() : {},
+          frontPanel: this.app && this.app.frontPanel ? this.app.frontPanel.toJSON() : {}
+        });
+      } catch (e) {
+        console.warn('Erro ao obter snapshot para undo:', e);
+        return '{}';
+      }
+    }
+
+    reset() {
+      this.undoStack = [];
+      this.redoStack = [];
+      this.lastState = this.getCurrentSnapshot();
+      this.updateButtons();
+    }
+
+    pushState() {
+      if (this.isApplying) return;
+      const current = this.getCurrentSnapshot();
+      if (!this.lastState) {
+        this.lastState = current;
+        return;
+      }
+      if (this.lastState === current) {
+        return;
+      }
+      this.undoStack.push(this.lastState);
+      this.lastState = current;
+      this.redoStack = [];
+      this.updateButtons();
+    }
+
+    undo() {
+      if (this.undoStack.length === 0 || this.isApplying) return;
+      const previousState = this.undoStack.pop();
+      if (this.lastState) {
+        this.redoStack.push(this.lastState);
+      }
+
+      this.isApplying = true;
+      try {
+        this.app.loadProjectJson(previousState, null, true);
+        this.lastState = previousState;
+      } catch (e) {
+        console.error('Erro ao desfazer:', e);
+      } finally {
+        this.isApplying = false;
+      }
+      this.updateButtons();
+      if (typeof this.app.showToast === 'function') {
+        this.app.showToast('Ação desfeita (Desfazer)');
+      }
+    }
+
+    redo() {
+      if (this.redoStack.length === 0 || this.isApplying) return;
+      const nextState = this.redoStack.pop();
+      if (this.lastState) {
+        this.undoStack.push(this.lastState);
+      }
+
+      this.isApplying = true;
+      try {
+        this.app.loadProjectJson(nextState, null, true);
+        this.lastState = nextState;
+      } catch (e) {
+        console.error('Erro ao refazer:', e);
+      } finally {
+        this.isApplying = false;
+      }
+      this.updateButtons();
+      if (typeof this.app.showToast === 'function') {
+        this.app.showToast('Ação refeita (Refazer)');
+      }
+    }
+
+    updateButtons() {
+      const btnUndo = document.getElementById('btn-undo');
+      const btnRedo = document.getElementById('btn-redo');
+      if (btnUndo) btnUndo.disabled = this.undoStack.length === 0;
+      if (btnRedo) btnRedo.disabled = this.redoStack.length === 0;
+    }
+
+    initKeyboardShortcuts() {
+      window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable || (e.target.closest && e.target.closest('[contenteditable="true"]'))) {
+          return;
+        }
+
+        const isCtrl = e.ctrlKey || e.metaKey;
+        if (isCtrl && !e.shiftKey && e.key.toLowerCase() === 'z') {
+          e.preventDefault();
+          this.undo();
+        } else if (isCtrl && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) {
+          e.preventDefault();
+          this.redo();
+        }
+      });
+    }
+  }
+
+  // ==========================================================================
   // 10. CENTRAL APP ORCHESTRATOR COM SINCRONIZAÇÃO BIDIRECIONAL AUTOMÁTICA
   // ==========================================================================
   class RosiViewApp {
@@ -4389,6 +4636,7 @@
       this.editor = null;
       this.runtime = null;
       this.palette = null;
+      this.undoManager = null;
       this.activeView = 'split';
       this.currentProjectName = 'meu_projeto.rosi';
     }
@@ -4398,8 +4646,12 @@
       this.editor = new BlockDiagramEditor({
         containerId: 'diagram-container',
         graph: this.graph,
-        app: this
+        app: this,
+        onWireCreated: () => {
+          if (this.undoManager) this.undoManager.pushState();
+        }
       });
+      this.undoManager = new UndoManager(this);
 
       this.runtime = new RosiViewRuntime({
         graph: this.graph,
@@ -4464,7 +4716,7 @@
 
       const myVer = (window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function') 
         ? ('v' + window.AndroidBridge.getVersion()) 
-        : 'v0.4.2';
+        : 'v0.4.3';
       this.currentVersion = myVer;
 
       const badge = splash.querySelector('.mobile-splash-badge');
@@ -4507,7 +4759,7 @@
           }
         })
         .catch(() => {
-          const myVer = 'v0.4.2';
+          const myVer = 'v0.4.3';
           setStatus(`Modo offline (${myVer}) • Abrindo...`, '#38bdf8');
         });
 
@@ -4529,7 +4781,7 @@
       this.isAndroid = isMobile;
       this.currentVersion = (isMobile && window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function')
         ? ('v' + window.AndroidBridge.getVersion())
-        : 'v0.4.2';
+        : 'v0.4.3';
       const versionEl = document.getElementById('status-app-version');
       if (versionEl) {
         versionEl.textContent = isMobile ? `RosiView Android ${this.currentVersion} — IFES` : `RosiView ${this.currentVersion} — IFES`;
@@ -4707,6 +4959,12 @@
       }
 
       if (btnPalette) btnPalette.addEventListener('click', () => this.palette.toggle());
+
+      const btnUndo = document.getElementById('btn-undo');
+      const btnRedo = document.getElementById('btn-redo');
+      if (btnUndo) btnUndo.addEventListener('click', () => { if (this.undoManager) this.undoManager.undo(); });
+      if (btnRedo) btnRedo.addEventListener('click', () => { if (this.undoManager) this.undoManager.redo(); });
+
       if (btnNew) btnNew.addEventListener('click', () => this.promptNewProject());
       if (btnClear) btnClear.addEventListener('click', () => this.promptNewProject());
       if (btnHelp) btnHelp.addEventListener('click', () => this.openManualHelp());
@@ -5064,6 +5322,7 @@
       }
 
       this.palette.toggle(false);
+      if (this.undoManager) this.undoManager.pushState();
     }
 
     duplicateFrontPanelWidget(origWidget) {
@@ -5151,6 +5410,7 @@
         this.editor.render();
       }
       this.frontPanel.selectWidget(id);
+      if (this.undoManager) this.undoManager.pushState();
       this.showToast(`Instrumento '${config.title}' duplicado!`);
     }
 
@@ -5191,6 +5451,7 @@
         this.graph.addNode(node);
         this.editor.render();
         this.palette.toggle(false);
+        if (this.undoManager) this.undoManager.pushState();
       }
     }
 
@@ -5199,6 +5460,7 @@
       this.graph.clear();
       this.frontPanel.clear();
       this.editor.render();
+      if (this.undoManager) this.undoManager.reset();
     }
 
     showToast(msg, duration = 3200) {
@@ -5431,11 +5693,19 @@
       e.target.value = '';
     }
 
-    loadProjectJson(jsonOrStr, fileName) {
+    loadProjectJson(jsonOrStr, fileName = null, isUndo = false) {
       try {
         const json = typeof jsonOrStr === 'string' ? JSON.parse(jsonOrStr) : jsonOrStr;
-        this.currentProjectName = fileName || 'meu_projeto.rosi';
-        this.clearAll();
+        if (!isUndo) {
+          this.currentProjectName = fileName || 'meu_projeto.rosi';
+        }
+
+        this.runtime.stop();
+        this.graph.clear();
+        this.frontPanel.clear();
+        if (!isUndo && this.undoManager) {
+          this.undoManager.reset();
+        }
 
           // 1. Restaura widgets do Painel Frontal
           if (json.frontPanel && Array.isArray(json.frontPanel.widgets)) {
@@ -5443,14 +5713,14 @@
               let widget = null;
               switch (w.kind) {
                 case 'slider':
-                  widget = new SliderWidget({ id: w.id, title: w.title, min: w.min, max: w.max, step: w.step, initialValue: w.initialValue, x: w.x, y: w.y });
+                  widget = new SliderWidget({ id: w.id, title: w.title, min: w.min, max: w.max, step: w.step, initialValue: w.initialValue, unit: w.unit, x: w.x, y: w.y });
                   break;
                 case 'tank':
-                  widget = new TankWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, x: w.x, y: w.y });
+                  widget = new TankWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, step: w.step, x: w.x, y: w.y });
                   if (w.initialValue !== undefined) widget.setValue(w.initialValue);
                   break;
                 case 'thermometer':
-                  widget = new ThermometerWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, x: w.x, y: w.y });
+                  widget = new ThermometerWidget({ id: w.id, title: w.title, min: w.min, max: w.max, unit: w.unit, step: w.step, x: w.x, y: w.y });
                   if (w.initialValue !== undefined) widget.setValue(w.initialValue);
                   break;
                 case 'chart':
@@ -5490,12 +5760,12 @@
                 case 'fp_indicator':
                   node = new FPIndicatorTerminalNode({ id: n.id, title: n.title, linkedWidgetId: n.linkedWidgetId, dataType: n.dataType, x: n.x, y: n.y });
                   break;
-                case 'math_add': node = new AddNode({ id: n.id, x: n.x, y: n.y }); break;
-                case 'math_sub': node = new SubtractNode({ id: n.id, x: n.x, y: n.y }); break;
-                case 'math_mul': node = new MultiplyNode({ id: n.id, x: n.x, y: n.y }); break;
-                case 'math_div': node = new DivideNode({ id: n.id, x: n.x, y: n.y }); break;
+                case 'math_add': node = new AddNode({ id: n.id, title: n.title, inputCount: n.inputCount, x: n.x, y: n.y }); break;
+                case 'math_sub': node = new SubtractNode({ id: n.id, title: n.title, x: n.x, y: n.y }); break;
+                case 'math_mul': node = new MultiplyNode({ id: n.id, title: n.title, inputCount: n.inputCount, x: n.x, y: n.y }); break;
+                case 'math_div': node = new DivideNode({ id: n.id, title: n.title, x: n.x, y: n.y }); break;
                 case 'math_gain': node = new GainNode({ id: n.id, gain: n.gain || 1, x: n.x, y: n.y }); break;
-                case 'math_sat': node = new SaturationNode({ id: n.id, x: n.x, y: n.y }); break;
+                case 'math_sat': node = new SaturationNode({ id: n.id, min: n.min, max: n.max, x: n.x, y: n.y }); break;
                 case 'logic_gt': node = new GreaterNode({ id: n.id, x: n.x, y: n.y }); break;
                 case 'logic_lt': node = new LessNode({ id: n.id, x: n.x, y: n.y }); break;
                 case 'logic_eq': node = new EqualNode({ id: n.id, x: n.x, y: n.y }); break;
@@ -5511,8 +5781,8 @@
                 case 'sig_timestep': node = new TimeStepNode({ id: n.id, x: n.x, y: n.y }); break;
                 case 'daq_ai': node = new DAQAssistantAINode({ id: n.id, channel: n.channel !== undefined ? n.channel : 0, x: n.x, y: n.y }); break;
                 case 'daq_ao': node = new DAQAssistantAONode({ id: n.id, channel: n.channel !== undefined ? n.channel : 0, x: n.x, y: n.y }); break;
-                case 'ctrl_onoff': node = new OnOffControllerNode({ id: n.id, x: n.x, y: n.y }); break;
-                case 'ctrl_pid': node = new PIDControllerNode({ id: n.id, x: n.x, y: n.y }); break;
+                case 'ctrl_onoff': node = new OnOffControllerNode({ id: n.id, setpoint: n.setpoint, hysteresis: n.hysteresis, x: n.x, y: n.y }); break;
+                case 'ctrl_pid': node = new PIDControllerNode({ id: n.id, kp: n.kp, ti: n.ti, td: n.td, setpoint: n.setpoint, x: n.x, y: n.y }); break;
                 case 'plant_tf': node = new TransferFunctionNode({ id: n.id, kp: n.kp, tau: n.tau, theta: n.theta, x: n.x, y: n.y }); break;
                 case 'formula_node':
                   node = new FormulaNode({
@@ -5564,7 +5834,9 @@
           }
 
           this.editor.render();
-        this.showToast(`Projeto '${this.currentProjectName}' carregado com sucesso!`);
+        if (!isUndo) {
+          this.showToast(`Projeto '${this.currentProjectName}' carregado com sucesso!`);
+        }
       } catch (err) {
         console.error('Erro ao carregar o arquivo .rosi:', err);
         alert('Erro ao abrir o arquivo .rosi: ' + err.message);

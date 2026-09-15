@@ -62,34 +62,33 @@ export class TankWidget {
     this.setupDrag();
   }
 
-  updateTicks() {
+  updateScale() {
     if (!this.element) return;
-    const scaleEl = this.scaleEl || this.element.querySelector(`#scale_${this.id}`);
-    const unitEl = this.unitEl || this.element.querySelector(`#unit_${this.id}`);
+    const scaleEl = this.scaleEl || this.element.querySelector(`#scale_${this.id}`) || this.element.querySelector('.tank-scale');
+    const unitEl = this.unitEl || this.element.querySelector(`#unit_${this.id}`) || this.element.querySelector('.numeric-box span');
     const titleEl = this.element.querySelector('.fp-widget-header');
 
-    if (titleEl) titleEl.textContent = this.title;
+    if (titleEl && this.title !== undefined) titleEl.textContent = this.title;
 
     if (scaleEl) {
       const min = Number(this.min) || 0;
-      const max = Number(this.max) || 100;
+      const max = (this.max !== undefined && this.max !== null) ? Number(this.max) : 300;
       const range = max - min;
-      const t3 = max;
-      const t2 = min + range * (2 / 3);
-      const t1 = min + range * (1 / 3);
-      const t0 = min;
+      const steps = 3;
 
       const formatVal = (v) => {
-        if (Math.abs(v) >= 100 || Number.isInteger(v)) return v.toFixed(0);
+        if (Math.abs(v) >= 100 || Number.isInteger(v)) return Math.round(v);
         return v.toFixed(1);
       };
 
-      scaleEl.innerHTML = `
-        <div>${formatVal(t3)} ${this.unit || ''}</div>
-        <div>${formatVal(t2)} ${this.unit || ''}</div>
-        <div>${formatVal(t1)} ${this.unit || ''}</div>
-        <div>${formatVal(t0)} ${this.unit || ''}</div>
-      `;
+      scaleEl.innerHTML = '';
+      const unitStr = this.unit ? ` ${this.unit}` : '';
+      for (let i = steps; i >= 0; i--) {
+        const val = min + range * (i / steps);
+        const div = document.createElement('div');
+        div.textContent = `${formatVal(val)}${unitStr}`;
+        scaleEl.appendChild(div);
+      }
     }
 
     if (unitEl) {
@@ -99,13 +98,27 @@ export class TankWidget {
     this.setValue(this.value);
   }
 
+  updateTicks() {
+    this.updateScale();
+  }
+
+  applyConfig(cfg = {}) {
+    if (cfg.title !== undefined) this.title = cfg.title;
+    if (cfg.min !== undefined) this.min = Number(cfg.min);
+    if (cfg.max !== undefined) this.max = Number(cfg.max);
+    if (cfg.unit !== undefined) this.unit = cfg.unit;
+    if (cfg.step !== undefined) this.step = Number(cfg.step);
+
+    this.updateScale();
+  }
+
   setValue(val) {
     this.value = Number(val) || 0;
     const min = Number(this.min) || 0;
-    const max = Number(this.max) || 100;
+    const max = (this.max !== undefined && this.max !== null) ? Number(this.max) : 300;
     const clamped = Math.max(min, Math.min(max, this.value));
     const range = (max - min) || 1;
-    const pct = ((clamped - min) / range) * 100;
+    const pct = Math.max(0, Math.min(100, ((clamped - min) / range) * 100));
 
     if (this.waterEl) {
       this.waterEl.style.height = `${pct}%`;

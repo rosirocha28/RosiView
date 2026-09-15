@@ -672,13 +672,21 @@ export class FrontPanelManager {
       if (widget.step !== undefined) numInput.step = widget.step;
     }
 
+    if (typeof widget.updateScale === 'function') {
+      widget.updateScale();
+    }
+
+    if (typeof widget.updateTicks === 'function') {
+      widget.updateTicks();
+    }
+
     const tankScale = widget.element.querySelector('.tank-scale');
-    if (tankScale) {
-      const spans = tankScale.querySelectorAll('span');
-      if (spans.length >= 3) {
-        spans[0].textContent = widget.max;
-        spans[1].textContent = ((widget.min + widget.max) / 2).toFixed(0);
-        spans[2].textContent = widget.min;
+    if (tankScale && typeof widget.updateScale !== 'function') {
+      const divs = tankScale.querySelectorAll('div, span');
+      if (divs.length >= 3) {
+        divs[0].textContent = `${widget.max} ${widget.unit || ''}`.trim();
+        divs[1].textContent = `${((widget.min + widget.max) / 2).toFixed(0)} ${widget.unit || ''}`.trim();
+        divs[divs.length - 1].textContent = `${widget.min} ${widget.unit || ''}`.trim();
       }
       if (typeof widget.setValue === 'function' && widget.value !== undefined) {
         widget.setValue(widget.value);
@@ -686,12 +694,12 @@ export class FrontPanelManager {
     }
 
     const thermoScale = widget.element.querySelector('.thermometer-scale');
-    if (thermoScale) {
-      const spans = thermoScale.querySelectorAll('span');
+    if (thermoScale && typeof widget.updateScale !== 'function') {
+      const spans = thermoScale.querySelectorAll('.scale-mark span, span');
       if (spans.length >= 3) {
-        spans[0].textContent = `${widget.max}°`;
-        spans[1].textContent = `${((widget.min + widget.max) / 2).toFixed(0)}°`;
-        spans[2].textContent = `${widget.min}°`;
+        spans[0].textContent = `${widget.max}`;
+        spans[1].textContent = `${((widget.min + widget.max) / 2).toFixed(0)}`;
+        spans[spans.length - 1].textContent = `${widget.min}`;
       }
       if (typeof widget.setValue === 'function' && widget.value !== undefined) {
         widget.setValue(widget.value);
@@ -706,10 +714,6 @@ export class FrontPanelManager {
       widget.drawGauge();
     } else if (typeof widget.setValue === 'function' && widget.value !== undefined) {
       widget.setValue(widget.value);
-    }
-
-    if (typeof widget.updateTicks === 'function') {
-      widget.updateTicks();
     }
 
     if (this.app && this.app.graph) {

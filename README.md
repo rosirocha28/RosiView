@@ -56,7 +56,7 @@ Para comunicar com a placa física conectada à porta USB:
 1. Certifique-se de ter os drivers **NI-DAQmx** e o **Python 3** instalados no computador.
 2. Dê um duplo clique no arquivo:
    ```bash
-   INICIAR_ROSIVIEW_BRIDGE.bat
+   bridge.bat
    ```
 3. O bridge Python iniciará o servidor WebSocket local na porta `8765`.
 4. Abra o **`index.html`** no navegador e selecione **"Hardware: NI USB-6009 (WebSocket Bridge)"** na barra superior.
@@ -72,7 +72,7 @@ ROSIVIEW/
 ├── manifest.json                      # Metadados de PWA / Web App
 ├── INICIAR_ROSIVIEW.bat               # Inicializador oficial com auto-update
 ├── CRIAR_ATALHO_AREA_DE_TRABALHO.bat  # Gerador de atalho no Desktop com ícone
-├── INICIAR_ROSIVIEW_BRIDGE.bat        # Inicializador do bridge de hardware
+├── bridge.bat                         # Inicializador do bridge de hardware
 ├── assets/                            # Ícone oficial e imagens
 │   ├── rosiview_icon.ico              # Ícone para atalhos Windows
 │   ├── rosiview_icon.png              # Logotipo em alta resolução

@@ -49,6 +49,12 @@ try {
     # Sem conexao ou timeout: continua offline normalmente
 }
 
+# Verificacao de integridade: se componentes essenciais (bridge) estiverem faltando, forca reparo/atualizacao
+$bridgeMissing = (-not (Test-Path (Join-Path $projectRoot "bridge\RosiViewBridge.exe"))) -or (-not (Test-Path (Join-Path $projectRoot "bridge.bat")))
+if ($bridgeMissing -and $remoteVer) {
+    $needsUpdate = $true
+}
+
 if ($needsUpdate -and $remoteVer) {
     Write-Host ""
     Write-Host "============================================================" -ForegroundColor Cyan

@@ -1,16 +1,16 @@
 {
-  "version": "v0.4.3",
-  "name": "RosiView v0.4.3",
+  "version": "v0.4.4",
+  "name": "RosiView v0.4.4",
   "releaseDate": "2026-09-15",
-  "notes": "Lançamento v0.4.3: Restauração do sistema de Desfazer e Refazer (Undo/Redo), correção e atualização dinâmica de escalas do Tanque e Termômetro, e automação do Bridge de hardware.",
+  "notes": "Lançamento v0.4.4: Inclusão garantida do módulo Bridge de hardware (NI USB-6009) na atualização automática desktop, criação do inicializador bridge.bat e mecanismo de autocura para componentes essenciais.",
   "desktop": {
-    "version": "v0.4.3",
-    "tag": "v0.4.3",
-    "name": "RosiView Desktop v0.4.3",
+    "version": "v0.4.4",
+    "tag": "v0.4.4",
+    "name": "RosiView Desktop v0.4.4",
     "releaseDate": "2026-09-15",
-    "notes": "Versão Desktop v0.4.3: Suporte a Desfazer/Refazer (Ctrl+Z/Ctrl+Y), escalas proporcionais para Tanque e Termômetro, e automação transparente do Bridge USB-6009.",
-    "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.4.3.zip",
-    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/v0.4.3"
+    "notes": "Versão Desktop v0.4.4: Módulo Bridge incluso na atualização automática, atalho bridge.bat na raiz e verificação ativa de integridade.",
+    "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.4.4.zip",
+    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/v0.4.4"
   },
   "android": {
     "version": "v0.4.3",

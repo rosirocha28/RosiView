@@ -11,7 +11,7 @@ Add-Type -AssemblyName WindowsBase
 
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $localVerPath = Join-Path $projectRoot "version.json"
-$localVer = "v0.4.3"
+$localVer = "v0.4.4"
 
 if (Test-Path $localVerPath) {
     try {
@@ -185,8 +185,18 @@ $timer.add_Tick({
             # Sem internet ou timeout -> modo offline
         }
 
+        # Verificacao de integridade: se componentes essenciais (bridge) estiverem faltando, forca reparo/atualizacao
+        $bridgeMissing = (-not (Test-Path (Join-Path $projectRoot "bridge\RosiViewBridge.exe"))) -or (-not (Test-Path (Join-Path $projectRoot "bridge.bat")))
+        if ($bridgeMissing -and $remoteVer) {
+            $needsUpdate = $true
+        }
+
         if ($needsUpdate -and $remoteVer) {
-            Set-SplashStatus "Nova versão ($remoteVer) encontrada! Baixando atualização..." "#f59e0b"
+            if ($bridgeMissing -and ($localVer -eq $remoteVer)) {
+                Set-SplashStatus "Instalando módulo Bridge de Hardware..." "#f59e0b"
+            } else {
+                Set-SplashStatus "Nova versão ($remoteVer) encontrada! Baixando atualização..." "#f59e0b"
+            }
             $zipUrl = "https://github.com/rosirocha28/RosiView/archive/refs/heads/main.zip"
             $tempZip = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "rosiview_auto_update.zip")
             $tempDir = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "rosiview_auto_" + [System.Guid]::NewGuid().ToString())

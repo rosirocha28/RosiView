@@ -57,7 +57,7 @@ if (Test-Path $manualPdf) {
 }
 
 # Copia arquivos do app para subpasta app
-$appFiles = @("index.html", "version.json", "manifest.json", "RosiView.exe", "RosiView.vbs", "INICIAR_ROSIVIEW.bat", "CRIAR_ATALHO_AREA_DE_TRABALHO.bat", "INICIAR_ROSIVIEW_BRIDGE.bat")
+$appFiles = @("index.html", "version.json", "manifest.json", "RosiView.exe", "RosiView.vbs", "INICIAR_ROSIVIEW.bat", "CRIAR_ATALHO_AREA_DE_TRABALHO.bat", "bridge.bat")
 foreach ($f in $appFiles) {
     $src = Join-Path $projectRoot $f
     if (Test-Path $src) {

@@ -96,7 +96,7 @@ class RosiViewApp {
     this.isAndroid = isMobile;
     this.currentVersion = (isMobile && window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function')
       ? ('v' + window.AndroidBridge.getVersion())
-      : 'v0.4.3';
+      : 'v0.4.4';
     const versionEl = document.getElementById('status-app-version');
     if (versionEl) {
       versionEl.textContent = isMobile ? `RosiView Android ${this.currentVersion} — IFES` : `RosiView ${this.currentVersion} — IFES`;
@@ -481,7 +481,7 @@ class RosiViewApp {
             'Não foi possível conectar ao Bridge da NI USB-6009 (127.0.0.1:8765).\n\n' +
             'Para operar a placa física no Windows:\n' +
             '1. Certifique-se de que o cabo USB está plugado no computador.\n' +
-            '2. Se o Bridge não estiver ativo, execute o arquivo "INICIAR_ROSIVIEW_BRIDGE.bat" na pasta do RosiView.\n' +
+            '2. Se o Bridge não estiver ativo, execute o arquivo "bridge.bat" na pasta do RosiView.\n' +
             '3. Clique no botão "Conectar" ao lado de Hardware.'
           );
         }

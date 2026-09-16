@@ -4716,7 +4716,7 @@
 
       const myVer = (window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function') 
         ? ('v' + window.AndroidBridge.getVersion()) 
-        : 'v0.4.3';
+        : 'v0.4.4';
       this.currentVersion = myVer;
 
       const badge = splash.querySelector('.mobile-splash-badge');
@@ -4759,7 +4759,7 @@
           }
         })
         .catch(() => {
-          const myVer = 'v0.4.3';
+          const myVer = 'v0.4.4';
           setStatus(`Modo offline (${myVer}) • Abrindo...`, '#38bdf8');
         });
 
@@ -4781,7 +4781,7 @@
       this.isAndroid = isMobile;
       this.currentVersion = (isMobile && window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function')
         ? ('v' + window.AndroidBridge.getVersion())
-        : 'v0.4.3';
+        : 'v0.4.4';
       const versionEl = document.getElementById('status-app-version');
       if (versionEl) {
         versionEl.textContent = isMobile ? `RosiView Android ${this.currentVersion} — IFES` : `RosiView ${this.currentVersion} — IFES`;

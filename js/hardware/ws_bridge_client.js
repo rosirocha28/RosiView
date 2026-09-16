@@ -30,6 +30,11 @@ export class WSBridgeClient extends IDAQDevice {
   }
 
   triggerProtocolLaunch() {
+    const now = Date.now();
+    if (this._lastProtocolLaunch && (now - this._lastProtocolLaunch < 10000)) {
+      return false;
+    }
+    this._lastProtocolLaunch = now;
     try {
       const iframe = document.createElement('iframe');
       iframe.style.display = 'none';
@@ -60,30 +65,25 @@ export class WSBridgeClient extends IDAQDevice {
 
       if (resp.ok) {
         const data = await resp.json();
+        this.mode = 'http';
+        this.startHttpPolling();
+
         if (data && data.connected === true) {
-          this.mode = 'http';
           this.connected = true;
           this.failCount = 0;
           if (data.device) this.deviceName = data.device;
           if (Array.isArray(data.ai)) this.analogInputs = data.ai;
           if (Array.isArray(data.ao)) this.analogOutputs = data.ao;
-          this.startHttpPolling();
           if (this.onStatusChange) this.onStatusChange(true, this.deviceName);
-          return true;
         } else {
           this.connected = false;
-          if (this.onStatusChange) this.onStatusChange(false);
-          throw new Error('PLACA_NAO_DETECTADA');
+          this.deviceName = null;
+          if (this.onStatusChange) this.onStatusChange(false, 'NI USB-6009 (Bridge Ativo • Aguardando cabo USB)');
         }
+        return true;
       }
     } catch (e) {
-      if (e.message === 'PLACA_NAO_DETECTADA') {
-        throw new Error(
-          'O Bridge do RosiView está ativo, mas nenhuma placa NI USB-6009 foi detectada no computador.\n\n' +
-          '1. Conecte o cabo USB da placa à porta USB do computador.\n' +
-          '2. Aguarde 2 segundos e clique em "Conectar" novamente.'
-        );
-      }
+      // HTTP indisponivel, tenta websocket fallback
     }
 
     // 2. Se HTTP não respondeu, tenta WebSocket (compatível com rosiview_bridge.py)
@@ -135,11 +135,6 @@ export class WSBridgeClient extends IDAQDevice {
     try {
       return await this.tryConnectOnce();
     } catch (err) {
-      // Se a placa física não foi detectada, mas o bridge está rodando, repassa o erro
-      if (err && err.message && err.message.includes('PLACA_NAO_DETECTADA')) {
-        throw err;
-      }
-
       // Se o bridge não estava rodando, tenta iniciá-lo via protocolo do Windows rosiview-bridge://
       this.triggerProtocolLaunch();
 
@@ -149,12 +144,9 @@ export class WSBridgeClient extends IDAQDevice {
       try {
         return await this.tryConnectOnce();
       } catch (err2) {
-        if (err2 && err2.message && err2.message.includes('PLACA_NAO_DETECTADA')) {
-          throw err2;
-        }
         throw new Error(
           'Não foi possível conectar ao Bridge da NI USB-6009 em 127.0.0.1:8765.\n\n' +
-          'Dica: Conecte o cabo USB da placa e abra o RosiView pelo atalho oficial da Área de Trabalho.'
+          'Dica: Execute o arquivo "bridge.bat" na pasta do RosiView.'
         );
       }
     }
@@ -198,7 +190,7 @@ export class WSBridgeClient extends IDAQDevice {
     if (this.connected) {
       this.connected = false;
       this.analogInputs.fill(0.0);
-      if (this.onStatusChange) this.onStatusChange(false);
+      if (this.onStatusChange) this.onStatusChange(false, 'NI USB-6009 (Bridge Ativo • Aguardando cabo USB)');
     }
   }
 

@@ -117,12 +117,18 @@ namespace RosiView {
         const int SW_SHOW = 5;
         const int SW_SHOWNOACTIVATE = 4;
 
+        const string SingleInstanceMutexName = "Global\\RosiViewBridge_SingleInstance_Mutex";
+
         static string deviceName = null;
         static double[] aiChannels = new double[8];
         static double[] aoChannels = new double[2];
         static volatile bool running = true;
         static volatile bool isDeviceConnected = false;
         static HttpListener listener;
+
+        static DateTime startupTime = DateTime.UtcNow;
+        static DateTime lastActivityTime = DateTime.UtcNow;
+        static bool hasReceivedFirstRequest = false;
 
         static void Main(string[] args) {
             Console.Title = "RosiView - NI USB-6009 Native Bridge (NI-DAQmx)";
@@ -137,82 +143,129 @@ namespace RosiView {
                 }
             }
 
-            if (startHidden) {
-                IntPtr hWnd = GetConsoleWindow();
-                if (hWnd != IntPtr.Zero) ShowWindow(hWnd, SW_HIDE);
-            }
-
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("==================================================================");
-            Console.WriteLine("   ROSIVIEW - SERVIDOR BRIDGE NATIVO NI USB-6009 (NI-DAQmx)       ");
-            Console.WriteLine("   IFES • Engenharia de Controle e Automacao                     ");
-            Console.WriteLine("==================================================================");
-            Console.ResetColor();
-
-            deviceName = NIDriver.DetectDeviceName();
-            if (!string.IsNullOrEmpty(deviceName)) {
-                Console.Write("[1/2] Verificando placa NI USB-6009 ({0})... ", deviceName);
-                bool readOk = NIDriver.ReadAllAnalogInputs(deviceName, aiChannels);
-                if (!readOk) {
-                    aiChannels[0] = NIDriver.ReadAnalogInput(deviceName + "/ai0");
-                    readOk = (aiChannels[0] != 0.0);
+            // Garante instância única via Mutex com escopo de sessão/sistema
+            bool createdNew;
+            using (Mutex singleMutex = new Mutex(true, SingleInstanceMutexName, out createdNew)) {
+                if (!createdNew) {
+                    // Já existe uma instância do RosiViewBridge ativa!
+                    // Se foi chamado interativamente (sem --background), solicita que a instância existente exiba sua janela:
+                    if (!startHidden) {
+                        try {
+                            HttpWebRequest req = (HttpWebRequest)WebRequest.Create("http://127.0.0.1:8765/show");
+                            req.Timeout = 1200;
+                            req.Method = "GET";
+                            using (HttpWebResponse res = (HttpWebResponse)req.GetResponse()) { }
+                        } catch { }
+                    }
+                    // Encerra imediatamente sem abrir janela, sem bloquear em ReadKey e sem conflitar porta
+                    return;
                 }
-                if (readOk) {
-                    isDeviceConnected = true;
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("CONECTADA!");
-                    Console.ResetColor();
-                    Console.WriteLine("      Sensor AI0: {0:F3} V | Sensor AI1: {1:F3} V", aiChannels[0], aiChannels[1]);
+
+                if (startHidden) {
+                    IntPtr hWnd = GetConsoleWindow();
+                    if (hWnd != IntPtr.Zero) ShowWindow(hWnd, SW_HIDE);
+                }
+
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine("==================================================================");
+                Console.WriteLine("   ROSIVIEW - SERVIDOR BRIDGE NATIVO NI USB-6009 (NI-DAQmx)       ");
+                Console.WriteLine("   IFES • Engenharia de Controle e Automacao                     ");
+                Console.WriteLine("==================================================================");
+                Console.ResetColor();
+
+                deviceName = NIDriver.DetectDeviceName();
+                if (!string.IsNullOrEmpty(deviceName)) {
+                    Console.Write("[1/2] Verificando placa NI USB-6009 ({0})... ", deviceName);
+                    bool readOk = NIDriver.ReadAllAnalogInputs(deviceName, aiChannels);
+                    if (!readOk) {
+                        aiChannels[0] = NIDriver.ReadAnalogInput(deviceName + "/ai0");
+                        readOk = (aiChannels[0] != 0.0);
+                    }
+                    if (readOk) {
+                        isDeviceConnected = true;
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("CONECTADA!");
+                        Console.ResetColor();
+                        Console.WriteLine("      Sensor AI0: {0:F3} V | Sensor AI1: {1:F3} V", aiChannels[0], aiChannels[1]);
+                    } else {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine("DISPOSITIVO DETECTADO (Aguardando leitura)");
+                        Console.ResetColor();
+                    }
                 } else {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("DISPOSITIVO DETECTADO (Aguardando leitura)");
+                    Console.WriteLine("[1/2] Nenhuma placa NI USB detectada no momento (aguardando conexao)...");
                     Console.ResetColor();
                 }
-            } else {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("[1/2] Nenhuma placa NI USB detectada no momento (aguardando conexao)...");
-                Console.ResetColor();
-            }
 
-            Thread daqThread = new Thread(DaqSamplingLoop);
-            daqThread.IsBackground = true;
-            daqThread.Start();
+                Thread daqThread = new Thread(DaqSamplingLoop);
+                daqThread.IsBackground = true;
+                daqThread.Start();
 
-            Console.Write("[2/2] Iniciando Servidor Bridge em http://127.0.0.1:8765/ ... ");
-            try {
-                listener = new HttpListener();
-                listener.Prefixes.Add("http://localhost:8765/");
-                listener.Prefixes.Add("http://127.0.0.1:8765/");
-                listener.Start();
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("ONLINE!");
-                Console.ResetColor();
-            } catch (Exception ex) {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ERRO: " + ex.Message);
-                Console.ResetColor();
-                Console.WriteLine("Pressione qualquer tecla para sair...");
-                Console.ReadKey();
-                return;
-            }
-
-            Console.WriteLine("\n--> Enquanto a planta estiver conectada, nao feche esta janela.");
-            Console.WriteLine("--> O RosiView sincroniza leituras e comandos em tempo real.");
-            Console.WriteLine("==================================================================\n");
-
-            Thread httpThread = new Thread(HttpServerLoop);
-            httpThread.IsBackground = true;
-            httpThread.Start();
-
-            while (running) {
-                if (isDeviceConnected) {
-                    Console.Write("\r[AO VIVO - CONECTADO] AI0 (Nivel): {0,5:F2} V | AI1: {1,5:F2} V | AO1 (Bomba): {2,5:F2} V | {3} ", 
-                        aiChannels[0], aiChannels[1], aoChannels[1], DateTime.Now.ToString("HH:mm:ss.fff"));
-                } else {
-                    Console.Write("\r[DESCONECTADO] Aguardando conexao do cabo USB da placa NI USB-6009... ({0})   ", 
-                        DateTime.Now.ToString("HH:mm:ss"));
+                Console.Write("[2/2] Iniciando Servidor Bridge em http://127.0.0.1:8765/ ... ");
+                try {
+                    listener = new HttpListener();
+                    listener.Prefixes.Add("http://localhost:8765/");
+                    listener.Prefixes.Add("http://127.0.0.1:8765/");
+                    listener.Start();
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("ONLINE!");
+                    Console.ResetColor();
+                } catch (Exception ex) {
+                    if (startHidden) {
+                        // Modo oculto nunca deve bloquear aguardando tecla
+                        return;
+                    }
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("ERRO: " + ex.Message);
+                    Console.ResetColor();
+                    Console.WriteLine("Pressione qualquer tecla para sair...");
+                    Console.ReadKey();
+                    return;
                 }
-                Thread.Sleep(100);
+
+                Console.WriteLine("\n--> Enquanto a planta estiver conectada, nao feche esta janela.");
+                Console.WriteLine("--> O RosiView sincroniza leituras e comandos em tempo real.");
+                Console.WriteLine("==================================================================\n");
+
+                Thread httpThread = new Thread(HttpServerLoop);
+                httpThread.IsBackground = true;
+                httpThread.Start();
+
+                while (running) {
+                    // Watchdog de inatividade para processos iniciados em segundo plano (--background):
+                    // Se o aplicativo RosiView for fechado, as requisições cessam e o bridge encerra sozinho.
+                    if (startHidden) {
+                        DateTime now = DateTime.UtcNow;
+                        if (hasReceivedFirstRequest) {
+                            if ((now - lastActivityTime).TotalSeconds > 12) {
+                                running = false;
+                                break;
+                            }
+                        } else {
+                            if ((now - startupTime).TotalSeconds > 45) {
+                                running = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isDeviceConnected) {
+                        Console.Write("\r[AO VIVO - CONECTADO] AI0 (Nivel): {0,5:F2} V | AI1: {1,5:F2} V | AO1 (Bomba): {2,5:F2} V | {3} ", 
+                            aiChannels[0], aiChannels[1], aoChannels[1], DateTime.Now.ToString("HH:mm:ss.fff"));
+                    } else {
+                        Console.Write("\r[DESCONECTADO] Aguardando conexao do cabo USB da placa NI USB-6009... ({0})   ", 
+                            DateTime.Now.ToString("HH:mm:ss"));
+                    }
+                    Thread.Sleep(100);
+                }
+
+                try {
+                    if (listener != null && listener.IsListening) {
+                        listener.Stop();
+                        listener.Close();
+                    }
+                } catch { }
             }
         }
 
@@ -271,6 +324,9 @@ namespace RosiView {
             var req = context.Request;
             var res = context.Response;
 
+            lastActivityTime = DateTime.UtcNow;
+            hasReceivedFirstRequest = true;
+
             res.Headers.Add("Access-Control-Allow-Origin", "*");
             res.Headers.Add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
             res.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
@@ -283,7 +339,30 @@ namespace RosiView {
 
             try {
                 string path = req.Url.AbsolutePath.ToLower();
-                
+
+                if (path == "/shutdown" || path == "/exit") {
+                    byte[] okBuf = Encoding.UTF8.GetBytes("{\"status\":\"ok\",\"action\":\"shutdown\"}");
+                    res.ContentType = "application/json";
+                    res.ContentLength64 = okBuf.Length;
+                    res.OutputStream.Write(okBuf, 0, okBuf.Length);
+                    res.Close();
+                    running = false;
+                    ThreadPool.QueueUserWorkItem(delegate(object state) {
+                        Thread.Sleep(250);
+                        Environment.Exit(0);
+                    });
+                    return;
+                }
+
+                if (path == "/heartbeat") {
+                    byte[] okBuf = Encoding.UTF8.GetBytes("{\"status\":\"ok\",\"alive\":true}");
+                    res.ContentType = "application/json";
+                    res.ContentLength64 = okBuf.Length;
+                    res.OutputStream.Write(okBuf, 0, okBuf.Length);
+                    res.Close();
+                    return;
+                }
+
                 if (path == "/show") {
                     IntPtr hWnd = GetConsoleWindow();
                     if (hWnd != IntPtr.Zero) ShowWindow(hWnd, SW_SHOWNOACTIVATE);

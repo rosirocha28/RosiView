@@ -1,16 +1,16 @@
 {
-  "version": "v0.4.4",
-  "name": "RosiView v0.4.4",
+  "version": "v0.4.5",
+  "name": "RosiView v0.4.5",
   "releaseDate": "2026-09-15",
-  "notes": "Lançamento v0.4.4: Inclusão garantida do módulo Bridge de hardware (NI USB-6009) na atualização automática desktop, criação do inicializador bridge.bat e mecanismo de autocura para componentes essenciais.",
+  "notes": "Lançamento v0.4.5: Mutex de instância única para o RosiViewBridge, encerramento automático do Bridge ao fechar o app, watchdog de inatividade e conexão plug-and-play da NI USB-6009.",
   "desktop": {
-    "version": "v0.4.4",
-    "tag": "v0.4.4",
-    "name": "RosiView Desktop v0.4.4",
+    "version": "v0.4.5",
+    "tag": "v0.4.5",
+    "name": "RosiView Desktop v0.4.5",
     "releaseDate": "2026-09-15",
-    "notes": "Versão Desktop v0.4.4: Módulo Bridge incluso na atualização automática, atalho bridge.bat na raiz e verificação ativa de integridade.",
-    "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.4.4.zip",
-    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/v0.4.4"
+    "notes": "Versão Desktop v0.4.5: Mutex de instância única para o RosiViewBridge, encerramento automático do Bridge ao fechar o app, watchdog de inatividade e conexão plug-and-play da NI USB-6009.",
+    "downloadUrl": "https://github.com/rosirocha28/RosiView/archive/refs/tags/v0.4.5.zip",
+    "releaseUrl": "https://github.com/rosirocha28/RosiView/releases/tag/v0.4.5"
   },
   "android": {
     "version": "v0.4.3",

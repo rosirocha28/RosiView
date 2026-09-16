@@ -86,6 +86,7 @@ class RosiViewApp {
     this.setupStatusBar();
     this.setupBeforeUnload();
     this.setupUpdateChecker();
+    this.startBridgeHeartbeat();
 
     // 5. Inicia com a área de trabalho 100% limpa
     this.clearAll();
@@ -96,7 +97,7 @@ class RosiViewApp {
     this.isAndroid = isMobile;
     this.currentVersion = (isMobile && window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function')
       ? ('v' + window.AndroidBridge.getVersion())
-      : 'v0.4.4';
+      : 'v0.4.5';
     const versionEl = document.getElementById('status-app-version');
     if (versionEl) {
       versionEl.textContent = isMobile ? `RosiView Android ${this.currentVersion} — IFES` : `RosiView ${this.currentVersion} — IFES`;
@@ -209,13 +210,32 @@ class RosiViewApp {
   }
 
   setupBeforeUnload() {
+    window.addEventListener('pagehide', () => {
+      try {
+        navigator.sendBeacon('http://127.0.0.1:8765/shutdown');
+      } catch (_) {}
+    });
+
     window.addEventListener('beforeunload', (e) => {
+      try {
+        navigator.sendBeacon('http://127.0.0.1:8765/shutdown');
+      } catch (_) {}
       if (this.hasContent()) {
         e.preventDefault();
         e.returnValue = '';
         return '';
       }
     });
+  }
+
+  startBridgeHeartbeat() {
+    if (this.isAndroid) return;
+    if (this.bridgeHeartbeatTimer) return;
+    this.bridgeHeartbeatTimer = setInterval(() => {
+      try {
+        fetch('http://127.0.0.1:8765/heartbeat', { cache: 'no-store' }).catch(() => {});
+      } catch (_) {}
+    }, 4000);
   }
 
   hasContent() {
@@ -468,21 +488,24 @@ class RosiViewApp {
           await this.wsBridge.connect();
           this.currentDAQ = this.wsBridge;
           this.runtime.setDAQDevice(this.wsBridge);
-          if (hwDot) hwDot.className = 'status-dot connected';
-          const devTitle = this.wsBridge.deviceName ? `NI USB-6009 [${this.wsBridge.deviceName}] (Bridge NI-DAQmx)` : 'NI USB-6009 (Bridge NI-DAQmx)';
-          if (hwText) hwText.textContent = `Hardware: ${devTitle}`;
           updateConnectBtn('websocket', true);
+          if (this.wsBridge.connected) {
+            if (hwDot) hwDot.className = 'status-dot connected';
+            const devTitle = this.wsBridge.deviceName ? `NI USB-6009 [${this.wsBridge.deviceName}] (Bridge NI-DAQmx)` : 'NI USB-6009 (Bridge NI-DAQmx)';
+            if (hwText) hwText.textContent = `Hardware: ${devTitle}`;
+          } else {
+            if (hwDot) hwDot.className = 'status-dot running';
+            if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Bridge Ativo • Aguardando cabo USB)';
+            this.showToast('Bridge ativo! Conecte o cabo USB da placa a qualquer momento.');
+          }
         } catch (err) {
           updateConnectBtn('websocket', false);
           if (hwDot) hwDot.className = 'status-dot disconnected';
           if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Aguardando conexão - Clique em Conectar)';
           alert(
             (err && err.message) ? err.message :
-            'Não foi possível conectar ao Bridge da NI USB-6009 (127.0.0.1:8765).\n\n' +
-            'Para operar a placa física no Windows:\n' +
-            '1. Certifique-se de que o cabo USB está plugado no computador.\n' +
-            '2. Se o Bridge não estiver ativo, execute o arquivo "bridge.bat" na pasta do RosiView.\n' +
-            '3. Clique no botão "Conectar" ao lado de Hardware.'
+            'Não foi possível conectar ao Bridge da NI USB-6009 em 127.0.0.1:8765.\n\n' +
+            'Dica: Execute o arquivo "bridge.bat" na pasta do RosiView.'
           );
         }
       }
@@ -497,9 +520,10 @@ class RosiViewApp {
         if (hwText) hwText.textContent = `Hardware: ${devTitle}`;
         updateConnectBtn('websocket', true);
       } else {
-        if (hwDot) hwDot.className = 'status-dot disconnected';
-        if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Planta Desconectada)';
-        updateConnectBtn('websocket', false);
+        if (hwDot) hwDot.className = 'status-dot running';
+        const label = devName || 'NI USB-6009 (Bridge Ativo • Aguardando cabo USB)';
+        if (hwText) hwText.textContent = `Hardware: ${label}`;
+        updateConnectBtn('websocket', true);
       }
     };
 
@@ -535,11 +559,18 @@ class RosiViewApp {
           await this.wsBridge.connect();
           this.currentDAQ = this.wsBridge;
           this.runtime.setDAQDevice(this.wsBridge);
-          if (hwDot) hwDot.className = 'status-dot connected';
-          const devTitle = this.wsBridge.deviceName ? `NI USB-6009 [${this.wsBridge.deviceName}] (Bridge NI-DAQmx)` : 'NI USB-6009 (Bridge NI-DAQmx)';
-          if (hwText) hwText.textContent = `Hardware: ${devTitle}`;
           updateActiveItem('websocket');
           updateConnectBtn('websocket', true);
+          if (this.wsBridge.connected) {
+            if (hwDot) hwDot.className = 'status-dot connected';
+            const devTitle = this.wsBridge.deviceName ? `NI USB-6009 [${this.wsBridge.deviceName}] (Bridge NI-DAQmx)` : 'NI USB-6009 (Bridge NI-DAQmx)';
+            if (hwText) hwText.textContent = `Hardware: ${devTitle}`;
+            this.showToast('Bancada NI USB-6009 conectada com sucesso!');
+          } else {
+            if (hwDot) hwDot.className = 'status-dot running';
+            if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Bridge Ativo • Aguardando cabo USB)';
+            this.showToast('Bridge ativo! Conecte o cabo USB da placa a qualquer momento.');
+          }
           btnConnectHw.innerHTML = '<span>⚡</span> <span class="btn-text">Conectado</span>';
           setTimeout(() => {
             btnConnectHw.innerHTML = '<span>⚡</span> <span class="btn-text">Conectar</span>';
@@ -553,11 +584,8 @@ class RosiViewApp {
           if (hwText) hwText.textContent = 'Hardware: NI USB-6009 (Desconectado)';
           alert(
             (err && err.message) ? err.message :
-            'Não foi possível conectar à bancada física NI USB-6009.\n\n' +
-            'Passo a passo:\n' +
-            '1. Certifique-se de que o cabo USB da placa NI USB-6009 está conectado ao computador.\n' +
-            '2. Aguarde 2 segundos e clique em "Conectar" novamente.\n\n' +
-            '(Dica: O RosiView aciona o serviço da placa automaticamente em segundo plano).'
+            'Não foi possível conectar ao Bridge da NI USB-6009 em 127.0.0.1:8765.\n\n' +
+            'Dica: Execute o arquivo "bridge.bat" na pasta do RosiView.'
           );
         }
       });

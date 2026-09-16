@@ -311,7 +311,7 @@
         </div>
         <div class="mobile-splash-title-row">
           <span class="mobile-splash-title">RosiView</span>
-          <span class="mobile-splash-badge">v0.4.4</span>
+          <span class="mobile-splash-badge">v0.4.5</span>
         </div>
         <div class="mobile-splash-subtitle">IFES • Sistemas de Controle Integrado</div>
         
@@ -328,8 +328,15 @@
 
   </div>
 
+  <!-- Encerramento gracioso do Bridge ao descarregar página -->
+  <script>
+    window.addEventListener('pagehide', function() {
+      try { navigator.sendBeacon('http://127.0.0.1:8765/shutdown'); } catch (_) {}
+    });
+  </script>
+
   <!-- Ponto de Entrada da Aplicação (Bundle Autônomo com suporte a file:///) -->
-  <script src="js/rosiview_bundle.js?v=0.4.4"></script>
+  <script src="js/rosiview_bundle.js?v=0.4.5"></script>
 
 </body>
 </html>
